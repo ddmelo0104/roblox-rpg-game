@@ -1,0 +1,8 @@
+# Ferramentas do projeto, gerenciadas pelo Rokit (https://github.com/rojo-rbx/rokit).
+# Instale todas com `rokit install`. As mesmas versões estão fixadas no CI (.github/workflows/ci.yml).
+
+[tools]
+rojo = "rojo-rbx/rojo@7.4.4"
+selene = "Kampfkarren/selene@0.27.1"
+stylua = "JohnnyMorganz/StyLua@0.20.0"
+wally = "UpliftGames/wally@0.3.2"

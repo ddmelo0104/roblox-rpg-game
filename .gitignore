@@ -1,0 +1,28 @@
+# Places e modelos gerados (a fonte da verdade é src/)
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+# ...exceto assets exportados de propósito para assets/ (modelos, peças de mapa)
+!assets/**/*.rbxm
+!assets/**/*.rbxmx
+*.rbxl.lock
+*.rbxlx.lock
+build/
+
+# Gerado pelo Rojo / luau-lsp
+sourcemap.json
+
+# Pacotes do Wally
+Packages/
+ServerPackages/
+DevPackages/
+
+# Python
+__pycache__/
+
+# Editores e sistema
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

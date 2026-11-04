@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Mesmas versões do rokit.toml
+  ROJO_VERSION: 7.4.4
+  SELENE_VERSION: 0.27.1
+  STYLUA_VERSION: 0.20.0
+
+jobs:
+  qualidade:
+    name: Formatação, lint, backlog e build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Instalar ferramentas (versões do rokit.toml)
+        run: |
+          mkdir -p "$HOME/bin" && cd "$HOME/bin"
+          curl -fsSL -o rojo.zip   "https://github.com/rojo-rbx/rojo/releases/download/v${ROJO_VERSION}/rojo-${ROJO_VERSION}-linux-x86_64.zip"
+          curl -fsSL -o selene.zip "https://github.com/Kampfkarren/selene/releases/download/${SELENE_VERSION}/selene-${SELENE_VERSION}-linux.zip"
+          curl -fsSL -o stylua.zip "https://github.com/JohnnyMorganz/StyLua/releases/download/v${STYLUA_VERSION}/stylua-linux-x86_64.zip"
+          for z in *.zip; do unzip -o -q "$z"; done
+          chmod +x rojo selene stylua
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Formatação (StyLua)
+        run: stylua --check src
+
+      - name: Lint (Selene, std Roblox; aviso também falha)
+        run: selene src
+
+      - name: Backlog em dia
+        run: python3 tools/backlog.py --check
+
+      - name: Build do place (Rojo)
+        run: rojo build default.project.json --output projeto-rpg.rbxl
