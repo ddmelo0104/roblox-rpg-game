@@ -41,9 +41,9 @@ _Nada por aqui._
 | ADR | Status |
 | --- | --- |
 | [ADR-000 · Registrar decisões com ADRs](../arquitetura/adr/ADR-000-registrar-decisoes-com-adrs.md) | aceito |
-| [ADR-001 · Desenvolvimento externo com Rojo e Git](../arquitetura/adr/ADR-001-desenvolvimento-externo-com-rojo-e-git.md) | proposto |
-| [ADR-002 · Servidor autoritativo](../arquitetura/adr/ADR-002-servidor-autoritativo.md) | proposto |
-| [ADR-003 · Luau em modo strict](../arquitetura/adr/ADR-003-luau-em-modo-strict.md) | proposto |
+| [ADR-001 · Desenvolvimento externo com Rojo e Git](../arquitetura/adr/ADR-001-desenvolvimento-externo-com-rojo-e-git.md) | aceito |
+| [ADR-002 · Servidor autoritativo](../arquitetura/adr/ADR-002-servidor-autoritativo.md) | aceito |
+| [ADR-003 · Luau em modo strict](../arquitetura/adr/ADR-003-luau-em-modo-strict.md) | aceito |
 
 ## Bugs abertos
 

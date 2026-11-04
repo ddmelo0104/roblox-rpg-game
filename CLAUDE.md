@@ -17,7 +17,7 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 
 ## Estado atual (atualize quando mudar)
 - M0 (Fundação) em andamento: US-001, US-002, US-003, US-004 e US-006 em revisão; US-005 é a próxima, depois que o Davi movê-la para `pronto`.
-- ADR-001, ADR-002 e ADR-003 estão **propostos**: siga-os, mas não os trate como aceitos até o Davi mudar o status.
+- ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três).
 - O corte de MVP e os épicos do M1 **ainda não foram aprovados**. Não comece nada de gameplay sem uma história aprovada.
 
 ## Regras (não quebre)

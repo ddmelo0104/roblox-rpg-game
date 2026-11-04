@@ -2,10 +2,10 @@
 tipo: adr
 id: ADR-002
 titulo: Servidor autoritativo
-status: proposto
+status: aceito
 epicos: EP-001
 criado: 2026-10-29
-decidido_em:
+decidido_em: 2026-11-04
 substitui:
 substituido_por:
 ---
@@ -13,7 +13,7 @@ substituido_por:
 # ADR-002 · Servidor autoritativo
 
 > [!NOTE]
-> Status: **proposto**, aguardando a decisão do arquiteto.
+> Status: **aceito** em 04/11/2026 pelo Davi (opção B).
 
 ## Contexto
 No Roblox, o cliente roda na máquina do jogador e pode ser modificado por exploiters. Num RPG com saque total e mercado entre jogadores, XP, dano, loot e moeda são alvos óbvios de trapaça.
@@ -29,7 +29,7 @@ No Roblox, o cliente roda na máquina do jogador e pode ser modificado por explo
 
 ## Decisão
 > [!IMPORTANT]
-> **Proposta: opção B.** O cliente só envia **intenções** ("quero atacar o alvo X", "quero equipar o item Y"). O servidor valida (tipo, distância, cooldown, posse) e aplica.
+> **Decidido: opção B.** O cliente só envia **intenções** ("quero atacar o alvo X", "quero equipar o item Y"). O servidor valida (tipo, distância, cooldown, posse) e aplica.
 
 ## Consequências
 - Todo Remote tem validação no servidor, e isso é item obrigatório da Definition of Done.
