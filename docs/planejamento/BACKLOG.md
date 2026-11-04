@@ -10,7 +10,18 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 
 | Épico | Status | Prioridade | Marco | Progresso |
 | --- | --- | --- | --- | --- |
-| [EP-001 · Fundação do Projeto](epicos/EP-001-fundacao-do-projeto.md) | em-andamento | must | M0 | 0/6 histórias · 0/11 pts |
+| [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/6 histórias · 0/11 pts |
+| [EP-002 · Personagem, câmera e controles (PC)](epicos/EP-002-personagem-camera-e-controles.md) | backlog | must | M1 | sem histórias |
+| [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | backlog | must | M1 | sem histórias |
+| [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | backlog | must | M1 | sem histórias |
+| [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | backlog | must | M1 | sem histórias |
+| [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | backlog | must | M1 | sem histórias |
+| [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | backlog | must | M1 | sem histórias |
+| [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | backlog | must | M1 | sem histórias |
+| [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | backlog | must | M1 | sem histórias |
+| [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | backlog | must | M1 | sem histórias |
+| [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | backlog | must | M1 | sem histórias |
+| [EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)](epicos/EP-012-conteudo-de-grupo.md) | backlog | must | M1 | sem histórias |
 
 ## Em andamento e em revisão
 

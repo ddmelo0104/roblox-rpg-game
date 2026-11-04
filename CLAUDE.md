@@ -16,9 +16,9 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared`.
 
 ## Estado atual (atualize quando mudar)
-- M0 (Fundação) em andamento: US-001, US-002, US-003, US-004 e US-006 em revisão; US-005 é a próxima, depois que o Davi movê-la para `pronto`.
+- M0 (Fundação) em andamento: US-001, US-002, US-003, US-004 e US-006 em revisão; US-005 é a próxima, depois que o Davi movê-la para `pronto`. Em 05/11 o EP-001 virou "Base técnica e protótipo do núcleo".
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três).
-- O corte de MVP do M1 foi **aprovado** em 04/11/2026, com duas mudanças do Davi: só PC e acampamentos para grupos de 2 a 4 (aba Visão do Jogo do doc). Os épicos do M1 **ainda não foram aprovados**. Não comece nada de gameplay sem uma história aprovada.
+- O corte de MVP do M1 foi **aprovado** em 04/11/2026: só PC, região de Stardawn, dungeon solo, acampamentos para grupos de 2 a 4 e uma dungeon de grupo de teste (aba Visão do Jogo do doc). Os épicos do M1 (EP-002 a EP-012) foram **aprovados e criados** em 05/11; as histórias deles ainda não existem. Não comece nada de gameplay sem uma história aprovada.
 
 ## Regras (não quebre)
 1. **Servidor autoritativo** (ADR-002): o cliente só envia intenções; o servidor valida tipo, faixa, distância, cooldown e posse de tudo o que chega por Remote, e decide.
