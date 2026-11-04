@@ -8,7 +8,7 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - Responda em **português do Brasil**. Explique o plano antes de mexer, prefira mudanças pequenas e verificáveis e diga quando não tiver certeza.
 
 ## Onde está cada coisa
-- **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons) e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
+- **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons, Combate e Habilidades, Armas e Armaduras, Câmera e Mira, Movimentação, Mundo e Terreno), Facções e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
   - Leia a aba do sistema antes de implementar uma história dele. Se esta sessão não tiver acesso ao Claude Docs, peça ao Davi o trecho necessário. **Nunca invente regra de design.**
 - **Planejamento:** `docs/planejamento/` (épicos, histórias, roadmap e o `BACKLOG.md` gerado).
 - **Arquitetura:** `docs/arquitetura/` (visão, estrutura do repositório, convenções e ADRs).
@@ -18,7 +18,7 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 ## Estado atual (atualize quando mudar)
 - M0 (Fundação) em andamento: US-001, US-002, US-003, US-004 e US-006 em revisão; US-005 é a próxima, depois que o Davi movê-la para `pronto`.
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três).
-- O corte de MVP e os épicos do M1 **ainda não foram aprovados**. Não comece nada de gameplay sem uma história aprovada.
+- O corte de MVP do M1 foi **aprovado** em 04/11/2026, com duas mudanças do Davi: só PC e acampamentos para grupos de 2 a 4 (aba Visão do Jogo do doc). Os épicos do M1 **ainda não foram aprovados**. Não comece nada de gameplay sem uma história aprovada.
 
 ## Regras (não quebre)
 1. **Servidor autoritativo** (ADR-002): o cliente só envia intenções; o servidor valida tipo, faixa, distância, cooldown e posse de tudo o que chega por Remote, e decide.

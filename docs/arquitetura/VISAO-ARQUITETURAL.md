@@ -47,5 +47,11 @@ flowchart TB
 - [ ] Rede: Remotes puros ou um wrapper tipado? (sai da US-005)
 - [ ] Topologia do mundo: um place com tudo ou um place por zona? (ADR-004, a escrever)
 - [ ] Instâncias de dungeon: no mesmo servidor ou em *reserved servers*? (ADR-007, a escrever)
+- [ ] Itens como instâncias com `uid` gerado só no servidor, contra duplicação (ADR-006, a escrever)
+- [ ] Mercado entre servidores: armazenamento e transação atômica (ADR-008, a escrever, M2)
+- [ ] Detecção de acerto no servidor com tolerância de lag (ADR-009, a escrever)
+- [ ] Validação de movimento no servidor, contra speed hack (ADR-010, a escrever)
+
+**Jogadores por servidor:** o Roblox permite servidores de até 200 jogadores, mas no DevForum a sugestão prática para jogos com muito combate fica entre 50 e 100. Por isso "muitos jogadores" vale para o mundo, com vários servidores por zona, e não para um servidor só (ADR-004). Fontes: [Experience Join Improvements](https://devforum.roblox.com/t/experience-join-improvements-server-size-join-queues-and-social-slots-reservations/2294621) e [Is a 200 max player per server possible?](https://devforum.roblox.com/t/is-a-200-max-player-per-server-possible/3538720).
 
 A lista completa de ADRs, com o status de cada um, está no [BACKLOG.md](../planejamento/BACKLOG.md#decisões-adrs).
