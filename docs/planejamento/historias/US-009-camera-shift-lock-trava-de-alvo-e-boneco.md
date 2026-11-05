@@ -44,16 +44,16 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 - **Então** o zoom fica entre o mínimo e o máximo do Config
 
 **Cenário 5: boneco de treino**
-- **Dado** um place sem nenhum modelo com a tag `Alvo`
+- **Dado** um place sem nenhum modelo com a tag `Target`
 - **Quando** o servidor inicia
 - **Então** aparece um boneco de treino perto do spawn, e ele volta depois de um tempo se for derrubado
 
 ## Notas técnicas (arquiteto → dev)
 - Lado: cliente (câmera e trava) e servidor (boneco)
-- Módulos afetados: `src/client/Controllers/CameraController.luau`, `src/client/Controllers/TargetController.luau`, `src/server/Services/TrainingDummyService.luau`, `src/shared/Alvos.luau`, `src/shared/Config/Camera.luau` e `Treino.luau`
-- Alvos são Models com Humanoid e a tag `Alvo` (CollectionService); outros jogadores também podem ser travados (provisório: a pergunta de PvP está aberta na aba)
+- Módulos afetados: `src/client/Controllers/CameraController.luau`, `src/client/Controllers/TargetController.luau`, `src/server/Services/TrainingDummyService.luau`, `src/shared/Targets.luau`, `src/shared/Config/Camera.luau` e `Training.luau`
+- Alvos são Models com Humanoid e a tag `Target` (CollectionService); outros jogadores também podem ser travados (provisório: a pergunta de PvP está aberta na aba)
 - O shift-lock padrão do Roblox fica desligado (`StarterPlayer.EnableMouseLockOption`), porque o Shift é a corrida
-- O boneco é um placeholder criado por código; modelos de verdade são feitos no Studio e só precisam da tag `Alvo`
+- O boneco é um placeholder criado por código; modelos de verdade são feitos no Studio e só precisam da tag `Target`
 - Remotes e validação no servidor: nenhum nesta história
 - Dados persistidos: nenhum
 
@@ -61,7 +61,7 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 - [x] Zoom mínimo e máximo pelo Config
 - [x] Modo combate: mouse no centro, câmera no ombro, personagem virado para a câmera
 - [x] Trava: escolher o alvo mais perto do centro da câmera, contorno, trocar e soltar
-- [x] Boneco de treino com a tag `Alvo`, que volta depois de derrubado
+- [x] Boneco de treino com a tag `Target`, que volta depois de derrubado
 - [ ] Testar no Studio (cenários acima), com servidor e cliente
 - [x] Atualizar a documentação afetada
 
@@ -69,14 +69,14 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 **Feito pelo dev (2026-11-05):** o Davi pediu em 05/11 para começar o código.
 - **`CameraController`:** zoom limitado pelo Config e o modo combate. No modo combate, o mouse fica preso no centro, a câmera vai para o ombro e o personagem vira para onde a câmera aponta. Com um alvo travado, a câmera fica atrás do ombro olhando para o alvo, e o personagem vira para ele.
 - **`TargetController`:** travar escolhe o alvo vivo, no alcance, visível e mais perto do centro da câmera, desenha um contorno nele e liga o modo combate. A tecla de trocar passa para outro alvo. A trava solta quando o alvo morre, sai do alcance, fica sem visão por um tempo, quando se trava de novo ou quando o modo combate desliga.
-- **`TrainingDummyService`:** se o place não tiver nenhum modelo com a tag `Alvo`, cria um boneco de treino 20 studs à frente do SpawnLocation. Derrubado, ele volta depois de 5 s. Desde a US-012 são 3 bonecos lado a lado (`Config/Treino.QUANTIDADE_BONECOS`).
-- **`Shared.Alvos`:** diz o que é alvo (Model com Humanoid e a tag) e onde ele está.
+- **`TrainingDummyService`:** se o place não tiver nenhum modelo com a tag `Target`, cria um boneco de treino 20 studs à frente do SpawnLocation. Derrubado, ele volta depois de 5 s. Desde a US-012 são 3 bonecos lado a lado (`Config/Training.DUMMY_COUNT`).
+- **`Shared.Targets`:** diz o que é alvo (Model com Humanoid e a tag) e onde ele está.
 - **`default.project.json`:** desliga o shift-lock padrão do Roblox (`EnableMouseLockOption`), porque o Shift é a corrida.
 
 **Comportamentos provisórios** (perguntas abertas da aba Câmera e Mira, ajustáveis em `Config/Camera`):
 - Ctrl liga e desliga o modo combate; T ou o botão do meio do mouse trava e solta; Tab troca de alvo.
 - Travar liga o modo combate; soltar não desliga.
-- A trava pega outros jogadores (`TRAVA_PEGA_JOGADORES`).
+- A trava pega outros jogadores (`LOCK_ON_PLAYERS`).
 - O Tab também abre a lista de jogadores do Roblox. Se incomodar, troque a tecla no Config.
 
 **Limitações conhecidas desta primeira versão:**
@@ -95,6 +95,6 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 
    Em cada caso a trava solta. Com 2 jogadores (Test → Clients and Servers → 2 players), Tab passa a trava do boneco para o outro jogador.
 5. **Cenário 4:** use a rodinha do mouse. O zoom para entre 6 e 22 studs.
-6. **Boneco volta:** na barra de comandos do servidor, rode `workspace["Boneco de treino"].Humanoid.Health = 0`. Ele some e volta 5 s depois.
+6. **Boneco volta:** na barra de comandos do servidor, rode `workspace.TrainingDummy.Humanoid.Health = 0`. Ele some e volta 5 s depois.
 
 Passando, mude `status` para `concluido` e preencha `concluido_em`.

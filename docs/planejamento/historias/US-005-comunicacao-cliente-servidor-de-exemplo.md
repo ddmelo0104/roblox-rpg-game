@@ -42,9 +42,9 @@ concluido_em:
 
 ## Revisão / resultado
 **Feito pelo dev (2026-11-05):** o Davi pediu em 05/11 para começar o código, então a história saiu do backlog direto para a implementação.
-- **Lista única:** `src/shared/Remotes.luau` lista todos os Remotes, e todos são RemoteEvent. O servidor cria cada um em `ReplicatedStorage.Remotes` (`Remotes.criar`, chamado no `Main` antes dos Services). O cliente pega com `Remotes.evento(nome)`, que espera a replicação.
-- **Camada de rede do servidor:** `src/server/Rede.luau` tem o `Rede.aoReceber(nome, validar, aoPedir)`. Primeiro aplica o limite de pedidos por segundo, por jogador e por Remote (`Config/Rede`), depois o validador. O que falha vira um aviso `[Rede] … recusado de …`, sem erro.
-- **Validadores:** `src/shared/Validar.luau` tem `Validar.numero` (tipo, NaN, infinito, faixa) e `Validar.booleano`.
+- **Lista única:** `src/shared/Remotes.luau` lista todos os Remotes, e todos são RemoteEvent. O servidor cria cada um em `ReplicatedStorage.Remotes` (`Remotes.create`, chamado no `Main` antes dos Services). O cliente pega com `Remotes.event(name)`, que espera a replicação.
+- **Camada de rede do servidor:** `src/server/Network.luau` tem o `Network.onReceive(name, validate, handler)`. Primeiro aplica o limite de pedidos por segundo, por jogador e por Remote (`Config/Network`), depois o validador. O que falha vira um aviso `[Network] … rejected from …`, sem erro.
+- **Validadores:** `src/shared/Validate.luau` tem `Validate.number` (tipo, NaN, infinito, faixa) e `Validate.boolean`.
 - **Exemplo:** `PingService` no servidor e `PingController` no cliente.
 
 **Decisões propostas, aguardando o Davi:**
@@ -52,8 +52,8 @@ concluido_em:
 - A rede usa Remotes puros com essa camada de validação, sem wrapper tipado externo.
 
 **Para o Davi testar no Studio:**
-1. **Cenário 1:** dê Play. O Output do cliente mostra `[Rede] ping ok · 1 · hora do servidor …`.
-2. **Cenário 2:** em Test → Clients and Servers (1 jogador), use a barra de comandos da janela do jogador para rodar `game.ReplicatedStorage.Remotes.RequestPing:FireServer("x")` e `game.ReplicatedStorage.Remotes.RequestPing:FireServer(table.create(10000, 1))`. O Output do servidor mostra `[Rede] RequestPing recusado de …: esperava número, veio string` (e `…veio table`), sem erro.
-3. **Limite:** na mesma barra, rode `for i = 1, 50 do game.ReplicatedStorage.Remotes.RequestPing:FireServer(i) end`. O servidor responde até o limite de `Config/Rede` e avisa uma vez que o jogador passou do limite.
+1. **Cenário 1:** dê Play. O Output do cliente mostra `[Network] ping ok · 1 · server time …`.
+2. **Cenário 2:** em Test → Clients and Servers (1 jogador), use a barra de comandos da janela do jogador para rodar `game.ReplicatedStorage.Remotes.RequestPing:FireServer("x")` e `game.ReplicatedStorage.Remotes.RequestPing:FireServer(table.create(10000, 1))`. O Output do servidor mostra `[Network] RequestPing rejected from …: expected number, got string` (e `…got table`), sem erro.
+3. **Limite:** na mesma barra, rode `for i = 1, 50 do game.ReplicatedStorage.Remotes.RequestPing:FireServer(i) end`. O servidor responde até o limite de `Config/Network` e avisa uma vez que o jogador passou do limite.
 
 Passando, mude `status` para `concluido` e preencha `concluido_em`.

@@ -63,14 +63,14 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 ## Notas técnicas (arquiteto → dev)
 - Lado: cliente e servidor
 - Módulos afetados:
-  - Config: `src/shared/Config/EspadaLonga.luau` (as 3 habilidades), `src/shared/Config/Combate.luau` (energia e margem de lag) e `src/shared/Config/Treino.luau` (3 bonecos)
-  - Shared: `src/shared/Habilidades.luau` (tipos e contas da área), `src/shared/Energia.luau` e `src/shared/Alvos.luau`
+  - Config: `src/shared/Config/Longsword.luau` (as 3 habilidades), `src/shared/Config/Combat.luau` (energia e margem de lag) e `src/shared/Config/Training.luau` (3 bonecos)
+  - Shared: `src/shared/Abilities.luau` (tipos e contas da área), `src/shared/Energy.luau` e `src/shared/Targets.luau`
   - Servidor: `src/server/Services/CombatService.luau` e `src/server/Services/EnergyService.luau`
   - Cliente: `src/client/Controllers/CombatController.luau`, `CombatEffectsController.luau` e `CombatHudController.luau`
 - Remotes e validação no servidor:
   - `RequestAbility`: o cliente manda o id, a direção no plano e, no golpe, o alvo travado. O servidor responde a quem pediu com a hora em que a habilidade fica pronta e, se recusou, o motivo.
   - `AbilityUsed`: o servidor avisa todos de quem usou, qual habilidade, de onde, quem foi atingido e o dano.
-  - `Rede.aoReceber` confere o tipo do id, o vetor (sem NaN) e a instância. Depois, o `CombatService` confere cooldown, alvo, alcance, linha de visão e energia.
+  - `Network.onReceive` confere o tipo do id, o vetor (sem NaN) e a instância. Depois, o `CombatService` confere cooldown, alvo, alcance, linha de visão e energia.
 - Dados persistidos: nenhum
 - ADRs relevantes: [ADR-009](../../arquitetura/adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md) (proposto) e [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md)
 
@@ -84,9 +84,9 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 
 ## Revisão / resultado
 **Feito pelo dev (2026-11-05):** o Davi pediu em 05/11 para construir a história junto com os ADR-009 e ADR-010.
-- **`Config/EspadaLonga`:** as 3 habilidades, com as distâncias escritas em metros (no Roblox, 1 stud = 0,28 m).
-- **`Config/Combate`:** energia máxima, regeneração, a margem de lag do ADR-009 e a diferença de altura aceita.
-- **`Shared.Habilidades`:** os tipos e as contas da área (à frente e em volta). O cliente e o servidor usam as mesmas contas. Ao iniciar, o servidor confere o Config e para com uma mensagem clara se um campo estiver errado.
+- **`Config/Longsword`:** as 3 habilidades, com as distâncias escritas em metros (no Roblox, 1 stud = 0,28 m).
+- **`Config/Combat`:** energia máxima, regeneração, a margem de lag do ADR-009 e a diferença de altura aceita.
+- **`Shared.Abilities`:** os tipos e as contas da área (à frente e em volta). O cliente e o servidor usam as mesmas contas. Ao iniciar, o servidor confere o Config e para com uma mensagem clara se um campo estiver errado.
 - **`EnergyService`:** a energia mora no servidor e vai para atributos do jogador, que o HUD lê.
 - **`CombatService`:** confere cooldown, alvo, alcance, linha de visão e energia, aplica o dano, zera o cooldown do giro quando ele derruba alguém e avisa todos os clientes.
 - **`CombatController`:**
@@ -95,10 +95,10 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
   - Desfaz o efeito se o servidor recusar.
 - **`CombatEffectsController`:** desenha a área ou a linha do golpe, e o número de dano em cima de quem foi atingido.
 - **`CombatHudController`:** barra de energia, um quadro por habilidade com o cooldown, borda vermelha quando falta energia, e o último aviso.
-- **`TrainingDummyService`:** agora cria 3 bonecos lado a lado, a 4 studs de distância entre os centros (`Config/Treino`).
-- **`TargetController`:** passa o alvo travado para as habilidades e usa `Shared.Alvos` na lista de candidatos e na linha de visão.
+- **`TrainingDummyService`:** agora cria 3 bonecos lado a lado, a 4 studs de distância entre os centros (`Config/Training`).
+- **`TargetController`:** passa o alvo travado para as habilidades e usa `Shared.Targets` na lista de candidatos e na linha de visão.
 
-**Valores provisórios** (ajuste em `Config/EspadaLonga` e `Config/Combate`):
+**Valores provisórios** (ajuste em `Config/Longsword` e `Config/Combat`):
 
 | Habilidade | Tecla | Área | Energia | Cooldown | Dano |
 | --- | --- | --- | --- | --- | --- |
@@ -134,15 +134,15 @@ A energia vai até 100 e volta 5 por segundo. A margem de lag é de 1,5 stud, e 
    - Trave um boneco (T), chegue perto e aperte E. Uma linha vermelha vai até ele, e "220" sobe só dele.
 4. **Cenário 3:**
    - Fique encostado no boneco do meio e aperte R. Um disco azul aparece, e "80" sobe de todos os bonecos dentro do raio. O quadro R escurece por 8 s.
-   - Para ver o cooldown zerar, rode na barra de comandos do servidor: `for _, b in workspace:GetChildren() do if b.Name == "Boneco de treino" then b.Humanoid.Health = 50 end end`.
+   - Para ver o cooldown zerar, rode na barra de comandos do servidor: `for _, dummy in workspace:GetChildren() do if dummy.Name == "TrainingDummy" then dummy.Humanoid.Health = 50 end end`.
    - Espere o R voltar e aperte R. Os bonecos caem, o quadro R não escurece, e dá para usar R de novo na hora.
 5. **Cenário 4:**
    - Aperte Q duas vezes seguidas. O aviso "Corte frontal: em recarga" aparece.
-   - Use Q, E e R sem parar até a energia acabar (uns 15 s). O aviso "Sem energia" aparece, e a borda dos quadros fica vermelha.
+   - Use Q, E e R sem parar até a energia acabar (uns 15 s). O aviso "…: sem energia" aparece, e a borda dos quadros fica vermelha.
 6. **Cenário 5:**
    - Trave um boneco, afaste-se uns 8 studs e aperte E. O aviso "Golpe no alvo: fora de alcance" aparece.
    - Para ver o servidor recusar, ponha uma parede entre você e o boneco travado e aperte E em menos de 1,5 s, antes de a trava soltar. O aviso "Golpe no alvo: sem linha de visão" aparece.
-7. **Pedido inválido:** na barra de comandos do cliente, rode `game.ReplicatedStorage.Remotes.RequestAbility:FireServer("BolaDeFogo", Vector3.new(0, 0, -1))`. O servidor avisa `[Rede] RequestAbility recusado de …: opção desconhecida`, sem erro.
+7. **Pedido inválido:** na barra de comandos do cliente, rode `game.ReplicatedStorage.Remotes.RequestAbility:FireServer("BolaDeFogo", Vector3.new(0, 0, -1))`. O servidor avisa `[Network] RequestAbility rejected from …: unknown option`, sem erro.
 8. **Com 2 jogadores** (Test → Clients and Servers → 2 players): o jogador 2 vê o efeito e os números de dano quando o jogador 1 usa as habilidades.
 
 Passando, mude `status` para `concluido` e preencha `concluido_em`.

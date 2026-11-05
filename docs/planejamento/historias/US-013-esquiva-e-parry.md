@@ -40,7 +40,7 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 
 ## Notas técnicas (arquiteto → dev)
 - Lado: cliente e servidor
-- Módulos afetados: `src/server/Services/CombatService.luau`, `src/client/Controllers/CombatController.luau`, `src/shared/Config/Combate.luau`
+- Módulos afetados: `src/server/Services/CombatService.luau`, `src/client/Controllers/CombatController.luau`, `src/shared/Config/Combat.luau`
 - Remotes e validação no servidor: intenções de esquiva e de parry, com o tempo conferido no servidor dentro da margem de lag (ADR-009)
 - Dados persistidos: nenhum
 - ADRs relevantes: ADR-009 (a escrever), [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md)

@@ -40,7 +40,7 @@ No Roblox, o cliente controla a física do próprio personagem. A aba [Movimenta
 
 ## Notas técnicas (arquiteto → dev)
 - Lado: servidor
-- Módulos afetados: `src/server/Services/MovementValidationService.luau`, `src/shared/Config/Movimento.luau` (margem e intervalo)
+- Módulos afetados: `src/server/Services/MovementValidationService.luau`, `src/shared/Config/Movement.luau` (margem e intervalo)
 - Remotes e validação no servidor: nenhum Remote novo; usa a velocidade que o servidor decidiu na US-010
 - Dados persistidos: nenhum
 - ADRs relevantes: [ADR-010](../../arquitetura/adr/ADR-010-validacao-de-movimento-no-servidor.md) (proposto), [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md)

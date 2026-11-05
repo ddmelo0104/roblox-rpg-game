@@ -18,7 +18,7 @@ substituido_por:
 ## Contexto
 No Roblox, a física do personagem é do cliente que o controla (*network ownership*), e por isso andar não tem atraso. O lado ruim é que um exploiter consegue mudar a própria velocidade, se teleportar ou voar, e o servidor aceita.
 
-Na US-010, o servidor já decide a velocidade (`MovementService.velocidadePermitida`), mas o cliente pode ignorá-la. Num jogo com saque total, fugir ou alcançar alguém com speed hack quebra o jogo ([ADR-002](ADR-002-servidor-autoritativo.md)). A aba [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9) pede que a correção tenha margem, para não punir quem está com lag.
+Na US-010, o servidor já decide a velocidade (`MovementService.allowedSpeed`), mas o cliente pode ignorá-la. Num jogo com saque total, fugir ou alcançar alguém com speed hack quebra o jogo ([ADR-002](ADR-002-servidor-autoritativo.md)). A aba [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9) pede que a correção tenha margem, para não punir quem está com lag.
 
 O Roblox tem um modo próprio de autoridade do servidor (*Server Authority*, com `Workspace.AuthorityMode = Server`): o servidor simula, e o cliente prevê e corrige (*rollback*). Ele saiu em beta no Studio e depois foi anunciado como liberado, mas liga junto outras mudanças e ainda tem problemas conhecidos (ver Referências).
 
@@ -56,7 +56,7 @@ Prós e contras:
 
 ## Decisão
 > [!IMPORTANT]
-> **Proposta: opção B** agora (US-011), com os números em `Config/Movimento`.
+> **Proposta: opção B** agora (US-011), com os números em `Config/Movement`.
 > - Em paralelo, uma spike curta para testar a opção C no protótipo antes do EP-002.
 > - Se a opção C for boa, um novo ADR substitui este.
 
@@ -68,7 +68,7 @@ Prós e contras:
   - Com lag muito alto, pode haver puxões raros.
 - **O que passa a ser obrigatório:**
   - Todo teleporte feito pelo servidor passa pela função da validação, para não virar falso positivo.
-  - Toda mudança de velocidade decidida pelo servidor (corrida, lentidão, investida) entra em `MovementService.velocidadePermitida`.
+  - Toda mudança de velocidade decidida pelo servidor (corrida, lentidão, investida) entra em `MovementService.allowedSpeed`.
 
 ## Referências
 - Aba [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9): correção com margem para quem está com lag.

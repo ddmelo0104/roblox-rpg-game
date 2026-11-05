@@ -30,13 +30,13 @@ O protótipo (US-012) só tem corpo a corpo: a espada longa com corte frontal, g
 - Contras: com lag, golpes que acertaram na tela erram, sobretudo contra quem se move. É a sensação de "mas eu acertei".
 
 ### Opção B: o servidor confere com as posições que ele tem, mais uma margem fixa
-O cliente manda só a intenção: a habilidade, a direção e, no golpe no alvo, o alvo travado. O servidor confere cooldown, energia, alcance e linha de visão. Depois, calcula quem está na área com as posições dele, aumentando o alcance e a área em `MARGEM_LAG` studs.
+O cliente manda só a intenção: a habilidade, a direção e, no golpe no alvo, o alvo travado. O servidor confere cooldown, energia, alcance e linha de visão. Depois, calcula quem está na área com as posições dele, aumentando o alcance e a área em `LAG_MARGIN` studs (`Config/Combat`, a `MARGEM_LAG` da aba).
 - Prós:
   - Pouco código. As contas da área ficam num módulo puro em `shared`, e o cliente usa as mesmas contas para avisar antes de pedir e para desenhar o efeito na hora.
   - A margem é um número no Config, ajustável jogando.
   - No empate com a esquiva, vale o que o servidor processar primeiro, o que favorece quem defende, como a aba propõe.
 - Contras:
-  - Quem trapaceia ganha até `MARGEM_LAG` de alcance.
+  - Quem trapaceia ganha até `LAG_MARGIN` de alcance.
   - Com muito lag, contra alvos rápidos, ainda erra.
   - Pode não bastar para projéteis rápidos.
 
@@ -56,15 +56,15 @@ O servidor guarda o histórico das posições (por exemplo, do último segundo) 
 ## Decisão
 > [!IMPORTANT]
 > **Proposta: opção B** no protótipo e no M1.
-> - A margem começa em 1,5 stud (`Config/Combate.MARGEM_LAG`) e é ajustada no teste.
+> - A margem começa em 1,5 stud (`Config/Combat.LAG_MARGIN`) e é ajustada no teste.
 > - Reavaliar a opção C quando os projéteis do EP-003 entrarem, se os testes mostrarem erros demais.
 
 ## Consequências
 - **Positivas:** todo acerto passa por um caminho só, no servidor, e o cliente prevê o efeito com as mesmas contas.
-- **Negativas e trade-offs aceitos:** até `MARGEM_LAG` de alcance a mais para quem trapaceia. Quem tem lag alto erra mais contra alvos em movimento.
+- **Negativas e trade-offs aceitos:** até `LAG_MARGIN` de alcance a mais para quem trapaceia. Quem tem lag alto erra mais contra alvos em movimento.
 - **O que passa a ser obrigatório:**
   - O cliente nunca informa um acerto, só a intenção. O alvo travado também é uma intenção: o servidor confere tag, vida, alcance e linha de visão.
-  - Toda habilidade calcula o acerto com as funções de `Shared.Habilidades` e com a margem do Config.
+  - Toda habilidade calcula o acerto com as funções de `Shared.Abilities` e com a margem do Config.
   - O servidor confere a linha de visão. Só o cenário bloqueia, não os personagens.
 
 ## Referências
