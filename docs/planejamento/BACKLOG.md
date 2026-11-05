@@ -33,6 +33,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-005 · Comunicação cliente-servidor de exemplo](historias/US-005-comunicacao-cliente-servidor-de-exemplo.md) | revisao | EP-001 | must | 3 |
 | [US-007 · Loader de Services e Controllers](historias/US-007-loader-de-services-e-controllers.md) | revisao | EP-001 | must | 2 |
 | [US-008 · Config tipado do protótipo](historias/US-008-config-tipado-do-prototipo.md) | revisao | EP-001 | must | 1 |
+| [US-010 · Corrida e pulo pedidos ao servidor](historias/US-010-corrida-e-pulo.md) | revisao | EP-001 | must | 2 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 
@@ -45,7 +46,6 @@ _Nada por aqui._
 | História | Status | Épico | Prioridade | Pts |
 | --- | --- | --- | --- | --- |
 | [US-009 · Câmera em shift-lock com trava de alvo e boneco de treino](historias/US-009-camera-shift-lock-trava-de-alvo-e-boneco.md) | backlog | EP-001 | must | 5 |
-| [US-010 · Corrida e pulo pedidos ao servidor](historias/US-010-corrida-e-pulo.md) | backlog | EP-001 | must | 2 |
 | [US-011 · Validação de movimento no servidor](historias/US-011-validacao-de-movimento-no-servidor.md) | backlog | EP-001 | must | 3 |
 | [US-012 · Três habilidades com energia e cooldown contra o boneco](historias/US-012-tres-habilidades-com-energia-e-cooldown.md) | backlog | EP-001 | must | 5 |
 | [US-013 · Esquiva e parry](historias/US-013-esquiva-e-parry.md) | backlog | EP-001 | must | 5 |

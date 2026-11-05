@@ -18,6 +18,7 @@ local NOME_PASTA = "Remotes"
 -- nunca responder e travar o servidor.
 local LISTA: { string } = {
 	"RequestPing", -- US-005: exemplo de pedido validado
+	"RequestSprint", -- US-010: pedir para correr (true) ou parar (false)
 }
 
 local Remotes = {}
