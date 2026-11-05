@@ -2,7 +2,7 @@
 tipo: historia
 id: US-007
 titulo: Loader de Services e Controllers
-status: backlog
+status: revisao
 prioridade: must
 epico: EP-001
 pontos: 2
@@ -47,10 +47,21 @@ Primeira peça da base de código do [EP-001](../epicos/EP-001-base-tecnica-e-pr
 - ADRs relevantes: [ADR-003](../../arquitetura/adr/ADR-003-luau-em-modo-strict.md)
 
 ## Tarefas
-- [ ] `Loader.iniciar(pasta, rotulo)` com as duas fases e `pcall` por módulo
-- [ ] `Main` do servidor e do cliente usando o loader
+- [x] `Loader.iniciar(pasta, rotulo)` com as duas fases e `pcall` por módulo
+- [x] `Main` do servidor e do cliente usando o loader
 - [ ] Testar no Studio (cenários acima), com servidor e cliente
-- [ ] Registrar a proposta do loader na visão arquitetural
+- [x] Registrar a proposta do loader na visão arquitetural
 
 ## Revisão / resultado
-*Preenchido pelo dev ao terminar: o que foi feito, o que ficou de fora, como testar no Studio, PR.*
+**Feito pelo dev (2026-11-05):** o Davi pediu para começar o código, então a história foi direto para a implementação.
+- `src/shared/Loader.luau` inicia os módulos de uma pasta em duas fases: o `Init` de todos e depois o `Start` de cada um, numa thread própria. Cada chamada roda num `pcall`, e o erro sai no Output com o nome do módulo.
+- O `Main` do servidor inicia a pasta `Services`, e o do cliente, a pasta `Controllers`. Os prints `[Main] servidor ok` e `[Main] cliente ok` continuam, agora com a lista de módulos.
+
+**Decisão proposta, aguardando o Davi:** loader simples do projeto, sem framework. Trocar por um framework depois é mexer só no `Loader` e no contrato `Init`/`Start`.
+
+**Para o Davi testar no Studio:**
+1. Rode `rojo serve`, conecte o Studio e dê Play.
+2. **Cenários 1 e 2:** o Output mostra `[Main] servidor ok · Projeto RPG v0.0.1 · services: …` e `[Main] cliente ok · … · controllers: …`, com os nomes dos módulos.
+3. **Cenário 3:** crie `src/server/Services/Quebrado.luau` com `return { Start = function() error("teste") end }` e dê Play. O Output mostra `[Main] erro no Start de Quebrado: …teste`, e o resto continua funcionando (a corrida da US-010, por exemplo). Apague o arquivo depois.
+
+Passando, mude `status` para `concluido` e preencha `concluido_em`.

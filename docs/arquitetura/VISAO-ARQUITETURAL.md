@@ -42,7 +42,7 @@ flowchart TB
 | **Persistência** | Servidor | Salvar e carregar o perfil do jogador |
 
 ## Decisões em aberto
-- [ ] Usar um framework, ou um *loader* simples do projeto, para iniciar Services e Controllers?
+- [ ] Usar um framework, ou um *loader* simples do projeto, para iniciar Services e Controllers? Proposta do dev, já implementada na US-007: o loader simples `src/shared/Loader.luau` (Init de todos, depois Start), fácil de trocar por um framework. Falta o Davi confirmar.
 - [ ] Persistência: DataStore puro ou uma biblioteca com *session locking*? (ADR-005, a escrever)
 - [ ] Rede: Remotes puros ou um wrapper tipado? (sai da US-005)
 - [ ] Topologia do mundo: um place com tudo ou um place por zona? (ADR-004, a escrever)
