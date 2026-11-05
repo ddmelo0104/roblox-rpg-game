@@ -20,14 +20,14 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 ## Rodar no Studio
 1. Na pasta do projeto, rode `rojo serve`.
 2. No Studio, abra um place vazio, abra o plugin do Rojo e clique em **Connect**.
-3. Dê **Play**. O Output deve mostrar `[Main] servidor ok · Projeto RPG v0.0.1` e `[Main] cliente ok · Projeto RPG v0.0.1 · <seu nome>`.
+3. Dê **Play**. O Output deve mostrar `[Main] server ok · Projeto RPG v0.0.1` e `[Main] client ok · Projeto RPG v0.0.1 · <seu nome>`.
 
 ## Comandos
 | Comando | Para quê |
 | --- | --- |
 | `stylua src` | Formata o código |
 | `selene src` | Lint com as regras do Roblox |
-| `rojo build -o projeto-rpg.rbxl` | Gera o place |
+| `rojo build -o roblox-rpg-game.rbxl` | Gera o place |
 | `python3 tools/backlog.py` | Atualiza o [BACKLOG.md](docs/planejamento/BACKLOG.md) (no Windows, `py tools/backlog.py`) |
 
 O CI (GitHub Actions) roda formatação, lint, backlog e build a cada push e pull request.

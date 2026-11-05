@@ -1,5 +1,5 @@
 {
-  "name": "projeto-rpg",
+  "name": "roblox-rpg-game",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
@@ -13,6 +13,9 @@
       }
     },
     "StarterPlayer": {
+      "$properties": {
+        "EnableMouseLockOption": false
+      },
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"

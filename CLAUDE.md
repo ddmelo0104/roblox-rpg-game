@@ -8,7 +8,7 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - Responda em **português do Brasil**. Explique o plano antes de mexer, prefira mudanças pequenas e verificáveis e diga quando não tiver certeza.
 
 ## Onde está cada coisa
-- **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons) e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
+- **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons, Combate e Habilidades, Armas e Armaduras, Câmera e Mira, Movimentação, Mundo e Terreno), Facções e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
   - Leia a aba do sistema antes de implementar uma história dele. Se esta sessão não tiver acesso ao Claude Docs, peça ao Davi o trecho necessário. **Nunca invente regra de design.**
 - **Planejamento:** `docs/planejamento/` (épicos, histórias, roadmap e o `BACKLOG.md` gerado).
 - **Arquitetura:** `docs/arquitetura/` (visão, estrutura do repositório, convenções e ADRs).
@@ -16,9 +16,11 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared`.
 
 ## Estado atual (atualize quando mudar)
-- M0 (Fundação) em andamento: US-001, US-002, US-003, US-004 e US-006 em revisão; US-005 é a próxima, depois que o Davi movê-la para `pronto`.
-- ADR-001, ADR-002 e ADR-003 estão **propostos**: siga-os, mas não os trate como aceitos até o Davi mudar o status.
-- O corte de MVP e os épicos do M1 **ainda não foram aprovados**. Não comece nada de gameplay sem uma história aprovada.
+- M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento: US-001 a US-010 e US-012 em revisão, esperando o teste do Davi no Studio; US-011, US-013 e US-014 no backlog.
+- O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`).
+- O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
+- ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 já segue o ADR-009, e a US-011 espera o ADR-010.
+- O corte de MVP do M1 foi **aprovado** em 04/11/2026: só PC, região de Stardawn, dungeon solo, acampamentos para grupos de 2 a 4 e uma dungeon de grupo de teste (aba Visão do Jogo do doc). Os épicos do M1 (EP-002 a EP-012) foram **aprovados e criados** em 05/11; as histórias deles ainda não existem. Não comece nada de gameplay sem uma história aprovada.
 
 ## Regras (não quebre)
 1. **Servidor autoritativo** (ADR-002): o cliente só envia intenções; o servidor valida tipo, faixa, distância, cooldown e posse de tudo o que chega por Remote, e decide.
@@ -27,7 +29,8 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 4. **Uma responsabilidade por módulo:** Services no servidor, Controllers no cliente, tipos e funções puras em `shared`.
 5. **Código só no repositório.** Nunca edite scripts dentro do Studio, porque o Rojo sobrescreve. Mapas e modelos 3D continuam sendo feitos no Studio.
 6. **Nenhum item pode existir em dois lugares.** Itens terão `uid` gerado só no servidor e o perfil terá *session locking* (ADRs a escrever); não crie caminho que permita duplicação.
-7. Siga `docs/arquitetura/CONVENCOES-DE-CODIGO.md` (nomes, comentários, Git).
+7. **Código em inglês** (decisão do Davi, 05/11): nomes, comentários, logs, chaves do Config, Remotes, tags, atributos, commits e branches. A documentação em `docs/` e os textos que o jogador vê ficam em português.
+8. Siga `docs/arquitetura/CONVENCOES-DE-CODIGO.md` (nomes, comentários, Git).
 
 ## Fluxo de uma história
 Use a skill `implementar-historia` (`/implementar-historia US-XXX`). Resumo:
@@ -45,13 +48,13 @@ Para novas histórias e ADRs, use as skills `nova-historia` e `novo-adr`, que pa
 ```bash
 stylua src                          # formata (CI: stylua --check src)
 selene src                          # lint com std Roblox; aviso também falha
-rojo build -o projeto-rpg.rbxl      # gera o place e valida o default.project.json
+rojo build -o roblox-rpg-game.rbxl  # gera o place e valida o default.project.json
 python3 tools/backlog.py            # regenera docs/planejamento/BACKLOG.md (CI: --check)
 rojo serve                          # sincronização ao vivo com o Studio
 ```
 As ferramentas estão fixadas em `rokit.toml` (`rokit install`). O Selene baixa a API do Roblox na primeira execução; se o ambiente bloquear `setup.rbxcdn.com`, diga isso em vez de pular o lint, e conte com o CI.
 
 ## Testes
-- No Studio, Play: o Output deve mostrar `[Main] servidor ok` e `[Main] cliente ok`.
+- No Studio, Play: o Output deve mostrar `[Main] server ok` e `[Main] client ok`.
 - Tudo que envolve dois jogadores: Test → Clients and Servers → 2 players.
 - Se o servidor MCP do Roblox Studio estiver conectado, use-o para ler o Output e inspecionar instâncias, mas edite código só nos arquivos do repositório.
