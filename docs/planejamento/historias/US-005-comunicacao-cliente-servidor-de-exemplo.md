@@ -2,13 +2,13 @@
 tipo: historia
 id: US-005
 titulo: Comunicação cliente-servidor de exemplo
-status: backlog
+status: revisao
 prioridade: must
 epico: EP-001
 pontos: 3
 sprint:
 criado: 2026-10-29
-atualizado: 2026-11-04
+atualizado: 2026-11-05
 concluido_em:
 ---
 
@@ -32,13 +32,28 @@ concluido_em:
 
 ## Notas técnicas
 - Segue o [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md).
-- A decidir: Remotes criados pelo servidor em `ReplicatedStorage.Remotes` ou definidos no `default.project.json`.
+- Proposta implementada: Remotes criados pelo servidor em `ReplicatedStorage.Remotes`, a partir da lista em `src/shared/Remotes.luau` (aguardando o Davi).
 
 ## Tarefas
-- [ ] Módulo de rede com a criação e a validação dos Remotes
-- [ ] Exemplo `RequestPing` no servidor e no cliente
+- [x] Módulo de rede com a criação e a validação dos Remotes
+- [x] Exemplo `RequestPing` no servidor e no cliente
 - [ ] Testar no Studio (cenários acima), com servidor e cliente
-- [ ] Atualizar [VISAO-ARQUITETURAL.md](../../arquitetura/VISAO-ARQUITETURAL.md) com o padrão de rede
+- [x] Atualizar [VISAO-ARQUITETURAL.md](../../arquitetura/VISAO-ARQUITETURAL.md) com o padrão de rede
 
 ## Revisão / resultado
-*Preenchido pelo dev ao concluir.*
+**Feito pelo dev (2026-11-05):** o Davi pediu em 05/11 para começar o código, então a história saiu do backlog direto para a implementação.
+- **Lista única:** `src/shared/Remotes.luau` lista todos os Remotes, e todos são RemoteEvent. O servidor cria cada um em `ReplicatedStorage.Remotes` (`Remotes.criar`, chamado no `Main` antes dos Services). O cliente pega com `Remotes.evento(nome)`, que espera a replicação.
+- **Camada de rede do servidor:** `src/server/Rede.luau` tem o `Rede.aoReceber(nome, validar, aoPedir)`. Primeiro aplica o limite de pedidos por segundo, por jogador e por Remote (`Config/Rede`), depois o validador. O que falha vira um aviso `[Rede] … recusado de …`, sem erro.
+- **Validadores:** `src/shared/Validar.luau` tem `Validar.numero` (tipo, NaN, infinito, faixa) e `Validar.booleano`.
+- **Exemplo:** `PingService` no servidor e `PingController` no cliente.
+
+**Decisões propostas, aguardando o Davi:**
+- Os Remotes são criados pelo servidor a partir da lista no código, e não pelo `default.project.json`. Assim um Remote novo é uma linha só, junto do código que o usa.
+- A rede usa Remotes puros com essa camada de validação, sem wrapper tipado externo.
+
+**Para o Davi testar no Studio:**
+1. **Cenário 1:** dê Play. O Output do cliente mostra `[Rede] ping ok · 1 · hora do servidor …`.
+2. **Cenário 2:** em Test → Clients and Servers (1 jogador), use a barra de comandos da janela do jogador para rodar `game.ReplicatedStorage.Remotes.RequestPing:FireServer("x")` e `game.ReplicatedStorage.Remotes.RequestPing:FireServer(table.create(10000, 1))`. O Output do servidor mostra `[Rede] RequestPing recusado de …: esperava número, veio string` (e `…veio table`), sem erro.
+3. **Limite:** na mesma barra, rode `for i = 1, 50 do game.ReplicatedStorage.Remotes.RequestPing:FireServer(i) end`. O servidor responde até o limite de `Config/Rede` e avisa uma vez que o jogador passou do limite.
+
+Passando, mude `status` para `concluido` e preencha `concluido_em`.
