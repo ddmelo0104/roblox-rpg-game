@@ -47,18 +47,20 @@ O Davi joga o protótipo e decide que o combate está bom o bastante para constr
 - Depende de: [ADR-001](../../arquitetura/adr/ADR-001-desenvolvimento-externo-com-rojo-e-git.md), [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md) e [ADR-003](../../arquitetura/adr/ADR-003-luau-em-modo-strict.md)
 - Bloqueia: os épicos do M1 (EP-002 a EP-012)
 
-## Histórias candidatas
-Para criar quando o Davi pedir. Os IDs (US-007 em diante) saem na criação.
+## Histórias
+Criadas em 05/11, na ordem em que fazem sentido:
 
-| Ordem | História | Depende de |
-| --- | --- | --- |
-| 1 | Loader de Services e Controllers | a decisão do framework |
-| 2 | `src/shared/Config/` tipado para combate, movimento e câmera | — |
-| 3 | Personagem e câmera em shift-lock com trava de alvo | 1, 2 |
-| 4 | Corrida, pulo e validação de movimento no servidor | 3 e ADR-010 |
-| 5 | 3 habilidades com energia e cooldown, validadas no servidor, contra um boneco de treino | 3 e ADR-009 |
-| 6 | Esquiva e parry | 5 |
-| 7 | Spike de desempenho do terreno | — |
+| História | Depende de |
+| --- | --- |
+| [US-007 · Loader de Services e Controllers](../historias/US-007-loader-de-services-e-controllers.md) | — |
+| [US-008 · Config tipado do protótipo](../historias/US-008-config-tipado-do-prototipo.md) | — |
+| [US-005 · Comunicação cliente-servidor de exemplo](../historias/US-005-comunicacao-cliente-servidor-de-exemplo.md) | US-007, US-008 |
+| [US-010 · Corrida e pulo pedidos ao servidor](../historias/US-010-corrida-e-pulo.md) | US-005 |
+| [US-009 · Câmera em shift-lock com trava de alvo e boneco de treino](../historias/US-009-camera-shift-lock-trava-de-alvo-e-boneco.md) | US-007, US-008 |
+| [US-011 · Validação de movimento no servidor](../historias/US-011-validacao-de-movimento-no-servidor.md) | US-010 e ADR-010 |
+| [US-012 · Três habilidades com energia e cooldown contra o boneco](../historias/US-012-tres-habilidades-com-energia-e-cooldown.md) | US-009 e ADR-009 |
+| [US-013 · Esquiva e parry](../historias/US-013-esquiva-e-parry.md) | US-012 |
+| [US-014 · Spike de desempenho do terreno](../historias/US-014-spike-de-desempenho-do-terreno.md) | — |
 
 ## Riscos
 > [!WARNING]
@@ -72,10 +74,9 @@ Para criar quando o Davi pedir. Os IDs (US-007 em diante) saem na criação.
 - [x] O vault do Obsidian fica dentro do repositório? Não: a documentação de design virou Claude Docs, e a de engenharia mora em `docs/`. (2026-11-04)
 - [x] O repositório fica privado ou público? Público, como o Davi criou (2026-11-04). Por isso, os trechos copiados de guias de terceiros e as capturas de tela ficaram fora de `docs/referencias/`.
 
-## Histórias
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico
 - 2026-10-29: épico criado como Fundação do Projeto.
 - 2026-11-04: projeto passado para o Claude Code, no repositório público `ddmelo0104/roblox-rpg-game`. US-001, US-002, US-003, US-004 e US-006 implementadas pelo dev e em revisão.
-- 2026-11-05: escopo renovado para "Base técnica e protótipo do núcleo", aprovado pelo Davi.
+- 2026-11-05: escopo renovado para "Base técnica e protótipo do núcleo", aprovado pelo Davi. Histórias US-007 a US-014 criadas.

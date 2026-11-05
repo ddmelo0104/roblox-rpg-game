@@ -10,7 +10,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 
 | Épico | Status | Prioridade | Marco | Progresso |
 | --- | --- | --- | --- | --- |
-| [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/6 histórias · 0/11 pts |
+| [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/14 histórias · 0/37 pts |
 | [EP-002 · Personagem, câmera e controles (PC)](epicos/EP-002-personagem-camera-e-controles.md) | backlog | must | M1 | sem histórias |
 | [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | backlog | must | M1 | sem histórias |
 | [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | backlog | must | M1 | sem histórias |
@@ -42,6 +42,14 @@ _Nada por aqui._
 | História | Status | Épico | Prioridade | Pts |
 | --- | --- | --- | --- | --- |
 | [US-005 · Comunicação cliente-servidor de exemplo](historias/US-005-comunicacao-cliente-servidor-de-exemplo.md) | backlog | EP-001 | must | 3 |
+| [US-007 · Loader de Services e Controllers](historias/US-007-loader-de-services-e-controllers.md) | backlog | EP-001 | must | 2 |
+| [US-008 · Config tipado do protótipo](historias/US-008-config-tipado-do-prototipo.md) | backlog | EP-001 | must | 1 |
+| [US-009 · Câmera em shift-lock com trava de alvo e boneco de treino](historias/US-009-camera-shift-lock-trava-de-alvo-e-boneco.md) | backlog | EP-001 | must | 5 |
+| [US-010 · Corrida e pulo pedidos ao servidor](historias/US-010-corrida-e-pulo.md) | backlog | EP-001 | must | 2 |
+| [US-011 · Validação de movimento no servidor](historias/US-011-validacao-de-movimento-no-servidor.md) | backlog | EP-001 | must | 3 |
+| [US-012 · Três habilidades com energia e cooldown contra o boneco](historias/US-012-tres-habilidades-com-energia-e-cooldown.md) | backlog | EP-001 | must | 5 |
+| [US-013 · Esquiva e parry](historias/US-013-esquiva-e-parry.md) | backlog | EP-001 | must | 5 |
+| [US-014 · Spike de desempenho do terreno](historias/US-014-spike-de-desempenho-do-terreno.md) | backlog | EP-001 | must | 3 |
 
 ## Concluídas
 
