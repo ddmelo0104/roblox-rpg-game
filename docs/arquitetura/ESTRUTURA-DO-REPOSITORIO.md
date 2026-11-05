@@ -14,20 +14,25 @@ projeto-rpg/
 ├── docs/                     # documentação de engenharia (o design está no Claude Docs)
 └── src/
     ├── server/               # → ServerScriptService.Server
-    │   └── Main.server.luau
+    │   ├── Main.server.luau  # cria os Remotes e inicia os Services (Loader)
+    │   ├── Rede.luau         # limite por segundo e validação de tudo que chega do cliente
+    │   └── Services/         # um Service por sistema: Ping, Movement, TrainingDummy…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
-    │   └── Main.client.luau
+    │   ├── Main.client.luau  # inicia os Controllers (Loader)
+    │   └── Controllers/      # câmera, trava de alvo, movimento, UI…
     └── shared/               # → ReplicatedStorage.Shared
-        └── Projeto.luau
+        ├── Projeto.luau
+        ├── Loader.luau       # Init e Start dos Services e Controllers
+        ├── Remotes.luau      # lista única dos Remotes
+        ├── Validar.luau      # validadores puros do que vem do cliente
+        ├── Alvos.luau        # o que conta como alvo de combate
+        └── Config/           # números e teclas de tuning (Rede, Movimento, Camera, Treino…)
 ```
 
-As pastas abaixo nascem com as histórias que precisarem delas:
+As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005, US-007 a US-010. As outras nascem com as histórias que precisarem delas:
 
 | Pasta | Para quê |
 | --- | --- |
-| `src/server/Services/` | Um Service por sistema (combate, inventário, zonas…) |
-| `src/client/Controllers/` | Câmera, UI, efeitos, input |
-| `src/shared/Config/` | Dados de design e constantes de tuning (ex.: `Progressao.luau`, `Zonas.luau`) |
 | `src/shared/Types/` | Tipos Luau compartilhados |
 | `src/shared/Util/` | Funções puras (ex.: `GearScore.luau`) |
 | `assets/` | Modelos `.rbxm` exportados do Studio de propósito |
@@ -40,10 +45,15 @@ As pastas abaixo nascem com as histórias que precisarem delas:
     "$className": "DataModel",
     "ReplicatedStorage": { "Shared": { "$path": "src/shared" } },
     "ServerScriptService": { "Server": { "$path": "src/server" } },
-    "StarterPlayer": { "StarterPlayerScripts": { "Client": { "$path": "src/client" } } }
+    "StarterPlayer": {
+      "$properties": { "EnableMouseLockOption": false },
+      "StarterPlayerScripts": { "Client": { "$path": "src/client" } }
+    }
   }
 }
 ```
+
+O `EnableMouseLockOption` desligado tira o shift-lock padrão do Roblox, porque o jogo tem o próprio modo combate (US-009) e o Shift é a corrida (US-010).
 
 ## Nomes de arquivo no Rojo
 | Arquivo | Vira no Studio |

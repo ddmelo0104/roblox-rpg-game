@@ -2,7 +2,7 @@
 tipo: historia
 id: US-009
 titulo: Câmera em shift-lock com trava de alvo e boneco de treino
-status: backlog
+status: revisao
 prioridade: must
 epico: EP-001
 pontos: 5
@@ -58,12 +58,43 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 - Dados persistidos: nenhum
 
 ## Tarefas
-- [ ] Zoom mínimo e máximo pelo Config
-- [ ] Modo combate: mouse no centro, câmera no ombro, personagem virado para a câmera
-- [ ] Trava: escolher o alvo mais perto do centro da câmera, contorno, trocar e soltar
-- [ ] Boneco de treino com a tag `Alvo`, que volta depois de derrubado
+- [x] Zoom mínimo e máximo pelo Config
+- [x] Modo combate: mouse no centro, câmera no ombro, personagem virado para a câmera
+- [x] Trava: escolher o alvo mais perto do centro da câmera, contorno, trocar e soltar
+- [x] Boneco de treino com a tag `Alvo`, que volta depois de derrubado
 - [ ] Testar no Studio (cenários acima), com servidor e cliente
-- [ ] Atualizar a documentação afetada
+- [x] Atualizar a documentação afetada
 
 ## Revisão / resultado
-*Preenchido pelo dev ao terminar: o que foi feito, o que ficou de fora, como testar no Studio, PR.*
+**Feito pelo dev (2026-11-05):** o Davi pediu em 05/11 para começar o código.
+- **`CameraController`:** zoom limitado pelo Config e o modo combate. No modo combate, o mouse fica preso no centro, a câmera vai para o ombro e o personagem vira para onde a câmera aponta. Com um alvo travado, a câmera fica atrás do ombro olhando para o alvo, e o personagem vira para ele.
+- **`TargetController`:** travar escolhe o alvo vivo, no alcance, visível e mais perto do centro da câmera, desenha um contorno nele e liga o modo combate. A tecla de trocar passa para outro alvo. A trava solta quando o alvo morre, sai do alcance, fica sem visão por um tempo, quando se trava de novo ou quando o modo combate desliga.
+- **`TrainingDummyService`:** se o place não tiver nenhum modelo com a tag `Alvo`, cria um boneco de treino 20 studs à frente do SpawnLocation. Derrubado, ele volta depois de 5 s.
+- **`Shared.Alvos`:** diz o que é alvo (Model com Humanoid e a tag) e onde ele está.
+- **`default.project.json`:** desliga o shift-lock padrão do Roblox (`EnableMouseLockOption`), porque o Shift é a corrida.
+
+**Comportamentos provisórios** (perguntas abertas da aba Câmera e Mira, ajustáveis em `Config/Camera`):
+- Ctrl liga e desliga o modo combate; T ou o botão do meio do mouse trava e solta; Tab troca de alvo.
+- Travar liga o modo combate; soltar não desliga.
+- A trava pega outros jogadores (`TRAVA_PEGA_JOGADORES`).
+- O Tab também abre a lista de jogadores do Roblox. Se incomodar, troque a tecla no Config.
+
+**Limitações conhecidas desta primeira versão:**
+- Com alvo travado, a câmera ignora o mouse e pode atravessar paredes, porque não passa pela proteção de oclusão da câmera padrão.
+- Ao soltar a trava, a câmera volta para o ângulo de antes.
+- Trocar de alvo alterna entre os dois mais perto do centro.
+
+**Para o Davi testar no Studio:**
+1. **Cenário 5:** dê Play. Um "Boneco de treino" aparece à frente do spawn, com o nome em cima.
+2. **Cenário 1:** aperte Ctrl. O mouse some no centro, a câmera vai para o ombro direito e o personagem gira com a câmera. Ande com WASD olhando em volta, depois aperte Ctrl de novo para sair.
+3. **Cenário 2:** olhe para o boneco e aperte T (ou o botão do meio do mouse). Ele ganha um contorno amarelo, e a câmera e o personagem passam a segui-lo. Ande em círculo em volta dele.
+4. **Cenário 3:** aperte T de novo para soltar. Trave de novo e:
+   - afaste-se além de 60 studs;
+   - ou esconda o boneco atrás de uma parede por 1,5 s;
+   - ou aperte Ctrl.
+
+   Em cada caso a trava solta. Com 2 jogadores (Test → Clients and Servers → 2 players), Tab passa a trava do boneco para o outro jogador.
+5. **Cenário 4:** use a rodinha do mouse. O zoom para entre 6 e 22 studs.
+6. **Boneco volta:** na barra de comandos do servidor, rode `workspace["Boneco de treino"].Humanoid.Health = 0`. Ele some e volta 5 s depois.
+
+Passando, mude `status` para `concluido` e preencha `concluido_em`.
