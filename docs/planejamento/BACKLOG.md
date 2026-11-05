@@ -63,6 +63,8 @@ _Nada por aqui._
 | [ADR-001 · Desenvolvimento externo com Rojo e Git](../arquitetura/adr/ADR-001-desenvolvimento-externo-com-rojo-e-git.md) | aceito |
 | [ADR-002 · Servidor autoritativo](../arquitetura/adr/ADR-002-servidor-autoritativo.md) | aceito |
 | [ADR-003 · Luau em modo strict](../arquitetura/adr/ADR-003-luau-em-modo-strict.md) | aceito |
+| [ADR-009 · Acerto das habilidades no servidor, com margem de lag](../arquitetura/adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md) | proposto |
+| [ADR-010 · Validação de movimento no servidor](../arquitetura/adr/ADR-010-validacao-de-movimento-no-servidor.md) | proposto |
 
 ## Bugs abertos
 

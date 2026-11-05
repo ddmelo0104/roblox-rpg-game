@@ -20,7 +20,7 @@ concluido_em:
 **para que** speed hack e teleporte não funcionem.
 
 ## Contexto
-No Roblox, o cliente controla a física do próprio personagem. A aba [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9) pede a correção com margem para não punir quem está com lag. Precisa do ADR-010 (validação de movimento, a escrever) aceito antes de implementar.
+No Roblox, o cliente controla a física do próprio personagem. A aba [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9) pede a correção com margem para não punir quem está com lag. Precisa do [ADR-010](../../arquitetura/adr/ADR-010-validacao-de-movimento-no-servidor.md) (proposto em 05/11, opção B) aceito antes de implementar.
 
 ## Critérios de aceite
 **Cenário 1: speed hack corrigido**
@@ -43,10 +43,11 @@ No Roblox, o cliente controla a física do próprio personagem. A aba [Movimenta
 - Módulos afetados: `src/server/Services/MovementValidationService.luau`, `src/shared/Config/Movimento.luau` (margem e intervalo)
 - Remotes e validação no servidor: nenhum Remote novo; usa a velocidade que o servidor decidiu na US-010
 - Dados persistidos: nenhum
-- ADRs relevantes: ADR-010 (a escrever), [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md)
+- ADRs relevantes: [ADR-010](../../arquitetura/adr/ADR-010-validacao-de-movimento-no-servidor.md) (proposto), [ADR-002](../../arquitetura/adr/ADR-002-servidor-autoritativo.md)
 
 ## Tarefas
-- [ ] Escrever o ADR-010 (proposto) e esperar o aceite do Davi
+- [x] Escrever o ADR-010 (proposto em 05/11)
+- [ ] Aceite do Davi no ADR-010
 - [ ] Conferência periódica do deslocamento horizontal, com margem e correção
 - [ ] Exceção para teleportes do servidor
 - [ ] Testar no Studio (cenários acima), com servidor e cliente

@@ -49,8 +49,8 @@ flowchart TB
 - [ ] Instâncias de dungeon: no mesmo servidor ou em *reserved servers*? (ADR-007, a escrever)
 - [ ] Itens como instâncias com `uid` gerado só no servidor, contra duplicação (ADR-006, a escrever)
 - [ ] Mercado entre servidores: armazenamento e transação atômica (ADR-008, a escrever, M2)
-- [ ] Detecção de acerto no servidor com tolerância de lag (ADR-009, a escrever)
-- [ ] Validação de movimento no servidor, contra speed hack (ADR-010, a escrever)
+- [ ] Detecção de acerto no servidor com tolerância de lag ([ADR-009](adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md), proposto em 05/11). Proposta: o servidor confere com as posições dele mais uma margem fixa no Config, já usada na US-012. Falta o Davi aceitar.
+- [ ] Validação de movimento no servidor, contra speed hack ([ADR-010](adr/ADR-010-validacao-de-movimento-no-servidor.md), proposto em 05/11). Proposta: conferência própria com margem e puxão de volta (US-011), e uma spike do Server Authority do Roblox antes do EP-002. Falta o Davi aceitar.
 
 **Jogadores por servidor:** o Roblox permite servidores de até 200 jogadores, mas no DevForum a sugestão prática para jogos com muito combate fica entre 50 e 100. Por isso "muitos jogadores" vale para o mundo, com vários servidores por zona, e não para um servidor só (ADR-004). Fontes: [Experience Join Improvements](https://devforum.roblox.com/t/experience-join-improvements-server-size-join-queues-and-social-slots-reservations/2294621) e [Is a 200 max player per server possible?](https://devforum.roblox.com/t/is-a-200-max-player-per-server-possible/3538720).
 
