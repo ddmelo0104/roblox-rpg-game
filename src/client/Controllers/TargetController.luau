@@ -1,11 +1,11 @@
 --!strict
 --[[
 	TargetController.luau
-	Trava de alvo (US-009, aba Câmera e Mira). Travar escolhe o alvo válido mais perto do centro
-	da câmera e liga o modo combate; a tecla de trocar passa para outro alvo; travar de novo solta.
-	A trava também solta sozinha quando o alvo morre, sai do alcance, fica sem linha de visão por
-	um tempo ou quando o modo combate desliga.
-	É só do cliente: o servidor sempre confere alvo, alcance e linha de visão nas habilidades (ADR-002).
+	Target lock (US-009, Camera and Aim tab). Locking picks the valid target closest to the camera's
+	center and turns combat mode on; the switch key moves the lock to another target; locking again
+	releases it. The lock also releases by itself when the target dies, leaves the range, stays out
+	of sight for a while, or when combat mode is turned off.
+	Client only: the server always checks target, range and line of sight for abilities (ADR-002).
 ]]
 
 local Players = game:GetService("Players")
@@ -15,185 +15,186 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local ConfigCamera = require(Shared:WaitForChild("Config"):WaitForChild("Camera") :: ModuleScript)
-local Alvos = require(Shared:WaitForChild("Alvos") :: ModuleScript)
+local CameraConfig = require(Shared:WaitForChild("Config"):WaitForChild("Camera") :: ModuleScript)
+local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
 local CameraController = require(script.Parent.CameraController)
 
--- Cor do contorno do alvo travado (só visual).
-local COR_CONTORNO = Color3.fromRGB(255, 196, 0)
+-- Outline color of the locked target (visual only).
+local OUTLINE_COLOR = Color3.fromRGB(255, 196, 0)
 
 local TargetController = {}
 
-local jogador = Players.LocalPlayer
-local alvo: Model? = nil
-local contorno: Highlight? = nil
-local tempoSemVisao = 0
+local player = Players.LocalPlayer
+local target: Model? = nil
+local outline: Highlight? = nil
+local timeWithoutSight = 0
 
-local function raizDoJogador(): BasePart?
-	local personagem = jogador.Character
-	if not personagem then
+local function playerRoot(): BasePart?
+	local character = player.Character
+	if not character then
 		return nil
 	end
-	local raiz = personagem:FindFirstChild("HumanoidRootPart")
-	if raiz and raiz:IsA("BasePart") then
-		return raiz
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if root and root:IsA("BasePart") then
+		return root
 	end
 	return nil
 end
 
-local function foco(raiz: BasePart): Vector3
-	return raiz.Position + Vector3.new(0, ConfigCamera.ALTURA_FOCO, 0)
+local function focusOf(root: BasePart): Vector3
+	return root.Position + Vector3.new(0, CameraConfig.FOCUS_HEIGHT, 0)
 end
 
--- Os modelos que podem ser travados: os com a tag de alvo e, se o Config deixar, os outros jogadores.
-local function candidatos(): { Model }
-	local lista = Alvos.todos()
-	if ConfigCamera.TRAVA_PEGA_JOGADORES then
-		for _, outro in Players:GetPlayers() do
-			local personagem = outro.Character
-			if outro ~= jogador and personagem then
-				table.insert(lista, personagem)
+-- The models that can be locked: the ones with the target tag and, if the Config allows it, the
+-- other players.
+local function candidates(): { Model }
+	local list = Targets.all()
+	if CameraConfig.LOCK_ON_PLAYERS then
+		for _, other in Players:GetPlayers() do
+			local character = other.Character
+			if other ~= player and character then
+				table.insert(list, character)
 			end
 		end
 	end
-	return lista
+	return list
 end
 
-local function temLinhaDeVisao(origem: Vector3, modelo: Model, destino: Vector3): boolean
-	local ignorar: { Instance } = { modelo }
-	local personagem = jogador.Character
-	if personagem then
-		table.insert(ignorar, personagem)
+local function hasLineOfSight(origin: Vector3, model: Model, destination: Vector3): boolean
+	local ignore: { Instance } = { model }
+	local character = player.Character
+	if character then
+		table.insert(ignore, character)
 	end
-	return Alvos.temLinhaDeVisao(origem, destino, ignorar)
+	return Targets.hasLineOfSight(origin, destination, ignore)
 end
 
--- O alvo vivo, no alcance, dentro do ângulo da câmera e visível, mais perto do centro da tela.
-local function melhorAlvo(exceto: Model?): Model?
-	local raiz = raizDoJogador()
+-- The living, visible target, in range and within the camera's angle, closest to the screen's center.
+local function bestTarget(except: Model?): Model?
+	local root = playerRoot()
 	local camera = Workspace.CurrentCamera
-	if not raiz or not camera then
+	if not root or not camera then
 		return nil
 	end
-	local origem = foco(raiz)
-	local olhar = camera.CFrame.LookVector
-	local cosMinimo = math.cos(math.rad(ConfigCamera.ANGULO_TRAVA))
-	local melhor: Model? = nil
-	local melhorCos = -math.huge
+	local origin = focusOf(root)
+	local look = camera.CFrame.LookVector
+	local minCos = math.cos(math.rad(CameraConfig.LOCK_ANGLE))
+	local best: Model? = nil
+	local bestCos = -math.huge
 
-	for _, modelo in candidatos() do
-		local posicao = Alvos.posicao(modelo)
-		if modelo == exceto or not posicao or not Alvos.vivo(modelo) then
+	for _, model in candidates() do
+		local position = Targets.position(model)
+		if model == except or not position or not Targets.isAlive(model) then
 			continue
 		end
-		local paraAlvo = posicao - origem
-		local distancia = paraAlvo.Magnitude
-		if distancia < 0.5 or distancia > ConfigCamera.ALCANCE_TRAVA then
+		local toTarget = position - origin
+		local distance = toTarget.Magnitude
+		if distance < 0.5 or distance > CameraConfig.LOCK_RANGE then
 			continue
 		end
-		local cosAngulo = olhar:Dot(paraAlvo.Unit)
-		if cosAngulo > melhorCos and cosAngulo >= cosMinimo and temLinhaDeVisao(origem, modelo, posicao) then
-			melhor = modelo
-			melhorCos = cosAngulo
+		local cosAngle = look:Dot(toTarget.Unit)
+		if cosAngle > bestCos and cosAngle >= minCos and hasLineOfSight(origin, model, position) then
+			best = model
+			bestCos = cosAngle
 		end
 	end
-	return melhor
+	return best
 end
 
-local function soltar()
-	alvo = nil
-	tempoSemVisao = 0
-	if contorno then
-		contorno:Destroy()
-		contorno = nil
+local function release()
+	target = nil
+	timeWithoutSight = 0
+	if outline then
+		outline:Destroy()
+		outline = nil
 	end
-	CameraController.definirAlvo(nil)
+	CameraController.setTarget(nil)
 end
 
-local function travar(modelo: Model)
-	soltar()
-	alvo = modelo
+local function lock(model: Model)
+	release()
+	target = model
 
-	local novo = Instance.new("Highlight")
-	novo.FillTransparency = 0.85
-	novo.OutlineColor = COR_CONTORNO
-	novo.DepthMode = Enum.HighlightDepthMode.Occluded
-	novo.Adornee = modelo
-	novo.Parent = modelo
-	contorno = novo
+	local highlight = Instance.new("Highlight")
+	highlight.FillTransparency = 0.85
+	highlight.OutlineColor = OUTLINE_COLOR
+	highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+	highlight.Adornee = model
+	highlight.Parent = model
+	outline = highlight
 
-	CameraController.definirModoCombate(true)
-	CameraController.definirAlvo(modelo)
+	CameraController.setCombatMode(true)
+	CameraController.setTarget(model)
 end
 
--- A cada quadro, confere se a trava ainda vale.
-local function conferirTrava(dt: number)
-	local atual = alvo
-	if not atual then
+-- Every frame, checks whether the lock still holds.
+local function checkLock(dt: number)
+	local current = target
+	if not current then
 		return
 	end
-	local raiz = raizDoJogador()
-	local posicao = Alvos.posicao(atual)
-	if not CameraController.emModoCombate() or not raiz or not posicao or not Alvos.vivo(atual) then
-		soltar()
+	local root = playerRoot()
+	local position = Targets.position(current)
+	if not CameraController.isInCombatMode() or not root or not position or not Targets.isAlive(current) then
+		release()
 		return
 	end
-	local origem = foco(raiz)
-	if (posicao - origem).Magnitude > ConfigCamera.ALCANCE_TRAVA then
-		soltar()
+	local origin = focusOf(root)
+	if (position - origin).Magnitude > CameraConfig.LOCK_RANGE then
+		release()
 		return
 	end
-	if temLinhaDeVisao(origem, atual, posicao) then
-		tempoSemVisao = 0
+	if hasLineOfSight(origin, current, position) then
+		timeWithoutSight = 0
 	else
-		tempoSemVisao += dt
-		if tempoSemVisao >= ConfigCamera.TEMPO_SEM_VISAO_SOLTA then
-			soltar()
+		timeWithoutSight += dt
+		if timeWithoutSight >= CameraConfig.LOST_SIGHT_RELEASE_TIME then
+			release()
 		end
 	end
 end
 
-local function alternarTrava()
-	if alvo then
-		soltar()
+local function toggleLock()
+	if target then
+		release()
 		return
 	end
-	local escolhido = melhorAlvo(nil)
-	if escolhido then
-		travar(escolhido)
+	local chosen = bestTarget(nil)
+	if chosen then
+		lock(chosen)
 	end
 end
 
-local function trocarAlvo()
-	local atual = alvo
-	if not atual then
+local function switchTarget()
+	local current = target
+	if not current then
 		return
 	end
-	local proximo = melhorAlvo(atual)
-	if proximo then
-		travar(proximo)
+	local nextTarget = bestTarget(current)
+	if nextTarget then
+		lock(nextTarget)
 	end
 end
 
--- O alvo travado agora, ou nil. Usado pelas habilidades (US-012).
-function TargetController.alvoAtual(): Model?
-	return alvo
+-- The currently locked target, or nil. Used by the abilities (US-012).
+function TargetController.currentTarget(): Model?
+	return target
 end
 
 function TargetController:Start()
-	UserInputService.InputBegan:Connect(function(input, processado)
-		if processado then
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if processed then
 			return
 		end
-		if input.KeyCode == ConfigCamera.TECLA_TRAVAR or input.UserInputType == Enum.UserInputType.MouseButton3 then
-			alternarTrava()
-		elseif input.KeyCode == ConfigCamera.TECLA_TROCAR_ALVO then
-			trocarAlvo()
+		if input.KeyCode == CameraConfig.LOCK_KEY or input.UserInputType == Enum.UserInputType.MouseButton3 then
+			toggleLock()
+		elseif input.KeyCode == CameraConfig.SWITCH_TARGET_KEY then
+			switchTarget()
 		end
 	end)
 
-	RunService.Heartbeat:Connect(conferirTrava)
-	jogador.CharacterAdded:Connect(soltar)
+	RunService.Heartbeat:Connect(checkLock)
+	player.CharacterAdded:Connect(release)
 end
 
 return TargetController

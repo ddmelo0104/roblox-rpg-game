@@ -1,22 +1,22 @@
 --!strict
 --[[
 	Main.server.luau
-	Ponto de entrada do servidor. Cria os Remotes do projeto (US-005) e inicia todos os Services
-	de ServerScriptService.Server.Services com o Loader (US-007).
-	Um sistema novo no servidor é só um ModuleScript novo na pasta Services.
+	Server entry point. Creates the project's Remotes (US-005) and starts every Service in
+	ServerScriptService.Server.Services with the Loader (US-007).
+	A new server system is just a new ModuleScript in the Services folder.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage.Shared
 local Loader = require(Shared.Loader)
-local Projeto = require(Shared.Projeto)
+local Project = require(Shared.Project)
 local Remotes = require(Shared.Remotes)
 
--- Os Remotes existem antes de qualquer Service começar a ouvir.
-Remotes.criar()
+-- The Remotes exist before any Service starts listening.
+Remotes.create()
 
-local pasta = (script.Parent :: Instance):FindFirstChild("Services")
-local servicos = Loader.iniciar(pasta, "Main")
+local folder = (script.Parent :: Instance):FindFirstChild("Services")
+local services = Loader.start(folder, "Main")
 
-print(`[Main] servidor ok · {Projeto.descricao()} · services: {table.concat(servicos, ", ")}`)
+print(`[Main] server ok · {Project.describe()} · services: {table.concat(services, ", ")}`)

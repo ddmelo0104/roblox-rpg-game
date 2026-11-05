@@ -1,10 +1,10 @@
 --!strict
 --[[
 	CombatEffectsController.luau
-	Efeitos das habilidades (US-012), só visuais: o desenho da área (ou do golpe até o alvo) e o
-	número de dano em cima de quem foi atingido. Quem usa a habilidade desenha na hora, pelo
-	CombatController; os outros jogadores desenham quando o servidor avisa (AbilityUsed).
-	O número de dano é sempre o que o servidor aplicou.
+	Ability effects (US-012), visual only: the drawing of the area (or of the strike up to the
+	target) and the damage number above whoever was hit. Whoever uses the ability draws it right
+	away, through the CombatController; the other players draw it when the server says so
+	(AbilityUsed). The damage number is always the one the server applied.
 ]]
 
 local Players = game:GetService("Players")
@@ -13,136 +13,138 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Habilidades = require(Shared:WaitForChild("Habilidades") :: ModuleScript)
-local Alvos = require(Shared:WaitForChild("Alvos") :: ModuleScript)
+local Abilities = require(Shared:WaitForChild("Abilities") :: ModuleScript)
 local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
-local EspadaLonga = require(Shared:WaitForChild("Config"):WaitForChild("EspadaLonga") :: ModuleScript)
+local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
+local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
 
--- Só visual: quanto tempo cada efeito fica na tela e as cores de cada forma de habilidade.
-local TEMPO_AREA = 0.35
-local TEMPO_NUMERO = 0.8
-local SUBIDA_NUMERO = 2
-local CORES: { [string]: Color3 } = {
-	Frente = Color3.fromRGB(255, 220, 120),
-	Alvo = Color3.fromRGB(255, 120, 90),
-	EmVolta = Color3.fromRGB(140, 200, 255),
+-- Visual only: how long each effect stays on screen and the color of each ability shape.
+local AREA_DURATION = 0.35
+local NUMBER_DURATION = 0.8
+local NUMBER_RISE = 2
+local SHAPE_COLORS: { [string]: Color3 } = {
+	Front = Color3.fromRGB(255, 220, 120),
+	Target = Color3.fromRGB(255, 120, 90),
+	Around = Color3.fromRGB(140, 200, 255),
 }
 
 local CombatEffectsController = {}
 
-local jogador = Players.LocalPlayer
-local pasta: Folder? = nil
+local player = Players.LocalPlayer
+local folder: Folder? = nil
 
--- Pasta local (só deste cliente) para os efeitos.
-local function pastaDeEfeitos(): Folder
-	local atual = pasta
-	if atual and atual.Parent then
-		return atual
+-- Local folder (this client only) for the effects.
+local function effectsFolder(): Folder
+	local current = folder
+	if current and current.Parent then
+		return current
 	end
-	local nova = Instance.new("Folder")
-	nova.Name = "EfeitosDeCombate"
-	nova.Parent = Workspace
-	pasta = nova
-	return nova
+	local created = Instance.new("Folder")
+	created.Name = "CombatEffects"
+	created.Parent = Workspace
+	folder = created
+	return created
 end
 
--- Uma parte só de enfeite: não colide, não é tocada e não bloqueia raios (nem a trava de alvo).
-local function novaParte(cor: Color3): Part
-	local parte = Instance.new("Part")
-	parte.Anchored = true
-	parte.CanCollide = false
-	parte.CanQuery = false
-	parte.CanTouch = false
-	parte.CastShadow = false
-	parte.Material = Enum.Material.Neon
-	parte.Color = cor
-	parte.Transparency = 0.5
-	return parte
+-- A decorative part: it does not collide, is not touched and blocks no raycasts (not even the
+-- target lock's).
+local function newPart(color: Color3): Part
+	local part = Instance.new("Part")
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	part.CastShadow = false
+	part.Material = Enum.Material.Neon
+	part.Color = color
+	part.Transparency = 0.5
+	return part
 end
 
--- Some aos poucos e se apaga.
-local function sumir(parte: BasePart)
-	TweenService:Create(parte, TweenInfo.new(TEMPO_AREA), { Transparency = 1 }):Play()
-	task.delay(TEMPO_AREA, function()
-		parte:Destroy()
+-- Fades out and destroys itself.
+local function fadeOut(part: BasePart)
+	TweenService:Create(part, TweenInfo.new(AREA_DURATION), { Transparency = 1 }):Play()
+	task.delay(AREA_DURATION, function()
+		part:Destroy()
 	end)
 end
 
--- Desenha a habilidade a partir de `origem` (posição e direção de quem usou), na altura da
--- cintura. Devolve a parte do desenho, para quem previu poder apagar se o servidor recusar.
-function CombatEffectsController.desenhar(habilidade: any, origem: CFrame, alvo: Model?): BasePart?
-	local parte = novaParte(CORES[habilidade.forma] or Color3.new(1, 1, 1))
-	if habilidade.forma == "Frente" then
-		parte.Size = Vector3.new(habilidade.largura, 0.2, habilidade.alcance)
-		parte.CFrame = origem * CFrame.new(0, 0, -habilidade.alcance / 2)
-	elseif habilidade.forma == "EmVolta" then
-		-- O eixo do cilindro é o X; girado 90° em Z, ele fica de pé e vira um disco no chão.
-		parte.Shape = Enum.PartType.Cylinder
-		parte.Size = Vector3.new(0.2, habilidade.alcance * 2, habilidade.alcance * 2)
-		parte.CFrame = CFrame.new(origem.Position) * CFrame.Angles(0, 0, math.rad(90))
+-- Draws the ability from `origin` (position and direction of whoever used it), at waist height.
+-- Returns the drawn part, so whoever predicted it can remove it if the server rejects the request.
+function CombatEffectsController.draw(ability: any, origin: CFrame, target: Model?): BasePart?
+	local part = newPart(SHAPE_COLORS[ability.shape] or Color3.new(1, 1, 1))
+	if ability.shape == "Front" then
+		part.Size = Vector3.new(ability.width, 0.2, ability.range)
+		part.CFrame = origin * CFrame.new(0, 0, -ability.range / 2)
+	elseif ability.shape == "Around" then
+		-- The cylinder's axis is X; turned 90° around Z, it stands up and becomes a flat disc.
+		part.Shape = Enum.PartType.Cylinder
+		part.Size = Vector3.new(0.2, ability.range * 2, ability.range * 2)
+		part.CFrame = CFrame.new(origin.Position) * CFrame.Angles(0, 0, math.rad(90))
 	else
-		local posicao = if alvo then Alvos.posicao(alvo) else nil
-		local distancia = if posicao then (posicao - origem.Position).Magnitude else 0
-		if not posicao or distancia < 0.5 then
-			parte:Destroy()
+		local position = if target then Targets.position(target) else nil
+		local distance = if position then (position - origin.Position).Magnitude else 0
+		if not position or distance < 0.5 then
+			part:Destroy()
 			return nil
 		end
-		parte.Size = Vector3.new(0.4, 0.4, distancia)
-		parte.CFrame = CFrame.lookAt(origem.Position, posicao) * CFrame.new(0, 0, -distancia / 2)
+		part.Size = Vector3.new(0.4, 0.4, distance)
+		part.CFrame = CFrame.lookAt(origin.Position, position) * CFrame.new(0, 0, -distance / 2)
 	end
-	parte.Parent = pastaDeEfeitos()
-	sumir(parte)
-	return parte
+	part.Parent = effectsFolder()
+	fadeOut(part)
+	return part
 end
 
--- Mostra o dano subindo e sumindo em cima do alvo.
-function CombatEffectsController.mostrarDano(alvo: Model, dano: number)
-	local raiz = alvo.PrimaryPart or alvo:FindFirstChild("HumanoidRootPart")
-	if not raiz or not raiz:IsA("BasePart") then
+-- Shows the damage rising and fading above the target.
+function CombatEffectsController.showDamage(target: Model, damage: number)
+	local root = target.PrimaryPart or target:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") then
 		return
 	end
 
-	local quadro = Instance.new("BillboardGui")
-	quadro.Size = UDim2.fromOffset(80, 30)
-	quadro.StudsOffset = Vector3.new(0, 3, 0)
-	quadro.AlwaysOnTop = true
-	quadro.Adornee = raiz
+	local billboard = Instance.new("BillboardGui")
+	billboard.Size = UDim2.fromOffset(80, 30)
+	billboard.StudsOffset = Vector3.new(0, 3, 0)
+	billboard.AlwaysOnTop = true
+	billboard.Adornee = root
 
-	local texto = Instance.new("TextLabel")
-	texto.Size = UDim2.fromScale(1, 1)
-	texto.BackgroundTransparency = 1
-	texto.TextSize = 24
-	texto.TextColor3 = Color3.fromRGB(255, 230, 120)
-	texto.TextStrokeTransparency = 0.3
-	texto.Text = tostring(math.floor(dano + 0.5))
-	texto.Parent = quadro
-	quadro.Parent = pastaDeEfeitos()
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.TextSize = 24
+	label.TextColor3 = Color3.fromRGB(255, 230, 120)
+	label.TextStrokeTransparency = 0.3
+	label.Text = tostring(math.floor(damage + 0.5))
+	label.Parent = billboard
+	billboard.Parent = effectsFolder()
 
-	local info = TweenInfo.new(TEMPO_NUMERO)
-	TweenService:Create(quadro, info, { StudsOffset = quadro.StudsOffset + Vector3.new(0, SUBIDA_NUMERO, 0) }):Play()
-	TweenService:Create(texto, info, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
-	task.delay(TEMPO_NUMERO, function()
-		quadro:Destroy()
+	local info = TweenInfo.new(NUMBER_DURATION)
+	TweenService:Create(billboard, info, { StudsOffset = billboard.StudsOffset + Vector3.new(0, NUMBER_RISE, 0) })
+		:Play()
+	TweenService:Create(label, info, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+	task.delay(NUMBER_DURATION, function()
+		billboard:Destroy()
 	end)
 end
 
--- O aviso do servidor: alguém usou uma habilidade, de `origem`, e atingiu `atingidos`.
-local function aoUsarem(autor: Player, id: string, origem: CFrame, atingidos: { Model }, dano: number)
-	local habilidade = Habilidades.porId(EspadaLonga, id)
-	if not habilidade then
+-- The server's notice: someone used an ability from `origin` and hit `hits`.
+local function onAbilityUsed(user: Player, id: string, origin: CFrame, hits: { Model }, damage: number)
+	local ability = Abilities.byId(LongswordConfig, id)
+	if not ability then
 		return
 	end
-	-- Quem usou já desenhou na hora (previsão); os outros desenham agora.
-	if autor ~= jogador then
-		CombatEffectsController.desenhar(habilidade, origem, atingidos[1])
+	-- Whoever used it already drew it (prediction); the others draw it now.
+	if user ~= player then
+		CombatEffectsController.draw(ability, origin, hits[1])
 	end
-	for _, alvo in atingidos do
-		CombatEffectsController.mostrarDano(alvo, dano)
+	for _, target in hits do
+		CombatEffectsController.showDamage(target, damage)
 	end
 end
 
 function CombatEffectsController:Start()
-	Remotes.evento("AbilityUsed").OnClientEvent:Connect(aoUsarem)
+	Remotes.event("AbilityUsed").OnClientEvent:Connect(onAbilityUsed)
 end
 
 return CombatEffectsController

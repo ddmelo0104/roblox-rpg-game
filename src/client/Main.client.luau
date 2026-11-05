@@ -1,20 +1,20 @@
 --!strict
 --[[
 	Main.client.luau
-	Ponto de entrada do cliente. Espera os módulos compartilhados replicarem e inicia todos os
-	Controllers de Client.Controllers com o Loader (US-007).
-	Um sistema novo no cliente (câmera, UI, efeitos) é só um ModuleScript novo na pasta Controllers.
+	Client entry point. Waits for the shared modules to replicate and starts every Controller in
+	Client.Controllers with the Loader (US-007).
+	A new client system (camera, UI, effects) is just a new ModuleScript in the Controllers folder.
 ]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- No cliente, espera a replicação de ReplicatedStorage antes de usar os módulos compartilhados.
+-- On the client, wait for ReplicatedStorage to replicate before using the shared modules.
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Loader = require(Shared:WaitForChild("Loader") :: ModuleScript)
-local Projeto = require(Shared:WaitForChild("Projeto") :: ModuleScript)
+local Project = require(Shared:WaitForChild("Project") :: ModuleScript)
 
-local pasta = (script.Parent :: Instance):FindFirstChild("Controllers")
-local lista = table.concat(Loader.iniciar(pasta, "Main"), ", ")
+local folder = (script.Parent :: Instance):FindFirstChild("Controllers")
+local list = table.concat(Loader.start(folder, "Main"), ", ")
 
-print(`[Main] cliente ok · {Projeto.descricao()} · {Players.LocalPlayer.Name} · controllers: {lista}`)
+print(`[Main] client ok · {Project.describe()} · {Players.LocalPlayer.Name} · controllers: {list}`)

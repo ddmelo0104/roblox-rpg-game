@@ -1,8 +1,8 @@
 --!strict
 --[[
 	PingController.luau
-	Lado do cliente do exemplo de rede (US-005): ao entrar, manda um ping e mostra a resposta
-	do servidor no Output.
+	Client side of the network example (US-005): on join, it sends a ping and prints the server's
+	answer in the Output.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,13 +13,13 @@ local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
 local PingController = {}
 
 function PingController:Start()
-	local evento = Remotes.evento("RequestPing")
+	local event = Remotes.event("RequestPing")
 
-	evento.OnClientEvent:Connect(function(valor: number, horaDoServidor: number)
-		print(`[Rede] ping ok · {valor} · hora do servidor {string.format("%.2f", horaDoServidor)}`)
+	event.OnClientEvent:Connect(function(value: number, serverTime: number)
+		print(`[Network] ping ok · {value} · server time {string.format("%.2f", serverTime)}`)
 	end)
 
-	evento:FireServer(1)
+	event:FireServer(1)
 end
 
 return PingController

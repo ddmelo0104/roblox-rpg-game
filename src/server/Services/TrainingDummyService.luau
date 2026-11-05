@@ -1,103 +1,105 @@
 --!strict
 --[[
 	TrainingDummyService.luau
-	Bonecos de treino do protótipo (US-009, US-012). Se o place não tiver nenhum modelo com a tag
-	de alvo, cria uma fileira de bonecos simples à frente do spawn, para testar a trava de alvo e
-	as habilidades (Config/Treino diz quantos e o espaço entre eles).
-	Quando a vida de um chega a zero, ele volta depois de Config/Treino.TEMPO_VOLTAR_BONECO.
-	É um placeholder: modelos de verdade são feitos no Studio e só precisam da tag (Shared.Alvos.TAG).
+	Training dummies of the prototype (US-009, US-012). If the place has no model with the target
+	tag, it creates a row of simple dummies in front of the spawn, to test the target lock and the
+	abilities (Config/Training says how many and the spacing between them).
+	When a dummy's health reaches zero, it comes back after Config/Training.DUMMY_RESPAWN_TIME.
+	It is a placeholder: real models are built in Studio and only need the tag (Shared.Targets.TAG).
 ]]
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local Alvos = require(ReplicatedStorage.Shared.Alvos)
-local ConfigTreino = require(ReplicatedStorage.Shared.Config.Treino)
+local Targets = require(ReplicatedStorage.Shared.Targets)
+local TrainingConfig = require(ReplicatedStorage.Shared.Config.Training)
 
--- Cor das partes do boneco (só visual).
-local COR_BONECO = Color3.fromRGB(196, 160, 110)
+-- Visual only: the dummies' color and the name shown above them (player-facing, in Portuguese).
+local DUMMY_COLOR = Color3.fromRGB(196, 160, 110)
+local DISPLAY_NAME = "Boneco de treino"
 
 local TrainingDummyService = {}
 
--- O chão logo abaixo de um ponto, ou o próprio ponto se não houver nada embaixo.
-local function chaoAbaixo(ponto: Vector3): Vector3
-	local resultado = Workspace:Raycast(ponto + Vector3.new(0, 50, 0), Vector3.new(0, -200, 0))
-	if resultado then
-		return resultado.Position
+-- The ground right below a point, or the point itself if there is nothing below it.
+local function groundBelow(point: Vector3): Vector3
+	local result = Workspace:Raycast(point + Vector3.new(0, 50, 0), Vector3.new(0, -200, 0))
+	if result then
+		return result.Position
 	end
-	return ponto
+	return point
 end
 
--- O centro da fileira, à frente do SpawnLocation (ou da origem, se o place não tiver spawn), e a
--- direção de lado a lado da fileira.
-local function centroDaFileira(): (Vector3, Vector3)
-	local localDeSpawn = Workspace:FindFirstChildWhichIsA("SpawnLocation", true)
-	if localDeSpawn and localDeSpawn:IsA("BasePart") then
-		local frente = localDeSpawn.CFrame.LookVector * ConfigTreino.DISTANCIA_DO_SPAWN
-		return localDeSpawn.Position + frente, localDeSpawn.CFrame.RightVector
+-- The center of the row, in front of the SpawnLocation (or of the origin, if the place has no
+-- spawn), and the row's side-to-side direction.
+local function rowCenter(): (Vector3, Vector3)
+	local spawnLocation = Workspace:FindFirstChildWhichIsA("SpawnLocation", true)
+	if spawnLocation and spawnLocation:IsA("BasePart") then
+		local ahead = spawnLocation.CFrame.LookVector * TrainingConfig.DISTANCE_FROM_SPAWN
+		return spawnLocation.Position + ahead, spawnLocation.CFrame.RightVector
 	end
-	return Vector3.new(0, 0, -ConfigTreino.DISTANCIA_DO_SPAWN), Vector3.new(1, 0, 0)
+	return Vector3.new(0, 0, -TrainingConfig.DISTANCE_FROM_SPAWN), Vector3.new(1, 0, 0)
 end
 
-local function novaParte(nome: string, tamanho: Vector3, centro: Vector3, modelo: Model): Part
-	local parte = Instance.new("Part")
-	parte.Name = nome
-	parte.Size = tamanho
-	parte.CFrame = CFrame.new(centro)
-	parte.Anchored = true
-	parte.Color = COR_BONECO
-	parte.TopSurface = Enum.SurfaceType.Smooth
-	parte.BottomSurface = Enum.SurfaceType.Smooth
-	parte.Parent = modelo
-	return parte
+local function newPart(name: string, size: Vector3, center: Vector3, model: Model): Part
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Size = size
+	part.CFrame = CFrame.new(center)
+	part.Anchored = true
+	part.Color = DUMMY_COLOR
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part.Parent = model
+	return part
 end
 
--- Monta o boneco com os pés em `chao` e o coloca no Workspace com a tag de alvo.
-local function criarBoneco(chao: Vector3)
-	local modelo = Instance.new("Model")
-	modelo.Name = "Boneco de treino"
+-- Builds a dummy with its feet on `ground` and puts it in the Workspace with the target tag.
+local function createDummy(ground: Vector3)
+	local model = Instance.new("Model")
+	model.Name = "TrainingDummy"
 
-	novaParte("Perna esquerda", Vector3.new(1, 2, 1), chao + Vector3.new(-0.5, 1, 0), modelo)
-	novaParte("Perna direita", Vector3.new(1, 2, 1), chao + Vector3.new(0.5, 1, 0), modelo)
-	novaParte("Torso", Vector3.new(2, 2, 1), chao + Vector3.new(0, 3, 0), modelo)
-	novaParte("Head", Vector3.new(2, 1, 1), chao + Vector3.new(0, 4.5, 0), modelo)
-	local raiz = novaParte("HumanoidRootPart", Vector3.new(2, 2, 1), chao + Vector3.new(0, 3, 0), modelo)
-	raiz.Transparency = 1
-	raiz.CanCollide = false
-	modelo.PrimaryPart = raiz
+	newPart("LeftLeg", Vector3.new(1, 2, 1), ground + Vector3.new(-0.5, 1, 0), model)
+	newPart("RightLeg", Vector3.new(1, 2, 1), ground + Vector3.new(0.5, 1, 0), model)
+	newPart("Torso", Vector3.new(2, 2, 1), ground + Vector3.new(0, 3, 0), model)
+	newPart("Head", Vector3.new(2, 1, 1), ground + Vector3.new(0, 4.5, 0), model)
+	local root = newPart("HumanoidRootPart", Vector3.new(2, 2, 1), ground + Vector3.new(0, 3, 0), model)
+	root.Transparency = 1
+	root.CanCollide = false
+	model.PrimaryPart = root
 
-	local humanoide = Instance.new("Humanoid")
-	humanoide.RequiresNeck = false
-	humanoide.MaxHealth = ConfigTreino.VIDA_BONECO
-	humanoide.Health = ConfigTreino.VIDA_BONECO
-	humanoide.Parent = modelo
+	local humanoid = Instance.new("Humanoid")
+	humanoid.DisplayName = DISPLAY_NAME
+	humanoid.RequiresNeck = false
+	humanoid.MaxHealth = TrainingConfig.DUMMY_HEALTH
+	humanoid.Health = TrainingConfig.DUMMY_HEALTH
+	humanoid.Parent = model
 
-	CollectionService:AddTag(modelo, Alvos.TAG)
-	modelo.Parent = Workspace
+	CollectionService:AddTag(model, Targets.TAG)
+	model.Parent = Workspace
 
-	local voltando = false
-	humanoide.HealthChanged:Connect(function(vida)
-		if vida > 0 or voltando then
+	local respawning = false
+	humanoid.HealthChanged:Connect(function(health)
+		if health > 0 or respawning then
 			return
 		end
-		voltando = true
-		task.delay(ConfigTreino.TEMPO_VOLTAR_BONECO, function()
-			modelo:Destroy()
-			criarBoneco(chao)
+		respawning = true
+		task.delay(TrainingConfig.DUMMY_RESPAWN_TIME, function()
+			model:Destroy()
+			createDummy(ground)
 		end)
 	end)
 end
 
 function TrainingDummyService:Start()
-	if #CollectionService:GetTagged(Alvos.TAG) > 0 then
-		return -- o place já tem alvos feitos no Studio
+	if #Targets.all() > 0 then
+		return -- the place already has targets built in Studio
 	end
-	local centro, lado = centroDaFileira()
-	local quantidade = ConfigTreino.QUANTIDADE_BONECOS
-	for i = 1, quantidade do
-		local deslocamento = (i - (quantidade + 1) / 2) * ConfigTreino.ESPACO_ENTRE_BONECOS
-		criarBoneco(chaoAbaixo(centro + lado * deslocamento))
+	local center, side = rowCenter()
+	local count = TrainingConfig.DUMMY_COUNT
+	for i = 1, count do
+		local offset = (i - (count + 1) / 2) * TrainingConfig.DUMMY_SPACING
+		createDummy(groundBelow(center + side * offset))
 	end
 end
 

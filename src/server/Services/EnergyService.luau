@@ -1,76 +1,76 @@
 --!strict
 --[[
 	EnergyService.luau
-	Energia de cada jogador (US-012, aba Combate e Habilidades). O servidor é o dono do valor: as
-	habilidades gastam com `gastar`, a energia volta sozinha com o tempo, e o valor vai para
-	atributos do Player (Shared.Energia), que o HUD lê. Números em Config/Combate.
+	Each player's energy (US-012, Combat and Abilities tab). The server owns the value: abilities
+	spend it through `spend`, it comes back by itself over time, and it is published as Player
+	attributes (Shared.Energy), which the HUD reads. The numbers live in Config/Combat.
 ]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local ConfigCombate = require(ReplicatedStorage.Shared.Config.Combate)
-local Energia = require(ReplicatedStorage.Shared.Energia)
+local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
+local Energy = require(ReplicatedStorage.Shared.Energy)
 
 local EnergyService = {}
 
-local energia: { [Player]: number } = {}
+local energy: { [Player]: number } = {}
 
--- Publica o valor arredondado para baixo, para o HUD.
-local function publicar(jogador: Player)
-	local valor = energia[jogador]
-	if valor then
-		jogador:SetAttribute(Energia.ATRIBUTO, math.floor(valor))
+-- Publishes the value rounded down, for the HUD.
+local function publish(player: Player)
+	local value = energy[player]
+	if value then
+		player:SetAttribute(Energy.ATTRIBUTE, math.floor(value))
 	end
 end
 
-local function encher(jogador: Player)
-	energia[jogador] = ConfigCombate.ENERGIA_MAX
-	jogador:SetAttribute(Energia.ATRIBUTO_MAX, ConfigCombate.ENERGIA_MAX)
-	publicar(jogador)
+local function refill(player: Player)
+	energy[player] = CombatConfig.MAX_ENERGY
+	player:SetAttribute(Energy.MAX_ATTRIBUTE, CombatConfig.MAX_ENERGY)
+	publish(player)
 end
 
--- Provisório: todo personagem novo começa com a energia cheia.
-local function aoEntrar(jogador: Player)
-	encher(jogador)
-	jogador.CharacterAdded:Connect(function()
-		encher(jogador)
+-- Provisional: every new character starts with full energy.
+local function onPlayerAdded(player: Player)
+	refill(player)
+	player.CharacterAdded:Connect(function()
+		refill(player)
 	end)
 end
 
-local function regenerar(dt: number)
-	for jogador, valor in energia do
-		if valor < ConfigCombate.ENERGIA_MAX then
-			local novo = math.min(ConfigCombate.ENERGIA_MAX, valor + ConfigCombate.ENERGIA_REGEN * dt)
-			energia[jogador] = novo
-			if math.floor(novo) ~= math.floor(valor) then
-				publicar(jogador)
+local function regenerate(dt: number)
+	for player, value in energy do
+		if value < CombatConfig.MAX_ENERGY then
+			local updated = math.min(CombatConfig.MAX_ENERGY, value + CombatConfig.ENERGY_REGEN * dt)
+			energy[player] = updated
+			if math.floor(updated) ~= math.floor(value) then
+				publish(player)
 			end
 		end
 	end
 end
 
--- Tira `custo` da energia do jogador, se ele tiver o bastante. Devolve se gastou.
-function EnergyService.gastar(jogador: Player, custo: number): boolean
-	local atual = energia[jogador]
-	if not atual or atual < custo then
+-- Takes `cost` from the player's energy if they have enough. Returns whether it was spent.
+function EnergyService.spend(player: Player, cost: number): boolean
+	local current = energy[player]
+	if not current or current < cost then
 		return false
 	end
-	energia[jogador] = atual - custo
-	publicar(jogador)
+	energy[player] = current - cost
+	publish(player)
 	return true
 end
 
 function EnergyService:Start()
-	Players.PlayerAdded:Connect(aoEntrar)
-	for _, jogador in Players:GetPlayers() do
-		aoEntrar(jogador)
+	Players.PlayerAdded:Connect(onPlayerAdded)
+	for _, player in Players:GetPlayers() do
+		onPlayerAdded(player)
 	end
-	Players.PlayerRemoving:Connect(function(jogador)
-		energia[jogador] = nil
+	Players.PlayerRemoving:Connect(function(player)
+		energy[player] = nil
 	end)
-	RunService.Heartbeat:Connect(regenerar)
+	RunService.Heartbeat:Connect(regenerate)
 end
 
 return EnergyService

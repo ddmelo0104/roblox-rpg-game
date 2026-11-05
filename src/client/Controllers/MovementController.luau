@@ -1,9 +1,9 @@
 --!strict
 --[[
 	MovementController.luau
-	Corrida no PC (US-010): segurar a tecla de correr pede ao servidor para correr, e soltar pede
-	para parar. A velocidade muda na hora no cliente (previsão), e o servidor decide: o valor dele
-	é o que vale e é replicado para o personagem.
+	Sprinting on PC (US-010): holding the sprint key asks the server to sprint, and releasing it
+	asks to stop. The speed changes right away on the client (prediction), and the server decides:
+	its value is the one that counts and is replicated to the character.
 ]]
 
 local Players = game:GetService("Players")
@@ -11,54 +11,54 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local ConfigMovimento = require(Shared:WaitForChild("Config"):WaitForChild("Movimento") :: ModuleScript)
+local MovementConfig = require(Shared:WaitForChild("Config"):WaitForChild("Movement") :: ModuleScript)
 local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
 
 local MovementController = {}
 
-local jogador = Players.LocalPlayer
-local correndo = false
+local player = Players.LocalPlayer
+local sprinting = false
 
-local function humanoide(): Humanoid?
-	local personagem = jogador.Character
-	if not personagem then
+local function getHumanoid(): Humanoid?
+	local character = player.Character
+	if not character then
 		return nil
 	end
-	return personagem:FindFirstChildOfClass("Humanoid")
+	return character:FindFirstChildOfClass("Humanoid")
 end
 
-local function definirCorrida(evento: RemoteEvent, querCorrer: boolean)
-	if correndo == querCorrer then
+local function setSprinting(event: RemoteEvent, wantsToSprint: boolean)
+	if sprinting == wantsToSprint then
 		return
 	end
-	correndo = querCorrer
+	sprinting = wantsToSprint
 
-	-- Previsão: muda já no cliente para não esperar a volta do servidor.
-	local h = humanoide()
-	if h then
-		h.WalkSpeed = if querCorrer then ConfigMovimento.VELOCIDADE_CORRIDA else ConfigMovimento.VELOCIDADE_ANDAR
+	-- Prediction: change it on the client right away instead of waiting for the server.
+	local humanoid = getHumanoid()
+	if humanoid then
+		humanoid.WalkSpeed = if wantsToSprint then MovementConfig.SPRINT_SPEED else MovementConfig.WALK_SPEED
 	end
-	evento:FireServer(querCorrer)
+	event:FireServer(wantsToSprint)
 end
 
 function MovementController:Start()
-	local evento = Remotes.evento("RequestSprint")
+	local event = Remotes.event("RequestSprint")
 
-	UserInputService.InputBegan:Connect(function(input, processado)
-		if not processado and input.KeyCode == ConfigMovimento.TECLA_CORRER then
-			definirCorrida(evento, true)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if not processed and input.KeyCode == MovementConfig.SPRINT_KEY then
+			setSprinting(event, true)
 		end
 	end)
 
 	UserInputService.InputEnded:Connect(function(input)
-		if input.KeyCode == ConfigMovimento.TECLA_CORRER then
-			definirCorrida(evento, false)
+		if input.KeyCode == MovementConfig.SPRINT_KEY then
+			setSprinting(event, false)
 		end
 	end)
 
-	-- O servidor começa todo personagem novo andando.
-	jogador.CharacterAdded:Connect(function()
-		correndo = false
+	-- The server starts every new character walking.
+	player.CharacterAdded:Connect(function()
+		sprinting = false
 	end)
 end
 

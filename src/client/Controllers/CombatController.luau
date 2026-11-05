@@ -1,11 +1,11 @@
 --!strict
 --[[
 	CombatController.luau
-	Habilidades no PC (US-012): cada tecla pede ao servidor uma habilidade da espada longa.
-	Antes de pedir, o cliente confere o que já sabe (cooldown, energia, alvo travado e alcance)
-	para avisar na hora. Depois desenha o efeito e começa a contar o cooldown sem esperar o
-	servidor (previsão). Quem decide é o servidor (ADR-002, ADR-009): a resposta dele corrige o
-	cooldown e, se ele recusar, o efeito previsto some e o motivo aparece no HUD.
+	Abilities on PC (US-012): each key asks the server for one of the longsword's abilities. Before
+	asking, the client checks what it already knows (cooldown, energy, locked target and range) to
+	warn right away. Then it draws the effect and starts the cooldown without waiting for the server
+	(prediction). The server decides (ADR-002, ADR-009): its answer corrects the cooldown and, if it
+	rejects the request, the predicted effect disappears and the reason shows up on the HUD.
 ]]
 
 local Players = game:GetService("Players")
@@ -14,136 +14,149 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Habilidades = require(Shared:WaitForChild("Habilidades") :: ModuleScript)
-local Alvos = require(Shared:WaitForChild("Alvos") :: ModuleScript)
-local Energia = require(Shared:WaitForChild("Energia") :: ModuleScript)
+local Abilities = require(Shared:WaitForChild("Abilities") :: ModuleScript)
+local Energy = require(Shared:WaitForChild("Energy") :: ModuleScript)
 local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
-local ConfigCombate = require(Shared:WaitForChild("Config"):WaitForChild("Combate") :: ModuleScript)
-local EspadaLonga = require(Shared:WaitForChild("Config"):WaitForChild("EspadaLonga") :: ModuleScript)
+local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
+local CombatConfig = require(Shared:WaitForChild("Config"):WaitForChild("Combat") :: ModuleScript)
+local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
 local CombatEffectsController = require(script.Parent.CombatEffectsController)
 local TargetController = require(script.Parent.TargetController)
 
+-- What the player reads for each reason (game text, so it stays in Portuguese). The server sends the
+-- reasons in Shared.Abilities; "NoLockedTarget" only comes from the client.
+local REASON_TEXT: { [string]: string } = {
+	NoCharacter = "sem personagem",
+	OnCooldown = "em recarga",
+	InvalidTarget = "alvo inválido",
+	OutOfRange = "fora de alcance",
+	NoLineOfSight = "sem linha de visão",
+	NoEnergy = "sem energia",
+	NoLockedTarget = "trave um inimigo primeiro",
+}
+
 local CombatController = {}
 
-local jogador = Players.LocalPlayer
+local player = Players.LocalPlayer
 
--- Hora do servidor em que cada habilidade volta a ficar pronta (prevista aqui, corrigida pelo servidor).
-local prontaEm: { [string]: number } = {}
+-- Server time at which each ability is ready again (predicted here, corrected by the server).
+local readyAt: { [string]: number } = {}
 
--- O efeito desenhado na hora para cada habilidade, para apagar se o servidor recusar.
-local efeitoPrevisto: { [string]: Instance } = {}
+-- The effect drawn right away for each ability, to remove if the server rejects the request.
+local predictedEffect: { [string]: BasePart? } = {}
 
-local ultimoAviso: string? = nil
-local horaDoAviso = 0
+local lastNotice: string? = nil
+local lastNoticeTime = 0
 
-local function avisar(texto: string)
-	ultimoAviso = texto
-	horaDoAviso = os.clock()
+-- Shows "<ability name>: <reason>" on the HUD.
+local function notify(abilityName: string, reason: string)
+	lastNotice = `{abilityName}: {REASON_TEXT[reason] or reason}`
+	lastNoticeTime = os.clock()
 end
 
-local function raizViva(): BasePart?
-	local personagem = jogador.Character
-	if not personagem then
+local function aliveRoot(): BasePart?
+	local character = player.Character
+	if not character then
 		return nil
 	end
-	local humanoide = personagem:FindFirstChildOfClass("Humanoid")
-	local raiz = personagem:FindFirstChild("HumanoidRootPart")
-	if humanoide and humanoide.Health > 0 and raiz and raiz:IsA("BasePart") then
-		return raiz
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if humanoid and humanoid.Health > 0 and root and root:IsA("BasePart") then
+		return root
 	end
 	return nil
 end
 
--- Confere o que dá para conferir no cliente. Devolve a direção da habilidade (no plano) e o alvo
--- que vai no pedido, ou nil e o aviso para o jogador.
-local function prepararPedido(habilidade: any, raiz: BasePart): (Vector3?, Model?, string?)
-	if Workspace:GetServerTimeNow() < (prontaEm[habilidade.id] or 0) then
-		return nil, nil, `{habilidade.nome}: em recarga`
+-- Checks what the client can check. Returns the ability's flat direction and the target that goes
+-- with the request, or nil and the reason to show the player.
+local function prepareRequest(ability: any, root: BasePart): (Vector3?, Model?, string?)
+	if Workspace:GetServerTimeNow() < (readyAt[ability.id] or 0) then
+		return nil, nil, "OnCooldown"
 	end
-	local energiaAtual = Energia.de(jogador)
-	if energiaAtual < habilidade.energia then
-		return nil, nil, "Sem energia"
+	local currentEnergy = Energy.of(player)
+	if currentEnergy < ability.energyCost then
+		return nil, nil, "NoEnergy"
 	end
 
-	local origem = raiz.Position
-	local travado = TargetController.alvoAtual()
-	local posicaoTravado = if travado then Alvos.posicao(travado) else nil
+	local origin = root.Position
+	local locked = TargetController.currentTarget()
+	local lockedPosition = if locked then Targets.position(locked) else nil
 
-	if habilidade.forma == "Alvo" then
-		if not travado or not posicaoTravado or not Alvos.ehAlvo(travado) or not Alvos.vivo(travado) then
-			return nil, nil, `{habilidade.nome}: trave um inimigo primeiro`
+	if ability.shape == "Target" then
+		if not locked or not lockedPosition or not Targets.isTarget(locked) or not Targets.isAlive(locked) then
+			return nil, nil, "NoLockedTarget"
 		end
-		if not Habilidades.noRaio(origem, posicaoTravado, habilidade.alcance, 0, ConfigCombate.ALTURA_ACERTO) then
-			return nil, nil, `{habilidade.nome}: fora de alcance`
+		if not Abilities.isInRadius(origin, lockedPosition, ability.range, 0, CombatConfig.MAX_HIT_HEIGHT) then
+			return nil, nil, "OutOfRange"
 		end
-		return Habilidades.direcaoNoPlano(posicaoTravado - origem), travado, nil
+		return Abilities.flatDirection(lockedPosition - origin), locked, nil
 	end
 
-	-- Com alvo travado, a habilidade sai na direção dele; sem trava, para onde o personagem olha.
-	local direcao = if posicaoTravado then posicaoTravado - origem else raiz.CFrame.LookVector
-	return Habilidades.direcaoNoPlano(direcao), nil, nil
+	-- With a locked target, the ability goes toward it; without one, to where the character faces.
+	local direction = if lockedPosition then lockedPosition - origin else root.CFrame.LookVector
+	return Abilities.flatDirection(direction), nil, nil
 end
 
-local function usar(habilidade: any, evento: RemoteEvent)
-	local raiz = raizViva()
-	if not raiz then
+local function useAbility(ability: any, event: RemoteEvent)
+	local root = aliveRoot()
+	if not root then
 		return
 	end
-	local direcao, alvo, motivo = prepararPedido(habilidade, raiz)
-	if motivo then
-		avisar(motivo)
+	local direction, target, reason = prepareRequest(ability, root)
+	if reason then
+		notify(ability.name, reason)
 		return
 	end
-	local frente = direcao or Habilidades.direcaoNoPlano(raiz.CFrame.LookVector) or Vector3.new(0, 0, -1)
+	local forward = direction or Abilities.flatDirection(root.CFrame.LookVector) or Vector3.new(0, 0, -1)
 
-	-- Previsão: cooldown e efeito na hora; o servidor confirma ou desfaz.
-	prontaEm[habilidade.id] = Workspace:GetServerTimeNow() + habilidade.recarga
-	local origem = CFrame.lookAt(raiz.Position, raiz.Position + frente)
-	efeitoPrevisto[habilidade.id] = CombatEffectsController.desenhar(habilidade, origem, alvo)
-	evento:FireServer(habilidade.id, frente, alvo)
+	-- Prediction: cooldown and effect right away; the server confirms or undoes them.
+	readyAt[ability.id] = Workspace:GetServerTimeNow() + ability.cooldown
+	local origin = CFrame.lookAt(root.Position, root.Position + forward)
+	predictedEffect[ability.id] = CombatEffectsController.draw(ability, origin, target)
+	event:FireServer(ability.id, forward, target)
 end
 
--- A resposta do servidor: quando a habilidade fica pronta e, se ele recusou, o motivo.
-local function aoResponder(id: string, pronta: number, motivo: string?)
-	prontaEm[id] = pronta
-	local efeito = efeitoPrevisto[id]
-	efeitoPrevisto[id] = nil
-	if not motivo then
+-- The server's answer: when the ability is ready and, if it was rejected, why.
+local function onServerResponse(id: string, ready: number, reason: string?)
+	readyAt[id] = ready
+	local effect = predictedEffect[id]
+	predictedEffect[id] = nil
+	if not reason then
 		return
 	end
-	if efeito then
-		efeito:Destroy()
+	if effect then
+		effect:Destroy()
 	end
-	local habilidade = Habilidades.porId(EspadaLonga, id)
-	avisar(`{if habilidade then habilidade.nome else id}: {motivo}`)
+	local ability = Abilities.byId(LongswordConfig, id)
+	notify(if ability then ability.name else id, reason)
 end
 
--- Hora do servidor em que a habilidade volta a ficar pronta (0 se já está). Usado pelo HUD.
-function CombatController.prontaEm(id: string): number
-	return prontaEm[id] or 0
+-- Server time at which the ability is ready again (0 if it already is). Used by the HUD.
+function CombatController.getReadyAt(id: string): number
+	return readyAt[id] or 0
 end
 
--- O último aviso para o jogador e quando ele apareceu (os.clock). Usado pelo HUD.
-function CombatController.aviso(): (string?, number)
-	return ultimoAviso, horaDoAviso
+-- The last notice for the player and when it appeared (os.clock). Used by the HUD.
+function CombatController.getLastNotice(): (string?, number)
+	return lastNotice, lastNoticeTime
 end
 
 function CombatController:Start()
-	local evento = Remotes.evento("RequestAbility")
+	local event = Remotes.event("RequestAbility")
 
-	UserInputService.InputBegan:Connect(function(input, processado)
-		if processado then
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if processed then
 			return
 		end
-		for _, habilidade in EspadaLonga do
-			if input.KeyCode == habilidade.tecla then
-				usar(habilidade, evento)
+		for _, ability in LongswordConfig do
+			if input.KeyCode == ability.key then
+				useAbility(ability, event)
 				return
 			end
 		end
 	end)
 
-	evento.OnClientEvent:Connect(aoResponder)
+	event.OnClientEvent:Connect(onServerResponse)
 end
 
 return CombatController

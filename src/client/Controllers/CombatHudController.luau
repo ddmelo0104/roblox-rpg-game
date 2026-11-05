@@ -1,9 +1,9 @@
 --!strict
 --[[
 	CombatHudController.luau
-	HUD mínimo do protótipo (US-012): a barra de energia, um quadro por habilidade com a tecla, o
-	nome e o cooldown, e o último aviso ("Sem energia", "em recarga"…). A borda do quadro fica
-	vermelha quando falta energia para a habilidade. A UI de verdade é do EP-011.
+	Minimal prototype HUD (US-012): the energy bar, one slot per ability with its key, name and
+	cooldown, and the last notice ("sem energia", "em recarga"…). A slot's border turns red when
+	there is not enough energy for the ability. The real UI belongs to EP-011.
 ]]
 
 local Players = game:GetService("Players")
@@ -12,180 +12,179 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Energia = require(Shared:WaitForChild("Energia") :: ModuleScript)
+local Energy = require(Shared:WaitForChild("Energy") :: ModuleScript)
 local CombatController = require(script.Parent.CombatController)
-local EspadaLonga = require(Shared:WaitForChild("Config"):WaitForChild("EspadaLonga") :: ModuleScript)
+local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
 
--- Só visual: tamanhos (em pixels), tempo do aviso na tela e cores.
-local LADO_QUADRO = 64
-local ESPACO = 8
-local ALTURA_ENERGIA = 14
-local TEMPO_AVISO = 1.5
-local COR_FUNDO = Color3.fromRGB(25, 25, 30)
-local COR_ENERGIA = Color3.fromRGB(80, 170, 255)
-local COR_SEM_ENERGIA = Color3.fromRGB(220, 70, 70)
-local COR_AVISO = Color3.fromRGB(255, 200, 120)
+-- Visual only: sizes (in pixels), how long a notice stays on screen, and colors.
+local SLOT_SIZE = 64
+local GAP = 8
+local ENERGY_BAR_HEIGHT = 14
+local NOTICE_DURATION = 1.5
+local BACKGROUND_COLOR = Color3.fromRGB(25, 25, 30)
+local ENERGY_COLOR = Color3.fromRGB(80, 170, 255)
+local NO_ENERGY_COLOR = Color3.fromRGB(220, 70, 70)
+local NOTICE_COLOR = Color3.fromRGB(255, 200, 120)
 
-type Quadro = {
+type Slot = {
 	id: string,
-	recarga: number,
-	energia: number,
-	sombra: Frame,
-	tempo: TextLabel,
-	borda: UIStroke,
+	cooldown: number,
+	energyCost: number,
+	shade: Frame,
+	timer: TextLabel,
+	border: UIStroke,
 }
 
 type Hud = {
-	preenchimento: Frame,
-	valorEnergia: TextLabel,
-	aviso: TextLabel,
-	quadros: { Quadro },
+	energyFill: Frame,
+	energyText: TextLabel,
+	notice: TextLabel,
+	slots: { Slot },
 }
 
 local CombatHudController = {}
 
-local jogador = Players.LocalPlayer
+local player = Players.LocalPlayer
 
-local function novoTexto(nome: string, tamanho: number, pai: Instance): TextLabel
-	local texto = Instance.new("TextLabel")
-	texto.Name = nome
-	texto.BackgroundTransparency = 1
-	texto.TextColor3 = Color3.new(1, 1, 1)
-	texto.TextSize = tamanho
-	texto.Text = ""
-	texto.Parent = pai
-	return texto
+local function newLabel(name: string, textSize: number, parent: Instance): TextLabel
+	local label = Instance.new("TextLabel")
+	label.Name = name
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.TextSize = textSize
+	label.Text = ""
+	label.Parent = parent
+	return label
 end
 
-local function novoQuadro(habilidade: any, indice: number, pai: Instance): Quadro
-	local fundo = Instance.new("Frame")
-	fundo.Name = habilidade.id
-	fundo.Size = UDim2.fromOffset(LADO_QUADRO, LADO_QUADRO)
-	fundo.Position = UDim2.fromOffset((indice - 1) * (LADO_QUADRO + ESPACO), ALTURA_ENERGIA + ESPACO)
-	fundo.BackgroundColor3 = COR_FUNDO
-	fundo.BorderSizePixel = 0
-	fundo.Parent = pai
+local function newSlot(ability: any, index: number, parent: Instance): Slot
+	local frame = Instance.new("Frame")
+	frame.Name = ability.id
+	frame.Size = UDim2.fromOffset(SLOT_SIZE, SLOT_SIZE)
+	frame.Position = UDim2.fromOffset((index - 1) * (SLOT_SIZE + GAP), ENERGY_BAR_HEIGHT + GAP)
+	frame.BackgroundColor3 = BACKGROUND_COLOR
+	frame.BorderSizePixel = 0
+	frame.Parent = parent
 
-	local borda = Instance.new("UIStroke")
-	borda.Thickness = 2
-	borda.Color = COR_FUNDO
-	borda.Parent = fundo
+	local border = Instance.new("UIStroke")
+	border.Thickness = 2
+	border.Color = BACKGROUND_COLOR
+	border.Parent = frame
 
-	local tecla = novoTexto("Tecla", 14, fundo)
-	tecla.Text = habilidade.tecla.Name
-	tecla.TextXAlignment = Enum.TextXAlignment.Left
-	tecla.Size = UDim2.fromOffset(24, 18)
-	tecla.Position = UDim2.fromOffset(4, 2)
+	local key = newLabel("Key", 14, frame)
+	key.Text = ability.key.Name
+	key.TextXAlignment = Enum.TextXAlignment.Left
+	key.Size = UDim2.fromOffset(24, 18)
+	key.Position = UDim2.fromOffset(4, 2)
 
-	local nome = novoTexto("Nome", 11, fundo)
-	nome.Text = habilidade.nome
-	nome.TextWrapped = true
-	nome.Size = UDim2.new(1, -4, 0, 28)
-	nome.Position = UDim2.new(0, 2, 1, -30)
+	local name = newLabel("AbilityName", 11, frame)
+	name.Text = ability.name
+	name.TextWrapped = true
+	name.Size = UDim2.new(1, -4, 0, 28)
+	name.Position = UDim2.new(0, 2, 1, -30)
 
-	-- A sombra cobre o quadro e desce conforme o cooldown acaba.
-	local sombra = Instance.new("Frame")
-	sombra.Name = "Recarga"
-	sombra.AnchorPoint = Vector2.new(0, 1)
-	sombra.Position = UDim2.fromScale(0, 1)
-	sombra.Size = UDim2.fromScale(1, 0)
-	sombra.BackgroundColor3 = Color3.new(0, 0, 0)
-	sombra.BackgroundTransparency = 0.35
-	sombra.BorderSizePixel = 0
-	sombra.ZIndex = 2
-	sombra.Parent = fundo
+	-- The shade covers the slot and shrinks as the cooldown runs out.
+	local shade = Instance.new("Frame")
+	shade.Name = "Cooldown"
+	shade.AnchorPoint = Vector2.new(0, 1)
+	shade.Position = UDim2.fromScale(0, 1)
+	shade.Size = UDim2.fromScale(1, 0)
+	shade.BackgroundColor3 = Color3.new(0, 0, 0)
+	shade.BackgroundTransparency = 0.35
+	shade.BorderSizePixel = 0
+	shade.ZIndex = 2
+	shade.Parent = frame
 
-	local tempo = novoTexto("Tempo", 20, fundo)
-	tempo.Size = UDim2.fromScale(1, 1)
-	tempo.ZIndex = 3
+	local timer = newLabel("Timer", 20, frame)
+	timer.Size = UDim2.fromScale(1, 1)
+	timer.ZIndex = 3
 
 	return {
-		id = habilidade.id,
-		recarga = habilidade.recarga,
-		energia = habilidade.energia,
-		sombra = sombra,
-		tempo = tempo,
-		borda = borda,
+		id = ability.id,
+		cooldown = ability.cooldown,
+		energyCost = ability.energyCost,
+		shade = shade,
+		timer = timer,
+		border = border,
 	}
 end
 
-local function criarHud(): Hud
+local function createHud(): Hud
 	local gui = Instance.new("ScreenGui")
-	gui.Name = "HudDeCombate"
+	gui.Name = "CombatHud"
 	gui.ResetOnSpawn = false
 
-	local quantidade = #EspadaLonga
-	local barra = Instance.new("Frame")
-	barra.Name = "Barra"
-	barra.AnchorPoint = Vector2.new(0.5, 1)
-	barra.Position = UDim2.new(0.5, 0, 1, -20)
-	barra.Size =
-		UDim2.fromOffset(quantidade * LADO_QUADRO + (quantidade - 1) * ESPACO, ALTURA_ENERGIA + ESPACO + LADO_QUADRO)
-	barra.BackgroundTransparency = 1
-	barra.Parent = gui
+	local count = #LongswordConfig
+	local bar = Instance.new("Frame")
+	bar.Name = "Bar"
+	bar.AnchorPoint = Vector2.new(0.5, 1)
+	bar.Position = UDim2.new(0.5, 0, 1, -20)
+	bar.Size = UDim2.fromOffset(count * SLOT_SIZE + (count - 1) * GAP, ENERGY_BAR_HEIGHT + GAP + SLOT_SIZE)
+	bar.BackgroundTransparency = 1
+	bar.Parent = gui
 
-	local fundoEnergia = Instance.new("Frame")
-	fundoEnergia.Name = "Energia"
-	fundoEnergia.Size = UDim2.new(1, 0, 0, ALTURA_ENERGIA)
-	fundoEnergia.BackgroundColor3 = COR_FUNDO
-	fundoEnergia.BorderSizePixel = 0
-	fundoEnergia.Parent = barra
+	local energyBackground = Instance.new("Frame")
+	energyBackground.Name = "Energy"
+	energyBackground.Size = UDim2.new(1, 0, 0, ENERGY_BAR_HEIGHT)
+	energyBackground.BackgroundColor3 = BACKGROUND_COLOR
+	energyBackground.BorderSizePixel = 0
+	energyBackground.Parent = bar
 
-	local preenchimento = Instance.new("Frame")
-	preenchimento.Name = "Preenchimento"
-	preenchimento.Size = UDim2.fromScale(1, 1)
-	preenchimento.BackgroundColor3 = COR_ENERGIA
-	preenchimento.BorderSizePixel = 0
-	preenchimento.Parent = fundoEnergia
+	local energyFill = Instance.new("Frame")
+	energyFill.Name = "Fill"
+	energyFill.Size = UDim2.fromScale(1, 1)
+	energyFill.BackgroundColor3 = ENERGY_COLOR
+	energyFill.BorderSizePixel = 0
+	energyFill.Parent = energyBackground
 
-	local valorEnergia = novoTexto("Valor", 12, fundoEnergia)
-	valorEnergia.Size = UDim2.fromScale(1, 1)
-	valorEnergia.ZIndex = 2
+	local energyText = newLabel("Value", 12, energyBackground)
+	energyText.Size = UDim2.fromScale(1, 1)
+	energyText.ZIndex = 2
 
-	local aviso = novoTexto("Aviso", 18, barra)
-	aviso.AnchorPoint = Vector2.new(0.5, 1)
-	aviso.Position = UDim2.new(0.5, 0, 0, -6)
-	aviso.Size = UDim2.fromOffset(360, 22)
-	aviso.TextColor3 = COR_AVISO
-	aviso.TextStrokeTransparency = 0.5
+	local notice = newLabel("Notice", 18, bar)
+	notice.AnchorPoint = Vector2.new(0.5, 1)
+	notice.Position = UDim2.new(0.5, 0, 0, -6)
+	notice.Size = UDim2.fromOffset(360, 22)
+	notice.TextColor3 = NOTICE_COLOR
+	notice.TextStrokeTransparency = 0.5
 
-	local quadros: { Quadro } = {}
-	for indice, habilidade in EspadaLonga do
-		table.insert(quadros, novoQuadro(habilidade, indice, barra))
+	local slots: { Slot } = {}
+	for index, ability in LongswordConfig do
+		table.insert(slots, newSlot(ability, index, bar))
 	end
 
-	gui.Parent = jogador:WaitForChild("PlayerGui")
+	gui.Parent = player:WaitForChild("PlayerGui")
 	return {
-		preenchimento = preenchimento,
-		valorEnergia = valorEnergia,
-		aviso = aviso,
-		quadros = quadros,
+		energyFill = energyFill,
+		energyText = energyText,
+		notice = notice,
+		slots = slots,
 	}
 end
 
-local function atualizar(hud: Hud)
-	local atual, maxima = Energia.de(jogador)
-	local fracaoEnergia = if maxima > 0 then math.clamp(atual / maxima, 0, 1) else 0
-	hud.preenchimento.Size = UDim2.fromScale(fracaoEnergia, 1)
-	hud.valorEnergia.Text = `{atual} / {maxima}`
+local function update(hud: Hud)
+	local current, max = Energy.of(player)
+	local energyFraction = if max > 0 then math.clamp(current / max, 0, 1) else 0
+	hud.energyFill.Size = UDim2.fromScale(energyFraction, 1)
+	hud.energyText.Text = `{current} / {max}`
 
-	local agora = Workspace:GetServerTimeNow()
-	for _, quadro in hud.quadros do
-		local falta = math.max(0, CombatController.prontaEm(quadro.id) - agora)
-		local fracao = if quadro.recarga > 0 then math.clamp(falta / quadro.recarga, 0, 1) else 0
-		quadro.sombra.Size = UDim2.fromScale(1, fracao)
-		quadro.tempo.Text = if falta > 0 then string.format("%.1f", falta) else ""
-		quadro.borda.Color = if atual < quadro.energia then COR_SEM_ENERGIA else COR_FUNDO
+	local now = Workspace:GetServerTimeNow()
+	for _, slot in hud.slots do
+		local remaining = math.max(0, CombatController.getReadyAt(slot.id) - now)
+		local fraction = if slot.cooldown > 0 then math.clamp(remaining / slot.cooldown, 0, 1) else 0
+		slot.shade.Size = UDim2.fromScale(1, fraction)
+		slot.timer.Text = if remaining > 0 then string.format("%.1f", remaining) else ""
+		slot.border.Color = if current < slot.energyCost then NO_ENERGY_COLOR else BACKGROUND_COLOR
 	end
 
-	local texto, hora = CombatController.aviso()
-	hud.aviso.Text = if texto and os.clock() - hora < TEMPO_AVISO then texto else ""
+	local text, shownAt = CombatController.getLastNotice()
+	hud.notice.Text = if text and os.clock() - shownAt < NOTICE_DURATION then text else ""
 end
 
 function CombatHudController:Start()
-	local hud = criarHud()
+	local hud = createHud()
 	RunService.RenderStepped:Connect(function()
-		atualizar(hud)
+		update(hud)
 	end)
 end
 

@@ -1,11 +1,11 @@
 --!strict
 --[[
 	CameraController.luau
-	Câmera do PC (US-009, aba Câmera e Mira): terceira pessoa com zoom limitado e o modo combate,
-	um shift-lock do próprio jogo. No modo combate, o mouse fica preso no centro, a câmera vai
-	para o ombro e o personagem vira para onde a câmera aponta. Com um alvo travado (definido pelo
-	TargetController), a câmera e o personagem acompanham o alvo.
-	Tudo aqui é visual: o servidor não confia na câmera nem na trava (ADR-002).
+	PC camera (US-009, Camera and Aim tab): third person with limited zoom, plus combat mode, the
+	game's own shift-lock. In combat mode the mouse is locked to the center, the camera moves to the
+	shoulder and the character turns to where the camera points. With a locked target (set by the
+	TargetController), the camera and the character follow the target.
+	Everything here is visual: the server trusts neither the camera nor the lock (ADR-002).
 ]]
 
 local Players = game:GetService("Players")
@@ -15,108 +15,109 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local ConfigCamera = require(Shared:WaitForChild("Config"):WaitForChild("Camera") :: ModuleScript)
-local Alvos = require(Shared:WaitForChild("Alvos") :: ModuleScript)
+local CameraConfig = require(Shared:WaitForChild("Config"):WaitForChild("Camera") :: ModuleScript)
+local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
 
 local CameraController = {}
 
-local jogador = Players.LocalPlayer
-local modoCombate = false
-local alvoTravado: Model? = nil
+local player = Players.LocalPlayer
+local combatMode = false
+local lockedTarget: Model? = nil
 
-local function partes(): (Humanoid?, BasePart?)
-	local personagem = jogador.Character
-	if not personagem then
+local function characterParts(): (Humanoid?, BasePart?)
+	local character = player.Character
+	if not character then
 		return nil, nil
 	end
-	local humanoide = personagem:FindFirstChildOfClass("Humanoid")
-	local raiz = personagem:FindFirstChild("HumanoidRootPart")
-	if raiz and raiz:IsA("BasePart") then
-		return humanoide, raiz
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if root and root:IsA("BasePart") then
+		return humanoid, root
 	end
-	return humanoide, nil
+	return humanoid, nil
 end
 
--- Vira o personagem para uma direção, só no plano (giro em Y).
-local function virarPara(raiz: BasePart, direcao: Vector3)
-	local plana = Vector3.new(direcao.X, 0, direcao.Z)
-	if plana.Magnitude > 0.01 then
-		raiz.CFrame = CFrame.lookAt(raiz.Position, raiz.Position + plana.Unit)
+-- Turns the character toward a direction, on the ground plane only (rotation around Y).
+local function faceDirection(root: BasePart, direction: Vector3)
+	local flat = Vector3.new(direction.X, 0, direction.Z)
+	if flat.Magnitude > 0.01 then
+		root.CFrame = CFrame.lookAt(root.Position, root.Position + flat.Unit)
 	end
 end
 
--- Com alvo: a câmera fica atrás do ombro, olhando para o alvo, na distância do zoom atual.
-local function apontarParaAlvo(camera: Camera, raiz: BasePart, posicaoAlvo: Vector3)
-	local foco = raiz.Position + Vector3.new(0, ConfigCamera.ALTURA_FOCO, 0)
-	if (posicaoAlvo - foco).Magnitude < 1 then
+-- With a target: the camera stays behind the shoulder, looking at the target, at the current zoom
+-- distance.
+local function aimAtTarget(camera: Camera, root: BasePart, targetPosition: Vector3)
+	local focus = root.Position + Vector3.new(0, CameraConfig.FOCUS_HEIGHT, 0)
+	if (targetPosition - focus).Magnitude < 1 then
 		return
 	end
-	local distancia = (camera.CFrame.Position - camera.Focus.Position).Magnitude
-	local ombro = ConfigCamera.DESLOCAMENTO_OMBRO
-	local olhar = CFrame.lookAt(foco, posicaoAlvo)
-	local posicaoCamera = (olhar * CFrame.new(ombro.X, ombro.Y, distancia)).Position
-	camera.CFrame = CFrame.lookAt(posicaoCamera, posicaoAlvo)
+	local distance = (camera.CFrame.Position - camera.Focus.Position).Magnitude
+	local shoulder = CameraConfig.SHOULDER_OFFSET
+	local look = CFrame.lookAt(focus, targetPosition)
+	local cameraPosition = (look * CFrame.new(shoulder.X, shoulder.Y, distance)).Position
+	camera.CFrame = CFrame.lookAt(cameraPosition, targetPosition)
 end
 
--- Roda a cada quadro, logo depois da câmera padrão do Roblox.
-local function aCadaQuadro()
-	if not modoCombate then
+-- Runs every frame, right after Roblox's default camera.
+local function onRenderStep()
+	if not combatMode then
 		return
 	end
-	local humanoide, raiz = partes()
+	local humanoid, root = characterParts()
 	local camera = Workspace.CurrentCamera
-	if not humanoide or not raiz or not camera or humanoide.Health <= 0 then
+	if not humanoid or not root or not camera or humanoid.Health <= 0 then
 		return
 	end
 
 	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-	humanoide.AutoRotate = false
-	humanoide.CameraOffset = ConfigCamera.DESLOCAMENTO_OMBRO
+	humanoid.AutoRotate = false
+	humanoid.CameraOffset = CameraConfig.SHOULDER_OFFSET
 
-	local posicaoAlvo = if alvoTravado then Alvos.posicao(alvoTravado) else nil
-	if posicaoAlvo then
-		apontarParaAlvo(camera, raiz, posicaoAlvo)
-		virarPara(raiz, posicaoAlvo - raiz.Position)
+	local targetPosition = if lockedTarget then Targets.position(lockedTarget) else nil
+	if targetPosition then
+		aimAtTarget(camera, root, targetPosition)
+		faceDirection(root, targetPosition - root.Position)
 	else
-		virarPara(raiz, camera.CFrame.LookVector)
+		faceDirection(root, camera.CFrame.LookVector)
 	end
 end
 
-function CameraController.emModoCombate(): boolean
-	return modoCombate
+function CameraController.isInCombatMode(): boolean
+	return combatMode
 end
 
-function CameraController.definirModoCombate(ligado: boolean)
-	if modoCombate == ligado then
+function CameraController.setCombatMode(enabled: boolean)
+	if combatMode == enabled then
 		return
 	end
-	modoCombate = ligado
-	if not ligado then
+	combatMode = enabled
+	if not enabled then
 		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-		local humanoide = partes()
-		if humanoide then
-			humanoide.AutoRotate = true
-			humanoide.CameraOffset = Vector3.zero
+		local humanoid = characterParts()
+		if humanoid then
+			humanoid.AutoRotate = true
+			humanoid.CameraOffset = Vector3.zero
 		end
 	end
 end
 
--- Chamado pelo TargetController: o Model ao travar, nil ao soltar.
-function CameraController.definirAlvo(alvo: Model?)
-	alvoTravado = alvo
+-- Called by the TargetController: the Model when locking, nil when releasing.
+function CameraController.setTarget(target: Model?)
+	lockedTarget = target
 end
 
 function CameraController:Start()
-	jogador.CameraMinZoomDistance = ConfigCamera.ZOOM_MIN
-	jogador.CameraMaxZoomDistance = ConfigCamera.ZOOM_MAX
+	player.CameraMinZoomDistance = CameraConfig.ZOOM_MIN
+	player.CameraMaxZoomDistance = CameraConfig.ZOOM_MAX
 
-	UserInputService.InputBegan:Connect(function(input, processado)
-		if not processado and input.KeyCode == ConfigCamera.TECLA_MODO_COMBATE then
-			CameraController.definirModoCombate(not modoCombate)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if not processed and input.KeyCode == CameraConfig.COMBAT_MODE_KEY then
+			CameraController.setCombatMode(not combatMode)
 		end
 	end)
 
-	RunService:BindToRenderStep("ModoCombate", Enum.RenderPriority.Camera.Value + 1, aCadaQuadro)
+	RunService:BindToRenderStep("CombatMode", Enum.RenderPriority.Camera.Value + 1, onRenderStep)
 end
 
 return CameraController

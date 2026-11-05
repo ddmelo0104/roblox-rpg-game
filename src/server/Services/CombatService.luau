@@ -1,209 +1,210 @@
 --!strict
 --[[
 	CombatService.luau
-	Habilidades da espada longa do protótipo (US-012, aba Combate e Habilidades). O cliente só
-	pede ("corte frontal nesta direção", "golpe neste alvo travado"). O servidor confere
-	cooldown, alvo, alcance, linha de visão e energia, calcula quem foi atingido com as contas de
-	Shared.Habilidades e a margem de lag (ADR-009), aplica o dano e avisa todos os clientes.
-	Só modelos com a tag de alvo levam dano: o PvP depende das regras de zona, que ainda não existem.
+	Abilities of the prototype's longsword (US-012, Combat and Abilities tab). The client only asks
+	("front slash in this direction", "target strike on this locked target"). The server checks the
+	cooldown, target, range, line of sight and energy, works out who was hit with the math in
+	Shared.Abilities and the lag margin (ADR-009), applies the damage and tells every client.
+	Only models with the target tag take damage: PvP depends on the zone rules, which do not exist yet.
 ]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local Alvos = require(ReplicatedStorage.Shared.Alvos)
-local ConfigCamera = require(ReplicatedStorage.Shared.Config.Camera)
-local ConfigCombate = require(ReplicatedStorage.Shared.Config.Combate)
-local EspadaLonga = require(ReplicatedStorage.Shared.Config.EspadaLonga)
-local Habilidades = require(ReplicatedStorage.Shared.Habilidades)
+local Abilities = require(ReplicatedStorage.Shared.Abilities)
+local CameraConfig = require(ReplicatedStorage.Shared.Config.Camera)
+local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
+local LongswordConfig = require(ReplicatedStorage.Shared.Config.Longsword)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
-local Validar = require(ReplicatedStorage.Shared.Validar)
-local Rede = require(script.Parent.Parent.Rede)
+local Targets = require(ReplicatedStorage.Shared.Targets)
+local Validate = require(ReplicatedStorage.Shared.Validate)
+local Network = require(script.Parent.Parent.Network)
 local EnergyService = require(script.Parent.EnergyService)
 
-type Habilidade = Habilidades.Habilidade
+type Ability = Abilities.Ability
+type RejectReason = Abilities.RejectReason
 
 local CombatService = {}
 
--- A arma do protótipo; para com uma mensagem clara se o Config tiver um campo errado.
-local HABILIDADES = Habilidades.conferir(EspadaLonga, "Config/EspadaLonga")
+-- The prototype's weapon; stops with a clear message if a field in the Config is wrong.
+local ABILITIES = Abilities.validate(LongswordConfig, "Config/Longsword")
 
--- Ids que o cliente pode pedir.
+-- Ids the client may request.
 local IDS: { string } = {}
-for _, habilidade in HABILIDADES do
-	table.insert(IDS, habilidade.id)
+for _, ability in ABILITIES do
+	table.insert(IDS, ability.id)
 end
 
--- Hora do servidor em que cada habilidade de cada jogador volta a ficar pronta.
-local prontaEm: { [Player]: { [string]: number } } = {}
+-- Server time at which each ability of each player is ready again.
+local readyAt: { [Player]: { [string]: number } } = {}
 
-local pedido = Remotes.evento("RequestAbility")
-local aviso = Remotes.evento("AbilityUsed")
+local requestEvent = Remotes.event("RequestAbility")
+local usedEvent = Remotes.event("AbilityUsed")
 
-local function validarPedido(id: any, direcao: any, alvo: any): (boolean, string?)
-	local ok, motivo = Validar.umDe(id, IDS)
+local function validateRequest(id: any, direction: any, target: any): (boolean, string?)
+	local ok, reason = Validate.oneOf(id, IDS)
 	if not ok then
-		return false, motivo
+		return false, reason
 	end
-	ok, motivo = Validar.vetor(direcao, 0.5, 2)
+	ok, reason = Validate.vector(direction, 0.5, 2)
 	if not ok then
-		return false, motivo
+		return false, reason
 	end
-	return Validar.instanciaOuNada(alvo)
+	return Validate.instanceOrNil(target)
 end
 
-local function prontasDe(jogador: Player): { [string]: number }
-	local existentes = prontaEm[jogador]
-	if existentes then
-		return existentes
+local function readyTimesOf(player: Player): { [string]: number }
+	local existing = readyAt[player]
+	if existing then
+		return existing
 	end
-	local novas: { [string]: number } = {}
-	prontaEm[jogador] = novas
-	return novas
+	local created: { [string]: number } = {}
+	readyAt[player] = created
+	return created
 end
 
--- Responde só para quem pediu: quando a habilidade fica pronta e, se recusou, o motivo.
-local function responder(jogador: Player, id: string, motivo: string?)
-	pedido:FireClient(jogador, id, prontasDe(jogador)[id] or 0, motivo)
+-- Answers only the player who asked: when the ability is ready and, if it was rejected, why.
+local function respond(player: Player, id: string, reason: RejectReason?)
+	requestEvent:FireClient(player, id, readyTimesOf(player)[id] or 0, reason)
 end
 
-local function partesDe(jogador: Player): (Humanoid?, BasePart?)
-	local personagem = jogador.Character
-	if not personagem then
+local function partsOf(player: Player): (Humanoid?, BasePart?)
+	local character = player.Character
+	if not character then
 		return nil, nil
 	end
-	local raiz = personagem:FindFirstChild("HumanoidRootPart")
-	return personagem:FindFirstChildOfClass("Humanoid"), if raiz and raiz:IsA("BasePart") then raiz else nil
+	local root = character:FindFirstChild("HumanoidRootPart")
+	return character:FindFirstChildOfClass("Humanoid"), if root and root:IsA("BasePart") then root else nil
 end
 
--- Personagens e alvos não bloqueiam golpe nem linha de visão: só o cenário bloqueia.
-local function naoBloqueiam(): { Instance }
-	local lista: { Instance } = {}
-	for _, outro in Players:GetPlayers() do
-		local personagem = outro.Character
-		if personagem then
-			table.insert(lista, personagem)
+-- Characters and targets block neither hits nor line of sight: only the scenery does.
+local function nonBlocking(): { Instance }
+	local list: { Instance } = {}
+	for _, other in Players:GetPlayers() do
+		local character = other.Character
+		if character then
+			table.insert(list, character)
 		end
 	end
-	for _, alvo in Alvos.todos() do
-		table.insert(lista, alvo)
+	for _, target in Targets.all() do
+		table.insert(list, target)
 	end
-	return lista
+	return list
 end
 
-local function olhoDe(origem: Vector3): Vector3
-	return origem + Vector3.new(0, ConfigCamera.ALTURA_FOCO, 0)
+local function eyeOf(origin: Vector3): Vector3
+	return origin + Vector3.new(0, CameraConfig.FOCUS_HEIGHT, 0)
 end
 
--- Os alvos vivos dentro da área (Frente ou EmVolta) e à vista de quem atacou.
-local function alvosNaArea(habilidade: Habilidade, origem: Vector3, frente: Vector3): { Model }
-	local ignorar = naoBloqueiam()
-	local atingidos: { Model } = {}
-	for _, alvo in Alvos.todos() do
-		local posicao = Alvos.posicao(alvo)
-		if not posicao or not Alvos.vivo(alvo) then
+-- The living targets inside the area (Front or Around) that the attacker can see.
+local function targetsInArea(ability: Ability, origin: Vector3, forward: Vector3): { Model }
+	local ignore = nonBlocking()
+	local hits: { Model } = {}
+	for _, target in Targets.all() do
+		local position = Targets.position(target)
+		if not position or not Targets.isAlive(target) then
 			continue
 		end
-		local margem, altura = ConfigCombate.MARGEM_LAG, ConfigCombate.ALTURA_ACERTO
-		local dentro = if habilidade.forma == "Frente"
-			then Habilidades.naFrente(origem, frente, posicao, habilidade.alcance, habilidade.largura, margem, altura)
-			else Habilidades.noRaio(origem, posicao, habilidade.alcance, margem, altura)
-		if dentro and Alvos.temLinhaDeVisao(olhoDe(origem), posicao, ignorar) then
-			table.insert(atingidos, alvo)
+		local margin, maxHeight = CombatConfig.LAG_MARGIN, CombatConfig.MAX_HIT_HEIGHT
+		local inside = if ability.shape == "Front"
+			then Abilities.isInFront(origin, forward, position, ability.range, ability.width, margin, maxHeight)
+			else Abilities.isInRadius(origin, position, ability.range, margin, maxHeight)
+		if inside and Targets.hasLineOfSight(eyeOf(origin), position, ignore) then
+			table.insert(hits, target)
 		end
 	end
-	return atingidos
+	return hits
 end
 
--- Confere o alvo travado do golpe no alvo. Devolve o alvo, ou nil e o motivo da recusa.
-local function conferirAlvo(habilidade: Habilidade, origem: Vector3, pedidoAlvo: Instance?): (Model?, string?)
-	if not pedidoAlvo or not Alvos.ehAlvo(pedidoAlvo) then
-		return nil, "alvo inválido"
+-- Checks the locked target of the target strike. Returns the target, or nil and the reject reason.
+local function checkTarget(ability: Ability, origin: Vector3, requested: Instance?): (Model?, RejectReason?)
+	if not requested or not Targets.isTarget(requested) then
+		return nil, "InvalidTarget"
 	end
-	local alvo = pedidoAlvo :: Model
-	local posicao = Alvos.posicao(alvo)
-	if not posicao or not Alvos.vivo(alvo) then
-		return nil, "alvo inválido"
+	local target = requested :: Model
+	local position = Targets.position(target)
+	if not position or not Targets.isAlive(target) then
+		return nil, "InvalidTarget"
 	end
-	local margem, altura = ConfigCombate.MARGEM_LAG, ConfigCombate.ALTURA_ACERTO
-	if not Habilidades.noRaio(origem, posicao, habilidade.alcance, margem, altura) then
-		return nil, "fora de alcance"
+	local margin, maxHeight = CombatConfig.LAG_MARGIN, CombatConfig.MAX_HIT_HEIGHT
+	if not Abilities.isInRadius(origin, position, ability.range, margin, maxHeight) then
+		return nil, "OutOfRange"
 	end
-	if not Alvos.temLinhaDeVisao(olhoDe(origem), posicao, naoBloqueiam()) then
-		return nil, "sem linha de visão"
+	if not Targets.hasLineOfSight(eyeOf(origin), position, nonBlocking()) then
+		return nil, "NoLineOfSight"
 	end
-	return alvo, nil
+	return target, nil
 end
 
--- Tira a vida dos atingidos. Devolve se algum deles foi derrubado por este golpe.
-local function aplicarDano(atingidos: { Model }, dano: number): boolean
-	local derrubou = false
-	for _, alvo in atingidos do
-		local humanoide = alvo:FindFirstChildOfClass("Humanoid")
-		if humanoide and humanoide.Health > 0 then
-			humanoide:TakeDamage(dano)
-			if humanoide.Health <= 0 then
-				derrubou = true
+-- Takes health from the hit targets. Returns whether this hit knocked any of them down.
+local function applyDamage(hits: { Model }, damage: number): boolean
+	local knockedDown = false
+	for _, target in hits do
+		local humanoid = target:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			humanoid:TakeDamage(damage)
+			if humanoid.Health <= 0 then
+				knockedDown = true
 			end
 		end
 	end
-	return derrubou
+	return knockedDown
 end
 
-local function usar(jogador: Player, id: string, direcao: Vector3, pedidoAlvo: Instance?)
-	local habilidade = Habilidades.porId(HABILIDADES, id)
-	local humanoide, raiz = partesDe(jogador)
-	if not habilidade or not humanoide or not raiz or humanoide.Health <= 0 then
-		responder(jogador, id, "sem personagem")
+local function useAbility(player: Player, id: string, direction: Vector3, requestedTarget: Instance?)
+	local ability = Abilities.byId(ABILITIES, id)
+	local humanoid, root = partsOf(player)
+	if not ability or not humanoid or not root or humanoid.Health <= 0 then
+		respond(player, id, "NoCharacter")
 		return
 	end
 
-	local agora = Workspace:GetServerTimeNow()
-	local prontas = prontasDe(jogador)
-	if agora < (prontas[id] or 0) then
-		responder(jogador, id, "em recarga")
+	local now = Workspace:GetServerTimeNow()
+	local readyTimes = readyTimesOf(player)
+	if now < (readyTimes[id] or 0) then
+		respond(player, id, "OnCooldown")
 		return
 	end
 
-	local origem = raiz.Position
-	local frente = Habilidades.direcaoNoPlano(direcao)
-		or Habilidades.direcaoNoPlano(raiz.CFrame.LookVector)
+	local origin = root.Position
+	local forward = Abilities.flatDirection(direction)
+		or Abilities.flatDirection(root.CFrame.LookVector)
 		or Vector3.new(0, 0, -1)
 
-	local alvoTravado: Model? = nil
-	if habilidade.forma == "Alvo" then
-		local alvo, motivo = conferirAlvo(habilidade, origem, pedidoAlvo)
-		if not alvo then
-			responder(jogador, id, motivo)
+	local lockedTarget: Model? = nil
+	if ability.shape == "Target" then
+		local target, reason = checkTarget(ability, origin, requestedTarget)
+		if not target then
+			respond(player, id, reason)
 			return
 		end
-		alvoTravado = alvo
-		frente = Habilidades.direcaoNoPlano((Alvos.posicao(alvo) or origem) - origem) or frente
+		lockedTarget = target
+		forward = Abilities.flatDirection((Targets.position(target) or origin) - origin) or forward
 	end
 
-	if not EnergyService.gastar(jogador, habilidade.energia) then
-		responder(jogador, id, "sem energia")
+	if not EnergyService.spend(player, ability.energyCost) then
+		respond(player, id, "NoEnergy")
 		return
 	end
 
-	local atingidos = if alvoTravado then { alvoTravado } else alvosNaArea(habilidade, origem, frente)
-	local derrubou = aplicarDano(atingidos, habilidade.dano)
+	local hits = if lockedTarget then { lockedTarget } else targetsInArea(ability, origin, forward)
+	local knockedDown = applyDamage(hits, ability.damage)
 
-	prontas[id] = if derrubou and habilidade.zeraAoDerrubar then agora else agora + habilidade.recarga
-	responder(jogador, id, nil)
-	aviso:FireAllClients(jogador, id, CFrame.lookAt(origem, origem + frente), atingidos, habilidade.dano)
+	readyTimes[id] = if knockedDown and ability.resetOnKill then now else now + ability.cooldown
+	respond(player, id, nil)
+	usedEvent:FireAllClients(player, id, CFrame.lookAt(origin, origin + forward), hits, ability.damage)
 end
 
 function CombatService:Start()
-	Rede.aoReceber("RequestAbility", validarPedido, usar)
+	Network.onReceive("RequestAbility", validateRequest, useAbility)
 
-	-- AbilityUsed é só aviso do servidor. Ouvir e ignorar evita a fila de eventos sem destino
-	-- se um cliente disparar por ele.
-	aviso.OnServerEvent:Connect(function() end)
+	-- AbilityUsed is a server notice only. Listening and ignoring it avoids a queue of events with no
+	-- handler if a client fires it.
+	usedEvent.OnServerEvent:Connect(function() end)
 
-	Players.PlayerRemoving:Connect(function(jogador)
-		prontaEm[jogador] = nil
+	Players.PlayerRemoving:Connect(function(player)
+		readyAt[player] = nil
 	end)
 end
 

@@ -1,28 +1,29 @@
 --!strict
 --[[
 	PingService.luau
-	Exemplo do padrão de rede (US-005): o cliente pede um ping com um número, o servidor confere
-	o pedido e responde com o mesmo número e a hora do servidor. Serve de modelo para todo
-	Remote novo: definir em Shared.Remotes, validar aqui com Rede.aoReceber, responder ou agir.
+	Example of the network pattern (US-005): the client asks for a ping with a number, and the
+	server checks the request and answers with the same number and the server time. It is the model
+	for every new Remote: declare it in Shared.Remotes, validate it here with Network.onReceive, then
+	answer or act.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local ConfigRede = require(ReplicatedStorage.Shared.Config.Rede)
+local NetworkConfig = require(ReplicatedStorage.Shared.Config.Network)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
-local Validar = require(ReplicatedStorage.Shared.Validar)
-local Rede = require(script.Parent.Parent.Rede)
+local Validate = require(ReplicatedStorage.Shared.Validate)
+local Network = require(script.Parent.Parent.Network)
 
 local PingService = {}
 
 function PingService:Start()
-	local evento = Remotes.evento("RequestPing")
+	local event = Remotes.event("RequestPing")
 
-	Rede.aoReceber("RequestPing", function(valor)
-		return Validar.numero(valor, -ConfigRede.PING_MAXIMO, ConfigRede.PING_MAXIMO)
-	end, function(jogador, valor)
-		evento:FireClient(jogador, valor, Workspace:GetServerTimeNow())
+	Network.onReceive("RequestPing", function(value)
+		return Validate.number(value, -NetworkConfig.PING_MAX_VALUE, NetworkConfig.PING_MAX_VALUE)
+	end, function(player, value)
+		event:FireClient(player, value, Workspace:GetServerTimeNow())
 	end)
 end
 
