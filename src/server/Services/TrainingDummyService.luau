@@ -1,9 +1,10 @@
 --!strict
 --[[
 	TrainingDummyService.luau
-	Boneco de treino do protótipo (US-009). Se o place não tiver nenhum modelo com a tag de alvo,
-	cria um boneco simples perto do spawn, para testar a trava de alvo e, depois, as habilidades.
-	Quando a vida chega a zero, ele volta depois de Config/Treino.TEMPO_VOLTAR_BONECO.
+	Bonecos de treino do protótipo (US-009, US-012). Se o place não tiver nenhum modelo com a tag
+	de alvo, cria uma fileira de bonecos simples à frente do spawn, para testar a trava de alvo e
+	as habilidades (Config/Treino diz quantos e o espaço entre eles).
+	Quando a vida de um chega a zero, ele volta depois de Config/Treino.TEMPO_VOLTAR_BONECO.
 	É um placeholder: modelos de verdade são feitos no Studio e só precisam da tag (Shared.Alvos.TAG).
 ]]
 
@@ -28,13 +29,15 @@ local function chaoAbaixo(ponto: Vector3): Vector3
 	return ponto
 end
 
--- À frente do SpawnLocation, ou à frente da origem se o place não tiver spawn.
-local function pontoDoBoneco(): Vector3
+-- O centro da fileira, à frente do SpawnLocation (ou da origem, se o place não tiver spawn), e a
+-- direção de lado a lado da fileira.
+local function centroDaFileira(): (Vector3, Vector3)
 	local localDeSpawn = Workspace:FindFirstChildWhichIsA("SpawnLocation", true)
 	if localDeSpawn and localDeSpawn:IsA("BasePart") then
-		return chaoAbaixo(localDeSpawn.Position + localDeSpawn.CFrame.LookVector * ConfigTreino.DISTANCIA_DO_SPAWN)
+		local frente = localDeSpawn.CFrame.LookVector * ConfigTreino.DISTANCIA_DO_SPAWN
+		return localDeSpawn.Position + frente, localDeSpawn.CFrame.RightVector
 	end
-	return chaoAbaixo(Vector3.new(0, 0, -ConfigTreino.DISTANCIA_DO_SPAWN))
+	return Vector3.new(0, 0, -ConfigTreino.DISTANCIA_DO_SPAWN), Vector3.new(1, 0, 0)
 end
 
 local function novaParte(nome: string, tamanho: Vector3, centro: Vector3, modelo: Model): Part
@@ -90,7 +93,12 @@ function TrainingDummyService:Start()
 	if #CollectionService:GetTagged(Alvos.TAG) > 0 then
 		return -- o place já tem alvos feitos no Studio
 	end
-	criarBoneco(pontoDoBoneco())
+	local centro, lado = centroDaFileira()
+	local quantidade = ConfigTreino.QUANTIDADE_BONECOS
+	for i = 1, quantidade do
+		local deslocamento = (i - (quantidade + 1) / 2) * ConfigTreino.ESPACO_ENTRE_BONECOS
+		criarBoneco(chaoAbaixo(centro + lado * deslocamento))
+	end
 end
 
 return TrainingDummyService

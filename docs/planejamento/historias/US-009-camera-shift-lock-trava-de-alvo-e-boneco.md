@@ -69,7 +69,7 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 **Feito pelo dev (2026-11-05):** o Davi pediu em 05/11 para começar o código.
 - **`CameraController`:** zoom limitado pelo Config e o modo combate. No modo combate, o mouse fica preso no centro, a câmera vai para o ombro e o personagem vira para onde a câmera aponta. Com um alvo travado, a câmera fica atrás do ombro olhando para o alvo, e o personagem vira para ele.
 - **`TargetController`:** travar escolhe o alvo vivo, no alcance, visível e mais perto do centro da câmera, desenha um contorno nele e liga o modo combate. A tecla de trocar passa para outro alvo. A trava solta quando o alvo morre, sai do alcance, fica sem visão por um tempo, quando se trava de novo ou quando o modo combate desliga.
-- **`TrainingDummyService`:** se o place não tiver nenhum modelo com a tag `Alvo`, cria um boneco de treino 20 studs à frente do SpawnLocation. Derrubado, ele volta depois de 5 s.
+- **`TrainingDummyService`:** se o place não tiver nenhum modelo com a tag `Alvo`, cria um boneco de treino 20 studs à frente do SpawnLocation. Derrubado, ele volta depois de 5 s. Desde a US-012 são 3 bonecos lado a lado (`Config/Treino.QUANTIDADE_BONECOS`).
 - **`Shared.Alvos`:** diz o que é alvo (Model com Humanoid e a tag) e onde ele está.
 - **`default.project.json`:** desliga o shift-lock padrão do Roblox (`EnableMouseLockOption`), porque o Shift é a corrida.
 
@@ -85,7 +85,7 @@ Aba [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-
 - Trocar de alvo alterna entre os dois mais perto do centro.
 
 **Para o Davi testar no Studio:**
-1. **Cenário 5:** dê Play. Um "Boneco de treino" aparece à frente do spawn, com o nome em cima.
+1. **Cenário 5:** dê Play. Os bonecos de treino aparecem à frente do spawn, com o nome em cima.
 2. **Cenário 1:** aperte Ctrl. O mouse some no centro, a câmera vai para o ombro direito e o personagem gira com a câmera. Ande com WASD olhando em volta, depois aperte Ctrl de novo para sair.
 3. **Cenário 2:** olhe para o boneco e aperte T (ou o botão do meio do mouse). Ele ganha um contorno amarelo, e a câmera e o personagem passam a segui-lo. Ande em círculo em volta dele.
 4. **Cenário 3:** aperte T de novo para soltar. Trave de novo e:

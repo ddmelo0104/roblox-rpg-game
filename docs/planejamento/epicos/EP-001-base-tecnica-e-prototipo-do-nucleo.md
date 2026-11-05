@@ -23,7 +23,7 @@ Substitui o escopo antigo (Fundação do Projeto): proposto em 04/11 e aprovado 
 **Dentro**
 1. **Fechar a fundação:** US-001 a US-004 e US-006 estão em revisão (falta o teste do Davi no Studio); a US-005 é a próxima.
 2. **Base de código do gameplay:** loader de Services e Controllers, Remotes com validação no servidor e `src/shared/Config/` tipado.
-3. **ADRs:** ADR-001 a ADR-003 já aceitos (04/11); escrever o ADR-009 (acerto com tolerância de lag) e o ADR-010 (validação de movimento).
+3. **ADRs:** ADR-001 a ADR-003 já aceitos (04/11). O [ADR-009](../../arquitetura/adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md) (acerto com margem de lag) e o [ADR-010](../../arquitetura/adr/ADR-010-validacao-de-movimento-no-servidor.md) (validação de movimento) foram propostos em 05/11 e esperam o aceite.
 4. **Protótipo do núcleo, no PC:** personagem, câmera em shift-lock com trava de alvo, corrida e pulo, esquiva, parry e 3 habilidades com energia e cooldown, contra um boneco de treino. Regras nas abas [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0d54cbd-810d), [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-709f) e [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9).
 5. **Spike de desempenho do terreno:** um pedaço de terreno realista com vegetação e água, medido num PC modesto e num celular fraco ([Mundo e Terreno](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f460e959-73a7)).
 
@@ -34,7 +34,7 @@ Substitui o escopo antigo (Fundação do Projeto): proposto em 04/11 e aprovado 
 ## Critérios de conclusão
 - [ ] US-001 a US-006 concluídas pelo Davi
 - [x] ADR-001 a ADR-003 aceitos (04/11, opção B nos três)
-- [ ] ADR-009 e ADR-010 escritos
+- [x] ADR-009 e ADR-010 escritos (propostos em 05/11; falta o aceite)
 - [ ] No PC, o protótipo roda com 2 jogadores (Test → 2 players) e o servidor recusa intenções inválidas (cooldown, energia, alcance)
 - [ ] Os valores de combate, movimento e câmera saem do protótipo para `src/shared/Config/`
 - [ ] As perguntas de combate, câmera e movimento que dependem do protótipo estão respondidas
@@ -80,3 +80,4 @@ O progresso está no [BACKLOG.md](../BACKLOG.md).
 - 2026-10-29: épico criado como Fundação do Projeto.
 - 2026-11-04: projeto passado para o Claude Code, no repositório público `ddmelo0104/roblox-rpg-game`. US-001, US-002, US-003, US-004 e US-006 implementadas pelo dev e em revisão.
 - 2026-11-05: escopo renovado para "Base técnica e protótipo do núcleo", aprovado pelo Davi. Histórias US-007 a US-014 criadas.
+- 2026-11-05: o Davi escolheu a espada longa e as 3 habilidades do protótipo. ADR-009 e ADR-010 propostos; US-012 implementada e em revisão.

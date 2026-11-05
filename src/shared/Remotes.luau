@@ -19,6 +19,8 @@ local NOME_PASTA = "Remotes"
 local LISTA: { string } = {
 	"RequestPing", -- US-005: exemplo de pedido validado
 	"RequestSprint", -- US-010: pedir para correr (true) ou parar (false)
+	"RequestAbility", -- US-012: usar uma habilidade (id, direção e, no golpe no alvo, o alvo travado)
+	"AbilityUsed", -- US-012: aviso do servidor a todos (quem usou, qual, de onde, quem atingiu e o dano)
 }
 
 local Remotes = {}

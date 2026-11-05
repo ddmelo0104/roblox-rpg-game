@@ -8,7 +8,6 @@
 	É só do cliente: o servidor sempre confere alvo, alcance e linha de visão nas habilidades (ADR-002).
 ]]
 
-local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -48,12 +47,7 @@ end
 
 -- Os modelos que podem ser travados: os com a tag de alvo e, se o Config deixar, os outros jogadores.
 local function candidatos(): { Model }
-	local lista: { Model } = {}
-	for _, instancia in CollectionService:GetTagged(Alvos.TAG) do
-		if instancia:IsA("Model") then
-			table.insert(lista, instancia)
-		end
-	end
+	local lista = Alvos.todos()
 	if ConfigCamera.TRAVA_PEGA_JOGADORES then
 		for _, outro in Players:GetPlayers() do
 			local personagem = outro.Character
@@ -71,10 +65,7 @@ local function temLinhaDeVisao(origem: Vector3, modelo: Model, destino: Vector3)
 	if personagem then
 		table.insert(ignorar, personagem)
 	end
-	local parametros = RaycastParams.new()
-	parametros.FilterType = Enum.RaycastFilterType.Exclude
-	parametros.FilterDescendantsInstances = ignorar
-	return Workspace:Raycast(origem, destino - origem, parametros) == nil
+	return Alvos.temLinhaDeVisao(origem, destino, ignorar)
 end
 
 -- O alvo vivo, no alcance, dentro do ângulo da câmera e visível, mais perto do centro da tela.
@@ -182,6 +173,11 @@ local function trocarAlvo()
 	if proximo then
 		travar(proximo)
 	end
+end
+
+-- O alvo travado agora, ou nil. Usado pelas habilidades (US-012).
+function TargetController.alvoAtual(): Model?
+	return alvo
 end
 
 function TargetController:Start()

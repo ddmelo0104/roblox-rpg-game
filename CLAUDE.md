@@ -16,9 +16,10 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared`.
 
 ## Estado atual (atualize quando mudar)
-- M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento: US-001 a US-010 em revisão, esperando o teste do Davi no Studio; US-011 a US-014 no backlog.
+- M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento: US-001 a US-010 e US-012 em revisão, esperando o teste do Davi no Studio; US-011, US-013 e US-014 no backlog.
+- O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/EspadaLonga.luau`).
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
-- ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três).
+- ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 já segue o ADR-009, e a US-011 espera o ADR-010.
 - O corte de MVP do M1 foi **aprovado** em 04/11/2026: só PC, região de Stardawn, dungeon solo, acampamentos para grupos de 2 a 4 e uma dungeon de grupo de teste (aba Visão do Jogo do doc). Os épicos do M1 (EP-002 a EP-012) foram **aprovados e criados** em 05/11; as histórias deles ainda não existem. Não comece nada de gameplay sem uma história aprovada.
 
 ## Regras (não quebre)

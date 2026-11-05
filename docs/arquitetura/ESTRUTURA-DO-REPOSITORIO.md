@@ -16,20 +16,22 @@ projeto-rpg/
     ├── server/               # → ServerScriptService.Server
     │   ├── Main.server.luau  # cria os Remotes e inicia os Services (Loader)
     │   ├── Rede.luau         # limite por segundo e validação de tudo que chega do cliente
-    │   └── Services/         # um Service por sistema: Ping, Movement, TrainingDummy…
+    │   └── Services/         # um Service por sistema: Combat, Energy, Movement, Ping, TrainingDummy…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
-    │   └── Controllers/      # câmera, trava de alvo, movimento, UI…
+    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, efeitos, HUD…
     └── shared/               # → ReplicatedStorage.Shared
         ├── Projeto.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers
         ├── Remotes.luau      # lista única dos Remotes
         ├── Validar.luau      # validadores puros do que vem do cliente
-        ├── Alvos.luau        # o que conta como alvo de combate
-        └── Config/           # números e teclas de tuning (Rede, Movimento, Camera, Treino…)
+        ├── Alvos.luau        # o que conta como alvo de combate, e a linha de visão
+        ├── Habilidades.luau  # tipos e contas da área das habilidades (cliente e servidor)
+        ├── Energia.luau      # onde o servidor publica a energia de cada jogador
+        └── Config/           # números e teclas de tuning (Rede, Movimento, Camera, Treino, Combate, EspadaLonga…)
 ```
 
-As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005, US-007 a US-010. As outras nascem com as histórias que precisarem delas:
+As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005, US-007 a US-010 e US-012. As outras nascem com as histórias que precisarem delas:
 
 | Pasta | Para quê |
 | --- | --- |

@@ -13,4 +13,9 @@ return table.freeze({
 
 	-- Distância, em studs, à frente do SpawnLocation (ou da origem, se não houver spawn).
 	DISTANCIA_DO_SPAWN = 20,
+
+	-- Bonecos lado a lado e studs entre os centros (US-012): 3 bonecos, para testar se o corte
+	-- frontal acerta 3 inimigos de uma vez.
+	QUANTIDADE_BONECOS = 3,
+	ESPACO_ENTRE_BONECOS = 4,
 })
