@@ -10,7 +10,7 @@ roblox-rpg-game/
 ├── README.md                 # setup e comandos
 ├── .claude/skills/           # skills do projeto: implementar-historia, nova-historia, novo-adr
 ├── .github/                  # CI e template de pull request
-├── tools/backlog.py          # gera docs/planejamento/BACKLOG.md
+├── tools/                    # backlog.py (gera o BACKLOG.md) e setup.cmd/.ps1/.sh (prepara o computador)
 ├── docs/                     # documentação de engenharia (o design está no Claude Docs)
 └── src/
     ├── server/               # → ServerScriptService.Server
