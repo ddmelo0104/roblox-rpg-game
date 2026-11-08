@@ -7,12 +7,18 @@ O **design do jogo** fica no Claude Docs, onde é editado e comentado. A **docum
 
 | Aba | O que tem |
 | --- | --- |
-| [Visão do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) | Pitch, público, loops, experiência desejada, monetização |
+| [Visão do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) | Pitch, público, loops, experiência desejada, monetização e o escopo aprovado do M1 |
 | [Pilares de Design](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#55c20d98-b305) | Os cinco princípios que filtram toda ideia |
 | [Sistemas](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#2bbf444e-c46a) | Índice dos sistemas, com o status de cada um |
 | [Progressão](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#31c067be-9c32) | GS, fama, maestria, raridade, tuning e ritmo |
 | [Zonas e Risco](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#117aa7d2-031b) | Cores, derrubado, saque total, viagem |
 | [Dungeons](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#1f67c338-4738) | Tipos, dungeon solo procedural, corrompidas |
+| [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0d54cbd-810d) | Combate híbrido, energia e cooldown, esquiva e parry |
+| [Armas e Armaduras](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#53e3dc55-5a40) | Armas iniciais, segunda mão e os três tipos de armadura |
+| [Câmera e Mira](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f5514f82-709f) | Terceira pessoa, shift-lock e trava de alvo |
+| [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9) | Andar, correr e pular no M1 |
+| [Mundo e Terreno](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f460e959-73a7) | Regiões, terreno realista, tamanho pela travessia e otimização |
+| [Facções](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#84a9d09f-f75b) | As três cidades, as facções e os brasões |
 | [Revisão 03/11](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#08849064-3647) | Revisão da Visão, proposta de MVP e épicos candidatos |
 
 ## Engenharia (este repositório)

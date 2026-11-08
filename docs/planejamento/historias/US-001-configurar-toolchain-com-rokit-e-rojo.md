@@ -8,7 +8,7 @@ epico: EP-001
 pontos: 2
 sprint:
 criado: 2026-10-29
-atualizado: 2026-11-04
+atualizado: 2026-11-08
 concluido_em:
 ---
 
@@ -44,4 +44,6 @@ concluido_em:
 ## Revisão / resultado
 **Feito pelo dev (2026-11-04):** `rokit.toml` com as quatro ferramentas em versões estáveis que funcionam juntas com o Rojo 7.4. O README traz a instalação do Rokit para Windows e para macOS/Linux. Rojo, Selene e StyLua nessas versões foram baixados e rodados no ambiente do dev.
 
-**Para o Davi testar:** siga "Preparar o computador" no README e confira os dois cenários. Passando, mude `status` para `concluido` e preencha `concluido_em`.
+**Atualização (2026-11-08):** a pedido do Davi, `tools/setup.cmd` (Windows) e `tools/setup.sh` (macOS) fazem sozinhos a preparação do README. Eles instalam o que faltar, geram o place e oferecem iniciar o `rojo serve`. O `setup.sh` foi testado no ambiente do dev, com um Rokit simulado. O `setup.ps1` não pôde ser executado lá, porque não há PowerShell.
+
+**Para o Davi testar:** rode o script de setup, ou siga o passo a passo manual de "Preparar o computador" no README e confira os dois cenários. Passando, mude `status` para `concluido` e preencha `concluido_em`.

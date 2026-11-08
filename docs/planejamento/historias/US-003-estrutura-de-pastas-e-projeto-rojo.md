@@ -23,7 +23,7 @@ concluido_em:
 **Cenário 1: script do servidor**
 - **Dado** o arquivo `src/server/Main.server.luau`
 - **Quando** eu der Play no Studio com o Rojo conectado
-- **Então** vejo `[Main] servidor ok` no Output, e o script está em `ServerScriptService.Server`
+- **Então** vejo `[Main] server ok` no Output, e o script está em `ServerScriptService.Server`
 
 **Cenário 2: módulo compartilhado**
 - **Dado** um ModuleScript em `src/shared`
@@ -35,7 +35,7 @@ concluido_em:
 
 ## Tarefas
 - [x] `default.project.json` mapeando as três pastas
-- [x] `src/server/Main.server.luau`, `src/client/Main.client.luau` e `src/shared/Projeto.luau`
+- [x] `src/server/Main.server.luau`, `src/client/Main.client.luau` e `src/shared/Project.luau`
 - [ ] Testar no Studio (cenários acima)
 
 ## Revisão / resultado
@@ -43,5 +43,5 @@ concluido_em:
 
 **Para o Davi testar:**
 1. `rojo serve` na pasta do projeto e *Connect* no plugin do Rojo.
-2. Play. O Output deve mostrar `[Main] servidor ok · Projeto RPG v0.0.1` e `[Main] cliente ok · Projeto RPG v0.0.1 · <seu nome>`.
+2. Play. O Output deve mostrar `[Main] server ok · Projeto RPG v0.0.1` e `[Main] client ok · Projeto RPG v0.0.1 · <seu nome>`.
 3. No Explorer, confira `ServerScriptService.Server.Main`, `StarterPlayer.StarterPlayerScripts.Client.Main` e `ReplicatedStorage.Shared.Projeto`.

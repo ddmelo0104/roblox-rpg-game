@@ -42,10 +42,16 @@ flowchart TB
 | **Persistência** | Servidor | Salvar e carregar o perfil do jogador |
 
 ## Decisões em aberto
-- [ ] Usar um framework, ou um *loader* simples do projeto, para iniciar Services e Controllers?
+- [ ] Usar um framework, ou um *loader* simples do projeto, para iniciar Services e Controllers? Proposta do dev, já implementada na US-007: o loader simples `src/shared/Loader.luau` (Init de todos, depois Start), fácil de trocar por um framework. Falta o Davi confirmar.
 - [ ] Persistência: DataStore puro ou uma biblioteca com *session locking*? (ADR-005, a escrever)
-- [ ] Rede: Remotes puros ou um wrapper tipado? (sai da US-005)
+- [ ] Rede: Remotes puros ou um wrapper tipado? (sai da US-005) Proposta do dev, já implementada na US-005: Remotes puros criados pelo servidor a partir da lista única em `src/shared/Remotes.luau`, e todo pedido passa por `src/server/Network.luau` (limite por segundo e validação). Falta o Davi confirmar.
 - [ ] Topologia do mundo: um place com tudo ou um place por zona? (ADR-004, a escrever)
 - [ ] Instâncias de dungeon: no mesmo servidor ou em *reserved servers*? (ADR-007, a escrever)
+- [ ] Itens como instâncias com `uid` gerado só no servidor, contra duplicação (ADR-006, a escrever)
+- [ ] Mercado entre servidores: armazenamento e transação atômica (ADR-008, a escrever, M2)
+- [ ] Detecção de acerto no servidor com tolerância de lag ([ADR-009](adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md), proposto em 05/11). Proposta: o servidor confere com as posições dele mais uma margem fixa no Config, já usada na US-012. Falta o Davi aceitar.
+- [ ] Validação de movimento no servidor, contra speed hack ([ADR-010](adr/ADR-010-validacao-de-movimento-no-servidor.md), proposto em 05/11). Proposta: conferência própria com margem e puxão de volta (US-011), e uma spike do Server Authority do Roblox antes do EP-002. Falta o Davi aceitar.
+
+**Jogadores por servidor:** o Roblox permite servidores de até 200 jogadores, mas no DevForum a sugestão prática para jogos com muito combate fica entre 50 e 100. Por isso "muitos jogadores" vale para o mundo, com vários servidores por zona, e não para um servidor só (ADR-004). Fontes: [Experience Join Improvements](https://devforum.roblox.com/t/experience-join-improvements-server-size-join-queues-and-social-slots-reservations/2294621) e [Is a 200 max player per server possible?](https://devforum.roblox.com/t/is-a-200-max-player-per-server-possible/3538720).
 
 A lista completa de ADRs, com o status de cada um, está no [BACKLOG.md](../planejamento/BACKLOG.md#decisões-adrs).
