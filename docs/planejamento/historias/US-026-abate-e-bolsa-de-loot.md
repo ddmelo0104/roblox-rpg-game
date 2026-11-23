@@ -67,7 +67,7 @@ Aba [Progressão](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#31c067be-9c3
 ## Revisão / resultado
 **Feito pelo dev (2026-11-23):**
 - **Crédito:** o `DamageService` anota quanta vida cada jogador tirou de cada alvo. Ganha o abate quem tirou pelo menos 10% (`Config/Loot.KILL_CREDIT_MIN_SHARE`).
-- **Sorteio:** 5% de chance de item no comum e 25% no elite. O tier e a raridade vêm do ponto de spawn (tier e sorte da zona).
+- **Sorteio:** 5% de chance de item no comum e 25% no elite. O tier e a raridade vêm do ponto de spawn (o tier e a sorte da zona, pelo atributo `Zone`).
 - **Bolsa:** brilha na cor do melhor item. Pegar move os itens um a um, sem `yield`; o que não cabe fica na bolsa (regra 6 e ADR-006).
 - **Tecla G:** a tecla de interagir com baús e bolsas virou G (`Config/Interface.INTERACT_KEY`), porque o E padrão do Roblox é tecla de habilidade. O baú de teste (US-020) também mudou.
 

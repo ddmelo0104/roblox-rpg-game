@@ -67,7 +67,8 @@ Aba [Zonas e Risco](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#117aa7d2-0
 **Feito pelo dev (2026-11-23):**
 - **Pontos de spawn:** toda parte com a tag `EnemySpawn` é um ponto de spawn, montado no Studio. Os atributos dizem o que nasce ali:
   - `Enemy`: o tipo (`BanditThug`, `BanditArcher` ou `BanditBomber`);
-  - `Count`, `Elite`, `Tier` e `Luck`;
+  - `Count`, `Elite` e `Tier`;
+  - `Zone` (`Blue`, `Yellow`, `Red` ou `Black`), que define a sorte do loot e, desde a US-029, o multiplicador de fama;
   - `RespawnTime` e `Radius`.
   O servidor deixa a parte invisível e sem colisão.
 - **Área de teste:** sem pontos de spawn no place, o servidor cria a fila de teste à esquerda do spawn.

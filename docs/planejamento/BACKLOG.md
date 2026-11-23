@@ -14,7 +14,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-002 · Personagem, câmera e controles (PC)](epicos/EP-002-personagem-camera-e-controles.md) | backlog | must | M1 | sem histórias |
 | [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | em-andamento | must | M1 | 0/4 histórias · 0/16 pts |
 | [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | em-andamento | must | M1 | 0/5 histórias · 0/19 pts |
-| [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | backlog | must | M1 | sem histórias |
+| [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | em-andamento | must | M1 | 0/4 histórias · 0/12 pts |
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | backlog | must | M1 | sem histórias |
 | [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | backlog | must | M1 | sem histórias |
 | [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
@@ -53,6 +53,10 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-026 · Crédito por dano, abate e bolsa de loot](historias/US-026-abate-e-bolsa-de-loot.md) | revisao | EP-008 | must | 5 |
 | [US-027 · Tipos de inimigo, elite, escala por tier e pontos de spawn](historias/US-027-tipos-de-inimigo-elite-e-tier.md) | revisao | EP-008 | must | 3 |
 | [US-028 · Inimigo que explode ao morrer](historias/US-028-inimigo-que-explode-ao-morrer.md) | revisao | EP-008 | must | 2 |
+| [US-029 · Fama por abate, dividida pelo que o jogador veste](historias/US-029-fama-por-abate.md) | revisao | EP-005 | must | 5 |
+| [US-030 · Especialização e maestria aumentam o GS](historias/US-030-especializacao-e-maestria-no-gs.md) | revisao | EP-005 | must | 2 |
+| [US-031 · Maestria necessária para equipar tiers](historias/US-031-maestria-para-equipar-tiers.md) | revisao | EP-005 | must | 2 |
+| [US-032 · Pop-up de fama e tela de maestria (PC)](historias/US-032-pop-up-de-fama-e-tela-de-maestria.md) | revisao | EP-005 | must | 3 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 
