@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-008
 titulo: Inimigos, IA e facções
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-008 · Inimigos, IA e facções
@@ -50,6 +50,17 @@ Num playtest, as lutas não parecem repetidas (Pilar 2).
 As facções e os temas das zonas de Stardawn estão na aba [Dungeons](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#1f67c338-4738).
 
 ## Histórias
+Criadas pelo dev em 23/11, por delegação do Davi. As facções das zonas e as dungeons ficam para o EP-007 e o EP-010; aqui está a facção de teste, Bandidos.
+
+| História | Depende de |
+| --- | --- |
+| [US-025 · Inimigo com IA: perceber, perseguir, atacar e voltar](../historias/US-025-inimigo-com-ia.md) | US-013 |
+| [US-026 · Crédito por dano, abate e bolsa de loot](../historias/US-026-abate-e-bolsa-de-loot.md) | US-025, US-020 |
+| [US-027 · Tipos de inimigo, elite, escala por tier e pontos de spawn](../historias/US-027-tipos-de-inimigo-elite-e-tier.md) | US-025 |
+| [US-028 · Inimigo que explode ao morrer](../historias/US-028-inimigo-que-explode-ao-morrer.md) | US-027 |
+
+O critério "cada zona do M1 tem inimigos do tier dela" fecha com o EP-007: as zonas recebem pontos de spawn (`EnemySpawn`) com o tier delas.
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico

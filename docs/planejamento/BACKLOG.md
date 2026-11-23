@@ -17,7 +17,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | backlog | must | M1 | sem histórias |
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | backlog | must | M1 | sem histórias |
 | [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | backlog | must | M1 | sem histórias |
-| [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | backlog | must | M1 | sem histórias |
+| [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
 | [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | backlog | must | M1 | sem histórias |
 | [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | backlog | must | M1 | sem histórias |
 | [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | backlog | must | M1 | sem histórias |
@@ -49,6 +49,10 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-022 · Kits do arco, da besta e do cajado de fogo](historias/US-022-kits-do-arco-besta-e-cajado.md) | revisao | EP-003 | must | 5 |
 | [US-023 · Ataque básico com mira assistida](historias/US-023-ataque-basico-com-mira-assistida.md) | revisao | EP-003 | must | 3 |
 | [US-024 · Habilidade do peitoral e esquiva pelas botas](historias/US-024-peitoral-e-botas-no-kit.md) | revisao | EP-003 | must | 5 |
+| [US-025 · Inimigo com IA: perceber, perseguir, atacar e voltar](historias/US-025-inimigo-com-ia.md) | revisao | EP-008 | must | 5 |
+| [US-026 · Crédito por dano, abate e bolsa de loot](historias/US-026-abate-e-bolsa-de-loot.md) | revisao | EP-008 | must | 5 |
+| [US-027 · Tipos de inimigo, elite, escala por tier e pontos de spawn](historias/US-027-tipos-de-inimigo-elite-e-tier.md) | revisao | EP-008 | must | 3 |
+| [US-028 · Inimigo que explode ao morrer](historias/US-028-inimigo-que-explode-ao-morrer.md) | revisao | EP-008 | must | 2 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 

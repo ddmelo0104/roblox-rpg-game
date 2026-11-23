@@ -29,7 +29,7 @@ O baú de teste é uma ferramenta do protótipo, como os bonecos. O sorteio vale
 ## Critérios de aceite
 **Cenário 1: abrir o baú**
 - **Dado** o baú de teste ao lado do spawn
-- **Quando** o jogador segura E nele
+- **Quando** o jogador segura G nele
 - **Então** um item sorteado entra na mochila e o nome dele aparece
 
 **Cenário 2: sorteio**
@@ -63,13 +63,13 @@ O baú de teste é uma ferramenta do protótipo, como os bonecos. O sorteio vale
   - O tier sai 75% no tier da zona, 20% um abaixo e 5% um acima, dentro de T1 a T4.
   - O item é sorteado no catálogo, todos com a mesma chance. O `Random` vem de fora, para repetir com semente.
 - **`ChestService`:**
-  - Toda parte com a tag `LootChest` vira um baú: ProximityPrompt "Abrir", segurando 0,3 s.
+  - Toda parte com a tag `LootChest` vira um baú: ProximityPrompt "Abrir", segurando G por 0,3 s (o E padrão do Roblox é tecla de habilidade; mudado em 23/11 com a US-026).
   - O servidor confere a distância (12 studs) e espera 1 s entre aberturas.
   - O item sorteado vai para a mochila, e o aviso "Baú: <item>" aparece.
   - Se o place não tiver baús, aparece um baú de teste à esquerda do spawn.
 
 **Para o Davi testar no Studio:**
-1. **Abrir:** chegue perto do baú marrom à esquerda do spawn e segure E. Um item entra na mochila, e o nome dele aparece no HUD.
+1. **Abrir:** chegue perto do baú marrom à esquerda do spawn e segure G. Um item entra na mochila, e o nome dele aparece no HUD.
 2. **Sorteio:** abra o baú várias vezes. Quase tudo sai Comum e Incomum, com Raros às vezes. Como no Albion, Épico e Lendário são raros.
 
 Passando, mude `status` para `concluido` e preencha `concluido_em`.

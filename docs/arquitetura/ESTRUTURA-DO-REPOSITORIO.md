@@ -17,7 +17,9 @@ roblox-rpg-game/
     │   ├── Main.server.luau  # cria os Remotes e inicia os Services (Loader)
     │   ├── Network.luau      # limite por segundo e validação de tudo que chega do cliente
     │   ├── SparringDummy.luau # comportamento do boneco que ataca (US-013)
-    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Defense, Energy, Inventory, Movement, MovementValidation, Ping, Stats, Status, TrainingDummy…
+    │   ├── EnemyBrain.luau   # a IA de um inimigo: perceber, perseguir, atacar e voltar (US-025)
+    │   ├── EnemyBody.luau    # o corpo provisório dos inimigos (US-025)
+    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Damage, Defense, Enemy, Energy, Inventory, LootBag, Movement, MovementValidation, Ping, Stats, Status, TrainingDummy…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
@@ -33,10 +35,11 @@ roblox-rpg-game/
         ├── Defense.luau      # tipos e conta pura da esquiva e do parry
         ├── Items.luau        # tipos de item e contas de GS e atributos
         ├── Weapons.luau      # o kit de cada arma (ataque básico e 3 habilidades)
+        ├── Enemies.luau      # regras puras dos inimigos: tipos, escala por tier, elite e crédito do abate
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:

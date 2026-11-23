@@ -31,7 +31,8 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
     - ataque básico com mira assistida no botão esquerdo;
     - peitoral na tecla C;
     - esquiva pelas botas.
-  - Próximo: o EP-008, inimigos.
+  - EP-008 (inimigos) com US-025 a US-028 em revisão: IA no servidor, bolsa de loot com crédito por dano, tipos, elite, tier, pontos de spawn (`EnemySpawn`) e o bandido que explode ao morrer.
+  - Próximo: o EP-005, fama, maestria e especialização.
 - O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.
