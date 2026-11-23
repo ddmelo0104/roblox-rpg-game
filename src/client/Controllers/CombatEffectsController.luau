@@ -13,10 +13,10 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Abilities = require(Shared:WaitForChild("Abilities") :: ModuleScript)
 local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
 local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
-local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
+local ArmorConfig = require(Shared:WaitForChild("Config"):WaitForChild("Armor") :: ModuleScript)
+local Weapons = require(Shared:WaitForChild("Weapons") :: ModuleScript)
 
 -- Visual only: how long each effect stays on screen and the color of each ability shape.
 local AREA_DURATION = 0.35
@@ -27,7 +27,10 @@ local SHAPE_COLORS: { [string]: Color3 } = {
 	Front = Color3.fromRGB(255, 220, 120),
 	Target = Color3.fromRGB(255, 120, 90),
 	Around = Color3.fromRGB(140, 200, 255),
+	Ground = Color3.fromRGB(255, 150, 60),
 }
+local CHEST_TEXT_COLOR = Color3.fromRGB(150, 255, 170)
+local BASIC_ATTACK_ID = "BasicAttack"
 
 local CombatEffectsController = {}
 
@@ -70,11 +73,20 @@ local function fadeOut(part: BasePart)
 	end)
 end
 
--- Draws the ability from `origin` (position and direction of whoever used it), at waist height.
--- Returns the drawn part, so whoever predicted it can remove it if the server rejects the request.
-function CombatEffectsController.draw(ability: any, origin: CFrame, target: Model?): BasePart?
+-- Draws the ability from `origin` (position and direction of whoever used it), at waist height; a
+-- Ground ability is drawn at `point`. Returns the drawn part, so whoever predicted it can remove it
+-- if the server rejects the request. A "Self" ability (the chest's) draws nothing.
+function CombatEffectsController.draw(ability: any, origin: CFrame, target: Model?, point: Vector3?): BasePart?
+	if ability.shape == "Self" then
+		return nil
+	end
 	local part = newPart(SHAPE_COLORS[ability.shape] or Color3.new(1, 1, 1))
-	if ability.shape == "Front" then
+	if ability.shape == "Ground" then
+		local center = point or origin.Position
+		part.Shape = Enum.PartType.Cylinder
+		part.Size = Vector3.new(0.2, ability.radius * 2, ability.radius * 2)
+		part.CFrame = CFrame.new(center) * CFrame.Angles(0, 0, math.rad(90))
+	elseif ability.shape == "Front" then
 		part.Size = Vector3.new(ability.width, 0.2, ability.range)
 		part.CFrame = origin * CFrame.new(0, 0, -ability.range / 2)
 	elseif ability.shape == "Around" then
@@ -134,15 +146,37 @@ function CombatEffectsController.showDamage(target: Model, damage: number)
 	CombatEffectsController.showText(target, tostring(math.floor(damage + 0.5)), DAMAGE_COLOR, 24)
 end
 
--- The server's notice: someone used an ability from `origin` and hit `hits`.
-local function onAbilityUsed(user: Player, id: string, origin: CFrame, hits: { Model }, damage: number)
-	local ability = Abilities.byId(LongswordConfig, id)
-	if not ability then
-		return
+-- The chest ability with this id, or nil.
+local function chestAbility(id: string): any
+	for _, chest in ArmorConfig.CHEST_ABILITIES do
+		if chest.id == id then
+			return chest
+		end
 	end
-	-- Whoever used it already drew it (prediction); the others draw it now.
-	if user ~= player then
-		CombatEffectsController.draw(ability, origin, hits[1])
+	return nil
+end
+
+-- The server's notice: someone used an ability (or a basic attack) from `origin` and hit `hits`.
+local function onAbilityUsed(user: Player, id: string, origin: CFrame, hits: { Model }, damage: number, point: Vector3?)
+	if id == BASIC_ATTACK_ID then
+		-- The basic attack is not predicted, so everyone draws it now: a line to the target.
+		CombatEffectsController.draw({ shape = "Target" }, origin, hits[1])
+	else
+		local chest = chestAbility(id)
+		if chest then
+			if user.Character then
+				CombatEffectsController.showText(user.Character, chest.name, CHEST_TEXT_COLOR, 20)
+			end
+			return
+		end
+		local ability = Weapons.abilityById(id)
+		if not ability then
+			return
+		end
+		-- Whoever used it already drew it (prediction); the others draw it now.
+		if user ~= player then
+			CombatEffectsController.draw(ability, origin, hits[1], point)
+		end
 	end
 	for _, target in hits do
 		CombatEffectsController.showDamage(target, damage)

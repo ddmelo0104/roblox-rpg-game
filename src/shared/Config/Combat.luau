@@ -24,13 +24,10 @@ return table.freeze({
 	MAX_HIT_HEIGHT = 5,
 
 	-- US-013: defense. Dodge and parry cost no energy: without energy, the defense remains (Combat tab).
-	-- Dodge: a short dash with invulnerability. In the game the boots will define it; the prototype
-	-- has one dodge only (ESQUIVA_INVULNERAVEL and ESQUIVA_COOLDOWN in the design doc). Provisional.
+	-- Dodge: a short dash with invulnerability. Distance, invulnerability and cooldown come from the
+	-- boots (Config/Armor.BOOTS_DODGES, US-024; ESQUIVA_INVULNERAVEL and ESQUIVA_COOLDOWN in the doc).
 	DODGE_KEY = Enum.KeyCode.F,
-	DODGE_DISTANCE = 12, -- studs
 	DODGE_DURATION = 0.25, -- seconds the dash lasts
-	DODGE_INVULNERABLE_TIME = 0.35, -- seconds
-	DODGE_COOLDOWN = 2, -- seconds
 
 	-- Parry: a short window that negates a melee hit (PARRY_JANELA in the design doc). A parry that
 	-- catches no hit leaves the player vulnerable: no dodge or parry for PARRY_MISS_LOCKOUT seconds.

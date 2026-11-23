@@ -62,6 +62,15 @@ function EnergyService.spend(player: Player, cost: number): boolean
 	return true
 end
 
+-- Gives energy back to the player, up to the max (the light chest's Focus, US-024).
+function EnergyService.restore(player: Player, amount: number)
+	local current = energy[player]
+	if current then
+		energy[player] = math.min(CombatConfig.MAX_ENERGY, current + amount)
+		publish(player)
+	end
+end
+
 function EnergyService:Start()
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	for _, player in Players:GetPlayers() do

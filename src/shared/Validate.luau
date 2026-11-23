@@ -69,6 +69,14 @@ function Validate.shortString(value: any, maxLength: number): (boolean, string?)
 	return true, nil
 end
 
+-- Nothing (nil) or a real Vector3 position (no NaN or infinite components, not absurdly far away).
+function Validate.pointOrNil(value: any): (boolean, string?)
+	if value == nil then
+		return true, nil
+	end
+	return Validate.vector(value, 0, 1e6)
+end
+
 -- Nothing (nil) or an Instance. The caller checks class, tag and distance.
 function Validate.instanceOrNil(value: any): (boolean, string?)
 	if value == nil or typeof(value) == "Instance" then

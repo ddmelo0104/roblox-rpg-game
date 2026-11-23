@@ -19,7 +19,8 @@ local FOLDER_NAME = "Remotes"
 local LIST: { string } = {
 	"RequestPing", -- US-005: example of a validated request
 	"RequestSprint", -- US-010: ask to sprint (true) or to stop (false)
-	"RequestAbility", -- US-012: use an ability (id, direction and, for the target strike, the locked target)
+	"RequestAbility", -- US-012: use an ability (id, direction, the locked target and, for Ground, the point)
+	"RequestBasicAttack", -- US-023: basic attack (the locked target, if any; the server assists the aim)
 	"AbilityUsed", -- US-012: server notice to everyone (who used which ability, from where, who was hit, damage)
 	"RequestDodge", -- US-013: dodge (the client dashes on its own; the server opens the invulnerability)
 	"RequestParry", -- US-013: open the parry window

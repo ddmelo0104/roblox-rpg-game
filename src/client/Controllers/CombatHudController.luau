@@ -21,7 +21,7 @@ local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
 local CombatController = require(script.Parent.CombatController)
 local DefenseController = require(script.Parent.DefenseController)
 local Notices = require(script.Parent.Parent.Notices)
-local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
+local InventoryController = require(script.Parent.InventoryController)
 
 -- Visual only: sizes (in pixels), how long a notice stays on screen, and colors.
 local SLOT_SIZE = 64
@@ -54,6 +54,8 @@ type Slot = {
 }
 
 type Hud = {
+	bar: Frame,
+	slotsSignature: string,
 	energyFill: Frame,
 	energyText: TextLabel,
 	notice: TextLabel,
@@ -65,10 +67,11 @@ local CombatHudController = {}
 
 local player = Players.LocalPlayer
 
--- The abilities of the weapon, then the two defense actions.
+-- The abilities of the weapon and of the chest worn now (US-021, US-024), then the two defense
+-- actions.
 local function slotSpecs(): { SlotSpec }
 	local specs: { SlotSpec } = {}
-	for _, ability in LongswordConfig do
+	for _, ability in CombatController.currentAbilities() do
 		table.insert(specs, {
 			id = ability.id,
 			keyLabel = ability.key.Name,
@@ -83,7 +86,7 @@ local function slotSpecs(): { SlotSpec }
 			end,
 		})
 	end
-	for _, action in DefenseController.ACTIONS do
+	for _, action in DefenseController.actions() do
 		table.insert(specs, {
 			id = action.id,
 			keyLabel = action.keyLabel,
@@ -97,6 +100,15 @@ local function slotSpecs(): { SlotSpec }
 		})
 	end
 	return specs
+end
+
+-- A text that changes when the list of slots changes (another weapon or another chest).
+local function signatureOf(specs: { SlotSpec }): string
+	local parts = {}
+	for _, spec in specs do
+		table.insert(parts, `{spec.id}:{spec.cooldown}`)
+	end
+	return table.concat(parts, ",")
 end
 
 local function newLabel(name: string, textSize: number, parent: Instance): TextLabel
@@ -160,13 +172,10 @@ local function createHud(): Hud
 	gui.Name = "CombatHud"
 	gui.ResetOnSpawn = false
 
-	local specs = slotSpecs()
-	local count = #specs
 	local bar = Instance.new("Frame")
 	bar.Name = "Bar"
 	bar.AnchorPoint = Vector2.new(0.5, 1)
 	bar.Position = UDim2.new(0.5, 0, 1, -20)
-	bar.Size = UDim2.fromOffset(count * SLOT_SIZE + (count - 1) * GAP, ENERGY_BAR_HEIGHT + GAP + SLOT_SIZE)
 	bar.BackgroundTransparency = 1
 	bar.Parent = gui
 
@@ -205,19 +214,38 @@ local function createHud(): Hud
 	inCombat.Text = IN_COMBAT_TEXT
 	inCombat.Visible = false
 
-	local slots: { Slot } = {}
-	for index, spec in specs do
-		table.insert(slots, newSlot(spec, index, bar))
-	end
-
 	gui.Parent = player:WaitForChild("PlayerGui")
 	return {
+		bar = bar,
+		slotsSignature = "",
 		energyFill = energyFill,
 		energyText = energyText,
 		notice = notice,
 		inCombat = inCombat,
-		slots = slots,
+		slots = {},
 	}
+end
+
+-- Rebuilds the slots when the kit changes (another weapon, chest or boots), and resizes the bar.
+local function rebuildSlots(hud: Hud)
+	local specs = slotSpecs()
+	local signature = signatureOf(specs)
+	if signature == hud.slotsSignature then
+		return
+	end
+	hud.slotsSignature = signature
+	for _, slot in hud.slots do
+		local frame = slot.shade.Parent
+		if frame then
+			frame:Destroy()
+		end
+	end
+	hud.slots = {}
+	for index, spec in specs do
+		table.insert(hud.slots, newSlot(spec, index, hud.bar))
+	end
+	local count = math.max(#specs, 1)
+	hud.bar.Size = UDim2.fromOffset(count * SLOT_SIZE + (count - 1) * GAP, ENERGY_BAR_HEIGHT + GAP + SLOT_SIZE)
 end
 
 local function update(hud: Hud)
@@ -251,6 +279,10 @@ function CombatHudController:Start()
 	end)
 
 	local hud = createHud()
+	rebuildSlots(hud)
+	InventoryController.changed:Connect(function()
+		rebuildSlots(hud)
+	end)
 	RunService.RenderStepped:Connect(function()
 		update(hud)
 	end)

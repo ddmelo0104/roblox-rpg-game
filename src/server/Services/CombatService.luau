@@ -1,11 +1,13 @@
 --!strict
 --[[
 	CombatService.luau
-	Abilities of the prototype's longsword (US-012, Combat and Abilities tab). The client only asks
-	("front slash in this direction", "target strike on this locked target"). The server checks the
+	Abilities and basic attacks (US-012, US-021 to US-024, Combat and Abilities tab). The kit comes
+	from the equipment: the weapon gives the basic attack and 3 abilities, and the chest gives one
+	more ability. The client only asks ("this ability in this direction", "on this locked target",
+	"on this point"); the server checks that the ability belongs to what the player wears, then the
 	cooldown, target, range, line of sight and energy, works out who was hit with the math in
 	Shared.Abilities and the lag margin (ADR-009), applies the damage and tells every client.
-	Only models with the target tag take damage: PvP depends on the zone rules, which do not exist yet.
+	Only models with the target tag take damage: PvP depends on the zone rules (EP-007).
 ]]
 
 local Players = game:GetService("Players")
@@ -13,38 +15,47 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Abilities = require(ReplicatedStorage.Shared.Abilities)
+local ArmorConfig = require(ReplicatedStorage.Shared.Config.Armor)
 local CameraConfig = require(ReplicatedStorage.Shared.Config.Camera)
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
-local LongswordConfig = require(ReplicatedStorage.Shared.Config.Longsword)
+local Items = require(ReplicatedStorage.Shared.Items)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local Validate = require(ReplicatedStorage.Shared.Validate)
+local Weapons = require(ReplicatedStorage.Shared.Weapons)
 local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
 local EnergyService = require(script.Parent.EnergyService)
+local InventoryService = require(script.Parent.InventoryService)
 local StatsService = require(script.Parent.StatsService)
 
 type Ability = Abilities.Ability
 type RejectReason = Abilities.RejectReason
 
+-- Id of the basic attack in the AbilityUsed notice.
+local BASIC_ATTACK_ID = "BasicAttack"
+
 local CombatService = {}
 
--- The prototype's weapon; stops with a clear message if a field in the Config is wrong.
-local ABILITIES = Abilities.validate(LongswordConfig, "Config/Longsword")
-
--- Ids the client may request.
+-- Every kit is checked on start; a wrong field in a weapon's Config stops with a clear message.
 local IDS: { string } = {}
-for _, ability in ABILITIES do
-	table.insert(IDS, ability.id)
+for weaponId, kit in Weapons.all() do
+	for _, ability in Abilities.validate(kit.ABILITIES, `Config/{weaponId}`) do
+		table.insert(IDS, ability.id)
+	end
+end
+for _, chestAbility in ArmorConfig.CHEST_ABILITIES do
+	table.insert(IDS, chestAbility.id)
 end
 
--- Server time at which each ability of each player is ready again.
+-- Server time at which each ability of each player is ready again, and the next basic attack.
 local readyAt: { [Player]: { [string]: number } } = {}
+local basicReadyAt: { [Player]: number } = {}
 
 local requestEvent = Remotes.event("RequestAbility")
 local usedEvent = Remotes.event("AbilityUsed")
 
-local function validateRequest(id: any, direction: any, target: any): (boolean, string?)
+local function validateRequest(id: any, direction: any, target: any, point: any): (boolean, string?)
 	local ok, reason = Validate.oneOf(id, IDS)
 	if not ok then
 		return false, reason
@@ -53,7 +64,11 @@ local function validateRequest(id: any, direction: any, target: any): (boolean, 
 	if not ok then
 		return false, reason
 	end
-	return Validate.instanceOrNil(target)
+	ok, reason = Validate.instanceOrNil(target)
+	if not ok then
+		return false, reason
+	end
+	return Validate.pointOrNil(point)
 end
 
 local function readyTimesOf(player: Player): { [string]: number }
@@ -154,15 +169,75 @@ local function applyDamage(hits: { Model }, damage: number): boolean
 	return knockedDown
 end
 
-local function useAbility(player: Player, id: string, direction: Vector3, requestedTarget: Instance?)
-	local ability = Abilities.byId(ABILITIES, id)
+-- The living targets within `radius` of `point` (a Ground ability).
+local function targetsAroundPoint(point: Vector3, radius: number): { Model }
+	local hits: { Model } = {}
+	for _, target in Targets.all() do
+		local position = Targets.position(target)
+		if
+			position
+			and Targets.isAlive(target)
+			and Abilities.isInRadius(point, position, radius, CombatConfig.LAG_MARGIN, CombatConfig.MAX_HIT_HEIGHT)
+		then
+			table.insert(hits, target)
+		end
+	end
+	return hits
+end
+
+-- The kit of the weapon the player wears, or nil.
+local function kitOf(player: Player): any
+	local weapon = InventoryService.equipped(player).Weapon
+	return Weapons.kit(if weapon then weapon.itemId else nil)
+end
+
+-- The chest ability (US-024): energy, healing or resistance for the player.
+local function useChestAbility(player: Player, chestAbility: any, humanoid: Humanoid, root: BasePart, now: number)
+	local readyTimes = readyTimesOf(player)
+	if now < (readyTimes[chestAbility.id] or 0) then
+		respond(player, chestAbility.id, "OnCooldown")
+		return
+	end
+	if not EnergyService.spend(player, chestAbility.energyCost) then
+		respond(player, chestAbility.id, "NoEnergy")
+		return
+	end
+	if chestAbility.effect == "RestoreEnergy" then
+		EnergyService.restore(player, chestAbility.amount)
+	elseif chestAbility.effect == "Heal" then
+		humanoid.Health = math.min(humanoid.MaxHealth, humanoid.Health + humanoid.MaxHealth * chestAbility.amount)
+	elseif chestAbility.effect == "Resistance" then
+		StatsService.addResistance(player, chestAbility.amount, chestAbility.duration)
+	end
+	local stats = StatsService.of(player)
+	readyTimes[chestAbility.id] = now + chestAbility.cooldown * stats.cooldownMultiplier
+	respond(player, chestAbility.id, nil)
+	usedEvent:FireAllClients(player, chestAbility.id, root.CFrame, {}, 0, nil)
+end
+
+local function useAbility(player: Player, id: string, direction: Vector3, requestedTarget: Instance?, point: Vector3?)
 	local humanoid, root = partsOf(player)
-	if not ability or not humanoid or not root or humanoid.Health <= 0 then
+	if not humanoid or not root or humanoid.Health <= 0 then
 		respond(player, id, "NoCharacter")
 		return
 	end
-
 	local now = Workspace:GetServerTimeNow()
+
+	-- The chest ability, if the request is for the chest the player wears.
+	local chestAbility = Items.chestAbilityOf(InventoryService.equipped(player))
+	if chestAbility and chestAbility.id == id then
+		useChestAbility(player, chestAbility, humanoid, root, now)
+		return
+	end
+
+	-- Otherwise it must be an ability of the weapon the player wears.
+	local kit = kitOf(player)
+	local ability: Ability? = if kit then Abilities.byId(kit.ABILITIES, id) else nil
+	if not ability then
+		respond(player, id, "NoWeapon")
+		return
+	end
+
 	local readyTimes = readyTimesOf(player)
 	if now < (readyTimes[id] or 0) then
 		respond(player, id, "OnCooldown")
@@ -183,6 +258,17 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 		end
 		lockedTarget = target
 		forward = Abilities.flatDirection((Targets.position(target) or origin) - origin) or forward
+	elseif ability.shape == "Ground" then
+		-- The point must be within the ability's range (with the lag margin).
+		if not point then
+			respond(player, id, "InvalidTarget")
+			return
+		end
+		local margin = CombatConfig.LAG_MARGIN
+		if not Abilities.isInRadius(origin, point, ability.range, margin, CombatConfig.MAX_HIT_HEIGHT * 2) then
+			respond(player, id, "OutOfRange")
+			return
+		end
 	end
 
 	if not EnergyService.spend(player, ability.energyCost) then
@@ -193,7 +279,10 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 	-- The equipment scales the damage and shortens the cooldown (US-018).
 	local stats = StatsService.of(player)
 	local damage = ability.damage * stats.damageMultiplier
-	local hits = if lockedTarget then { lockedTarget } else targetsInArea(ability, origin, forward)
+	local hits = if lockedTarget
+		then { lockedTarget }
+		elseif ability.shape == "Ground" and point then targetsAroundPoint(point, ability.radius)
+		else targetsInArea(ability, origin, forward)
 	local knockedDown = applyDamage(hits, damage)
 	if #hits > 0 then
 		CombatStateService.mark(player)
@@ -203,11 +292,70 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 		then now
 		else now + ability.cooldown * stats.cooldownMultiplier
 	respond(player, id, nil)
-	usedEvent:FireAllClients(player, id, CFrame.lookAt(origin, origin + forward), hits, damage)
+	usedEvent:FireAllClients(player, id, CFrame.lookAt(origin, origin + forward), hits, damage, point)
+end
+
+-- The basic attack (US-023): no energy; it hits the locked target if it is valid and in reach,
+-- otherwise the nearest target in a cone in front of the player (aim assist).
+local function basicAttack(player: Player, requestedTarget: Instance?)
+	local humanoid, root = partsOf(player)
+	local kit = kitOf(player)
+	if not humanoid or not root or humanoid.Health <= 0 or not kit then
+		return
+	end
+	local now = Workspace:GetServerTimeNow()
+	if now < (basicReadyAt[player] or 0) then
+		return
+	end
+	local basic = kit.BASIC_ATTACK
+	local origin = root.Position
+	local eye = eyeOf(origin)
+	local ignore = nonBlocking()
+	local margin, maxHeight = CombatConfig.LAG_MARGIN, CombatConfig.MAX_HIT_HEIGHT
+
+	local function reachable(target: Model): boolean
+		local position = Targets.position(target)
+		return position ~= nil
+			and Targets.isAlive(target)
+			and Abilities.isInRadius(origin, position, basic.range, margin, maxHeight)
+			and Targets.hasLineOfSight(eye, position, ignore)
+	end
+
+	local target: Model? = nil
+	if requestedTarget and Targets.isTarget(requestedTarget) and reachable(requestedTarget :: Model) then
+		target = requestedTarget :: Model
+	else
+		local forward = Abilities.flatDirection(root.CFrame.LookVector) or Vector3.new(0, 0, -1)
+		local bestDistance = math.huge
+		for _, candidate in Targets.all() do
+			local position = Targets.position(candidate)
+			if
+				position
+				and Abilities.isInCone(origin, forward, position, basic.range + margin, basic.coneAngle, maxHeight)
+				and reachable(candidate)
+			then
+				local distance = (position - origin).Magnitude
+				if distance < bestDistance then
+					target = candidate
+					bestDistance = distance
+				end
+			end
+		end
+	end
+	if not target then
+		return
+	end
+
+	basicReadyAt[player] = now + basic.interval
+	local damage = basic.damage * StatsService.of(player).damageMultiplier
+	applyDamage({ target }, damage)
+	CombatStateService.mark(player)
+	usedEvent:FireAllClients(player, BASIC_ATTACK_ID, root.CFrame, { target }, damage, nil)
 end
 
 function CombatService:Start()
 	Network.onReceive("RequestAbility", validateRequest, useAbility)
+	Network.onReceive("RequestBasicAttack", Validate.instanceOrNil, basicAttack)
 
 	-- AbilityUsed is a server notice only. Listening and ignoring it avoids a queue of events with no
 	-- handler if a client fires it.
@@ -215,6 +363,7 @@ function CombatService:Start()
 
 	Players.PlayerRemoving:Connect(function(player)
 		readyAt[player] = nil
+		basicReadyAt[player] = nil
 	end)
 end
 

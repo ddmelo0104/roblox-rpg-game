@@ -8,6 +8,7 @@
 ]]
 
 local Config = script.Parent:WaitForChild("Config")
+local ArmorConfig = require(Config:WaitForChild("Armor") :: ModuleScript)
 local ItemsConfig = require(Config:WaitForChild("Items") :: ModuleScript)
 local ProgressionConfig = require(Config:WaitForChild("Progression") :: ModuleScript)
 
@@ -101,6 +102,25 @@ function Items.characterStats(equipped: Equipped): Stats
 		resistance = math.min(resistance, ItemsConfig.MAX_RESISTANCE),
 		cooldownMultiplier = math.max(1 - cooldownReduction, ItemsConfig.MIN_COOLDOWN_MULTIPLIER),
 	}
+end
+
+-- The armor type of what is worn in `slot`, or nil.
+local function armorTypeIn(equipped: Equipped, slot: string): string?
+	local record = equipped[slot]
+	local definition = if record then Items.definition(record.itemId) else nil
+	return if definition then definition.armorType else nil
+end
+
+-- The chest ability of what the character wears (US-024), or nil without a chest.
+function Items.chestAbilityOf(equipped: Equipped): any
+	local armorType = armorTypeIn(equipped, "Chest")
+	return if armorType then ArmorConfig.CHEST_ABILITIES[armorType] else nil
+end
+
+-- The dodge given by the boots (US-024); without boots, the default one.
+function Items.dodgeOf(equipped: Equipped): any
+	local armorType = armorTypeIn(equipped, "Feet") or ArmorConfig.DEFAULT_BOOTS
+	return ArmorConfig.BOOTS_DODGES[armorType]
 end
 
 -- What the player reads for an item, e.g. "Espada longa T3 (Raro)".

@@ -10,9 +10,11 @@
 	1 stud = 0.28 m. `name` is the text the player sees, so it stays in Portuguese.
 
 	Fields of each ability (the server checks all of them on start, with Shared.Abilities):
-	- shape: "Front" (area in front, in the aim direction), "Target" (the locked target) or "Around"
+	- shape: "Front" (area in front, in the aim direction), "Target" (the locked target), "Around"
+	  (around oneself) or "Ground" (a circle on the ground, under the locked target or ahead)
 	- range: length of the area (Front), max distance to the target (Target) or radius (Around)
 	- width: side-to-side size of the area; only used by Front (0 for the others)
+	- radius: size of the circle of a Ground ability (0 for the others)
 	- energyCost; cooldown, in seconds; damage: how much health it takes
 	- resetOnKill: if the ability knocks down an enemy, its cooldown resets at once
 ]]
@@ -28,6 +30,7 @@ local LIST = {
 		shape = "Front",
 		range = 1.5 * METER, -- ≈ 5.4 studs
 		width = 2.25 * METER, -- ≈ 8 studs: 3 enemies side by side, about 4 studs between their centers
+		radius = 0,
 		energyCost = 10,
 		cooldown = 2,
 		damage = 100,
@@ -40,6 +43,7 @@ local LIST = {
 		shape = "Target",
 		range = 1.5 * METER, -- provisional: the sword's reach
 		width = 0,
+		radius = 0,
 		energyCost = 20,
 		cooldown = 6,
 		damage = 220,
@@ -52,6 +56,7 @@ local LIST = {
 		shape = "Around",
 		range = 1.5 * METER, -- provisional: the radius is the sword's reach
 		width = 0,
+		radius = 0,
 		energyCost = 25,
 		cooldown = 8,
 		damage = 80,
@@ -63,4 +68,8 @@ for _, ability in LIST do
 	table.freeze(ability)
 end
 
-return table.freeze(LIST)
+return table.freeze({
+	-- Basic attack (US-023): no energy, aim assist. Range in studs, interval in seconds, cone in degrees.
+	BASIC_ATTACK = table.freeze({ range = 1.5 * METER, damage = 40, interval = 0.9, coneAngle = 60 }),
+	ABILITIES = table.freeze(LIST),
+})

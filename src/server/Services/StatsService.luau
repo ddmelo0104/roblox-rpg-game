@@ -12,11 +12,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
 local Items = require(ReplicatedStorage.Shared.Items)
+local ItemsConfig = require(ReplicatedStorage.Shared.Config.Items)
+local Workspace = game:GetService("Workspace")
 local InventoryService = require(script.Parent.InventoryService)
 
 local StatsService = {}
 
 local stats: { [Player]: Items.Stats } = {}
+
+-- Temporary extra resistance (the heavy chest's Fortress, US-024): amount and server time it ends.
+type Buff = { amount: number, endsAt: number }
+local resistanceBuffs: { [Player]: Buff } = {}
 
 -- Attributes of a player without equipment data yet.
 local NEUTRAL: Items.Stats = {
@@ -30,6 +36,21 @@ local NEUTRAL: Items.Stats = {
 -- The current attributes of the player's character.
 function StatsService.of(player: Player): Items.Stats
 	return stats[player] or NEUTRAL
+end
+
+-- The resistance right now: the equipment's plus a running buff, within the limit of Config/Items.
+function StatsService.resistanceOf(player: Player): number
+	local resistance = StatsService.of(player).resistance
+	local buff = resistanceBuffs[player]
+	if buff and Workspace:GetServerTimeNow() < buff.endsAt then
+		resistance += buff.amount
+	end
+	return math.min(resistance, ItemsConfig.MAX_RESISTANCE)
+end
+
+-- Adds `amount` of resistance for `duration` seconds (a new buff replaces the running one).
+function StatsService.addResistance(player: Player, amount: number, duration: number)
+	resistanceBuffs[player] = { amount = amount, endsAt = Workspace:GetServerTimeNow() + duration }
 end
 
 -- Recomputes the attributes and applies the max health, keeping the same fraction of health.
@@ -63,6 +84,7 @@ function StatsService:Start()
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		stats[player] = nil
+		resistanceBuffs[player] = nil
 	end)
 end
 

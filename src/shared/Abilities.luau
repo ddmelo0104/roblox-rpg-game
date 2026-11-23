@@ -7,11 +7,19 @@
 ]]
 
 -- How the ability aims (types from the Combat and Abilities tab): "Front" is the area in front, in
--- the aim direction; "Target" goes on the locked target; "Around" is the area around oneself.
-export type Shape = "Front" | "Target" | "Around"
+-- the aim direction; "Target" goes on the locked target; "Around" is the area around oneself;
+-- "Ground" is a circle on the ground, under the locked target or ahead (US-022).
+export type Shape = "Front" | "Target" | "Around" | "Ground"
 
 -- Why the server rejected a request. The client turns it into text for the player.
-export type RejectReason = "NoCharacter" | "OnCooldown" | "InvalidTarget" | "OutOfRange" | "NoLineOfSight" | "NoEnergy"
+export type RejectReason =
+	"NoCharacter"
+	| "OnCooldown"
+	| "InvalidTarget"
+	| "OutOfRange"
+	| "NoLineOfSight"
+	| "NoEnergy"
+	| "NoWeapon"
 
 -- The fields are explained in Config/Longsword. Distances in studs, times in seconds.
 export type Ability = {
@@ -21,14 +29,15 @@ export type Ability = {
 	shape: Shape,
 	range: number,
 	width: number,
+	radius: number,
 	energyCost: number,
 	cooldown: number,
 	damage: number,
 	resetOnKill: boolean,
 }
 
-local SHAPES = { "Front", "Target", "Around" }
-local NUMERIC_FIELDS = { "range", "width", "energyCost", "cooldown", "damage" }
+local SHAPES = { "Front", "Target", "Around", "Ground" }
+local NUMERIC_FIELDS = { "range", "width", "radius", "energyCost", "cooldown", "damage" }
 
 local Abilities = {}
 
@@ -46,12 +55,13 @@ function Abilities.validate(list: any, configName: string): { Ability }
 		assert(typeof(ability.name) == "string", `{where}: name must be a string`)
 		local key = ability.key
 		assert(typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode, `{where}: key must be an Enum.KeyCode`)
-		assert(table.find(SHAPES, ability.shape), `{where}: shape must be Front, Target or Around`)
+		assert(table.find(SHAPES, ability.shape), `{where}: shape must be Front, Target, Around or Ground`)
 		for _, field in NUMERIC_FIELDS do
 			local value = ability[field]
 			assert(typeof(value) == "number" and value >= 0, `{where}: {field} must be a number >= 0`)
 		end
 		assert(ability.shape ~= "Front" or ability.width > 0, `{where}: a Front ability needs a width`)
+		assert(ability.shape ~= "Ground" or ability.radius > 0, `{where}: a Ground ability needs a radius`)
 		assert(typeof(ability.resetOnKill) == "boolean", `{where}: resetOnKill must be a boolean`)
 	end
 	return list
@@ -96,6 +106,31 @@ function Abilities.isInFront(
 	local ahead = offset.X * forward.X + offset.Z * forward.Z
 	local sideways = math.abs(offset.X * forward.Z - offset.Z * forward.X)
 	return ahead >= -margin and ahead <= range + margin and sideways <= width / 2 + margin
+end
+
+-- Whether `point` is inside a cone in front of `origin`: up to `range` away and at most half of
+-- `coneAngle` degrees from `forward` (flat, length 1). Used by the basic attack's aim assist (US-023).
+function Abilities.isInCone(
+	origin: Vector3,
+	forward: Vector3,
+	point: Vector3,
+	range: number,
+	coneAngle: number,
+	maxHeight: number
+): boolean
+	local offset = point - origin
+	if math.abs(offset.Y) > maxHeight then
+		return false
+	end
+	local flat = Vector3.new(offset.X, 0, offset.Z)
+	local distance = flat.Magnitude
+	if distance > range then
+		return false
+	end
+	if distance < 0.5 then
+		return true
+	end
+	return forward:Dot(flat.Unit) >= math.cos(math.rad(coneAngle / 2))
 end
 
 -- Whether `point` is within `radius` of `origin` on the ground plane, with the same margin and height.

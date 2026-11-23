@@ -16,9 +16,11 @@ local Workspace = game:GetService("Workspace")
 
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
 local Defense = require(ReplicatedStorage.Shared.Defense)
+local Items = require(ReplicatedStorage.Shared.Items)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
+local InventoryService = require(script.Parent.InventoryService)
 local MovementValidationService = require(script.Parent.MovementValidationService)
 local StatsService = require(script.Parent.StatsService)
 local StatusService = require(script.Parent.StatusService)
@@ -103,12 +105,14 @@ local function dodge(player: Player)
 		sendState(player, "Dodge", reason)
 		return
 	end
+	-- The boots define the dodge (US-024).
+	local boots = Items.dodgeOf(InventoryService.equipped(player))
 	state.invulnerableFrom = now
-	state.invulnerableUntil = now + CombatConfig.DODGE_INVULNERABLE_TIME
-	state.dodgeReadyAt = now + CombatConfig.DODGE_COOLDOWN
+	state.invulnerableUntil = now + boots.invulnerableTime
+	state.dodgeReadyAt = now + boots.cooldown
 	-- The client dashes on its own, because it runs its character's physics; the movement validation
 	-- lets that dash through.
-	MovementValidationService.allowExtraDistance(player, CombatConfig.DODGE_DISTANCE)
+	MovementValidationService.allowExtraDistance(player, boots.distance)
 	sendState(player, nil, nil)
 end
 
@@ -169,7 +173,7 @@ function DefenseService.receiveHit(
 		end
 	elseif result == "Hit" then
 		-- The equipment's resistance removes part of the damage (US-018).
-		damage *= 1 - StatsService.of(player).resistance
+		damage *= 1 - StatsService.resistanceOf(player)
 		local humanoid = humanoidOf(player)
 		if humanoid then
 			humanoid:TakeDamage(damage)

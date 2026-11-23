@@ -20,7 +20,9 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
 local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
 local CombatConfig = require(Shared:WaitForChild("Config"):WaitForChild("Combat") :: ModuleScript)
+local Items = require(Shared:WaitForChild("Items") :: ModuleScript)
 local CombatEffectsController = require(script.Parent.CombatEffectsController)
+local InventoryController = require(script.Parent.InventoryController)
 local Notices = require(script.Parent.Parent.Notices)
 
 type ResultStyle = { text: string, color: Color3, size: number }
@@ -54,16 +56,23 @@ export type Action = {
 
 local DefenseController = {}
 
--- The two defense actions, for the HUD.
-DefenseController.ACTIONS = {
-	{ id = "Dodge", name = DODGE_NAME, keyLabel = CombatConfig.DODGE_KEY.Name, cooldown = CombatConfig.DODGE_COOLDOWN },
-	{
-		id = "Parry",
-		name = PARRY_NAME,
-		keyLabel = MOUSE_LABELS[CombatConfig.PARRY_INPUT] or CombatConfig.PARRY_INPUT.Name,
-		cooldown = CombatConfig.PARRY_MISS_LOCKOUT,
-	},
-} :: { Action }
+-- The two defense actions, for the HUD. The dodge's cooldown comes from the boots worn now (US-024).
+function DefenseController.actions(): { Action }
+	return {
+		{
+			id = "Dodge",
+			name = DODGE_NAME,
+			keyLabel = CombatConfig.DODGE_KEY.Name,
+			cooldown = Items.dodgeOf(InventoryController.equipped()).cooldown,
+		},
+		{
+			id = "Parry",
+			name = PARRY_NAME,
+			keyLabel = MOUSE_LABELS[CombatConfig.PARRY_INPUT] or CombatConfig.PARRY_INPUT.Name,
+			cooldown = CombatConfig.PARRY_MISS_LOCKOUT,
+		},
+	}
+end
 
 local player = Players.LocalPlayer
 
@@ -94,8 +103,8 @@ local function dodgeDirection(humanoid: Humanoid, root: BasePart): Vector3
 	return if back.Magnitude > 0.1 then back.Unit else Vector3.new(0, 0, 1)
 end
 
--- Pushes the character DODGE_DISTANCE studs along `direction` in DODGE_DURATION seconds.
-local function dash(root: BasePart, direction: Vector3)
+-- Pushes the character `distance` studs along `direction` in DODGE_DURATION seconds.
+local function dash(root: BasePart, direction: Vector3, distance: number)
 	local attachment = Instance.new("Attachment")
 	attachment.Name = "DodgeAttachment"
 	attachment.Parent = root
@@ -105,7 +114,7 @@ local function dash(root: BasePart, direction: Vector3)
 	velocity.Attachment0 = attachment
 	velocity.RelativeTo = Enum.ActuatorRelativeTo.World
 	velocity.MaxForce = math.huge
-	velocity.VectorVelocity = direction * (CombatConfig.DODGE_DISTANCE / CombatConfig.DODGE_DURATION)
+	velocity.VectorVelocity = direction * (distance / CombatConfig.DODGE_DURATION)
 	velocity.Parent = root
 
 	task.delay(CombatConfig.DODGE_DURATION, function()
@@ -173,9 +182,11 @@ local function tryDodge(event: RemoteEvent)
 		Notices.showReason(DODGE_NAME, reason)
 		return
 	end
-	-- Prediction: dash and start the cooldown now; the server confirms with DefenseState.
-	dodgeReadyAt = now + CombatConfig.DODGE_COOLDOWN
-	dash(root, dodgeDirection(humanoid, root))
+	-- Prediction: dash and start the cooldown now; the server confirms with DefenseState. The boots
+	-- define the distance and the cooldown (US-024).
+	local boots = Items.dodgeOf(InventoryController.equipped())
+	dodgeReadyAt = now + boots.cooldown
+	dash(root, dodgeDirection(humanoid, root), boots.distance)
 	event:FireServer()
 end
 
