@@ -33,7 +33,8 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
     - esquiva pelas botas.
   - EP-008 (inimigos) com US-025 a US-028 em revisão: IA no servidor, bolsa de loot com crédito por dano, tipos, elite, tier, pontos de spawn (`EnemySpawn`) e o bandido que explode ao morrer.
   - EP-005 (progressão) com US-029 a US-032 em revisão: fama por abate (zona e divisão por slot), especialização e maestria no GS, maestria para equipar tiers, pop-up de fama e tela de maestria (N).
-  - Próximo: o EP-006, persistência do perfil (ADR-005).
+  - EP-006 (perfil salvo) com US-033 e US-034 em revisão, seguindo o ADR-005 (proposto): DataStore com trava de sessão própria, inventário e fama no perfil. A regra dos 30 s ao sair em combate e o banco ficam para depois do EP-007.
+  - Próximo: o EP-007, o código das zonas de Stardawn (o terreno é do Davi).
 - O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.
@@ -45,7 +46,7 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 3. **Números de balanceamento ficam em `src/shared/Config/`**, nunca espalhados pelo código. Os valores iniciais estão nas tabelas de tuning das abas de design.
 4. **Uma responsabilidade por módulo:** Services no servidor, Controllers no cliente, tipos e funções puras em `shared`.
 5. **Código só no repositório.** Nunca edite scripts dentro do Studio, porque o Rojo sobrescreve. Mapas e modelos 3D continuam sendo feitos no Studio.
-6. **Nenhum item pode existir em dois lugares.** Itens terão `uid` gerado só no servidor e o perfil terá *session locking* (ADRs a escrever); não crie caminho que permita duplicação.
+6. **Nenhum item pode existir em dois lugares.** Itens têm `uid` gerado só no servidor (ADR-006) e o perfil tem *session locking* (ADR-005), ambos propostos; não crie caminho que permita duplicação. Tudo o que vai para o perfil é uma seção do `ProfileService`, e nenhum serviço apaga dados de jogador no `PlayerRemoving`.
 7. **Código em inglês** (decisão do Davi, 05/11): nomes, comentários, logs, chaves do Config, Remotes, tags, atributos, commits e branches. A documentação em `docs/` e os textos que o jogador vê ficam em português.
 8. Siga `docs/arquitetura/CONVENCOES-DE-CODIGO.md` (nomes, comentários, Git).
 

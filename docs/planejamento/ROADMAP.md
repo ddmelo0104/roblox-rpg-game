@@ -23,8 +23,8 @@ Decidida pelo dev em 23/11, por delegação do Davi, seguindo as dependências e
 2. **EP-003** · Combate e habilidades por equipamento: kit de cada arma, ataque básico, peitoral e botas (em revisão: US-021 a US-024).
 3. **EP-008** · Inimigos, IA e facções, com drops pelo sorteio da US-020 (em revisão: US-025 a US-028).
 4. **EP-005** · Fama, maestria e especialização (em revisão: US-029 a US-032; as habilidades alternativas vêm depois do EP-006).
-5. **EP-006** · Persistência do perfil (ADR-005) (próximo).
-6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio.
+5. **EP-006** · Persistência do perfil (ADR-005, proposto) (em revisão: US-033 e US-034).
+6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio (próximo).
 7. **EP-009** · Morte, derrubado e saque.
 8. **EP-010** · Dungeon aleatória solo.
 9. **EP-011** · HUD, UI e a quest de tutorial.

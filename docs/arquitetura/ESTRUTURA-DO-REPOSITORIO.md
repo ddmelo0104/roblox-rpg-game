@@ -19,7 +19,7 @@ roblox-rpg-game/
     │   ├── SparringDummy.luau # comportamento do boneco que ataca (US-013)
     │   ├── EnemyBrain.luau   # a IA de um inimigo: perceber, perseguir, atacar e voltar (US-025)
     │   ├── EnemyBody.luau    # o corpo provisório dos inimigos (US-025)
-    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Damage, Defense, Enemy, Energy, Inventory, LootBag, Mastery, Movement, MovementValidation, Ping, Stats, Status, TrainingDummy…
+    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Damage, Defense, Enemy, Energy, Inventory, LootBag, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
@@ -40,7 +40,7 @@ roblox-rpg-game/
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:

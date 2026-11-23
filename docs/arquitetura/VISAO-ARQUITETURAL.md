@@ -43,7 +43,7 @@ flowchart TB
 
 ## Decisões em aberto
 - [ ] Usar um framework, ou um *loader* simples do projeto, para iniciar Services e Controllers? Proposta do dev, já implementada na US-007: o loader simples `src/shared/Loader.luau` (Init de todos, depois Start), fácil de trocar por um framework. Falta o Davi confirmar.
-- [ ] Persistência: DataStore puro ou uma biblioteca com *session locking*? (ADR-005, a escrever)
+- [ ] Persistência: DataStore puro ou uma biblioteca com *session locking*? ([ADR-005](adr/ADR-005-perfil-salvo-com-trava-de-sessao.md), proposto em 23/11). Proposta: DataStore com trava de sessão própria atrás do `ProfileService`, já usada no EP-006, e o ProfileStore como alternativa. Falta o Davi aceitar.
 - [ ] Rede: Remotes puros ou um wrapper tipado? (sai da US-005) Proposta do dev, já implementada na US-005: Remotes puros criados pelo servidor a partir da lista única em `src/shared/Remotes.luau`, e todo pedido passa por `src/server/Network.luau` (limite por segundo e validação). Falta o Davi confirmar.
 - [ ] Topologia do mundo: um place com tudo ou um place por zona? (ADR-004, a escrever)
 - [ ] Instâncias de dungeon: no mesmo servidor ou em *reserved servers*? (ADR-007, a escrever)
