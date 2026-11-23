@@ -19,6 +19,7 @@ local REASON_TEXT: { [string]: string } = {
 	Vulnerable = "vulnerável",
 	BagFull = "mochila cheia",
 	TooFar = "longe demais",
+	NotYours = "ainda é de quem lutou",
 }
 
 local Notices = {}

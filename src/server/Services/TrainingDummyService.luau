@@ -41,6 +41,10 @@ local SPARRING: Kind = {
 
 local TrainingDummyService = {}
 
+-- Whether the place came with targets built in Studio. Checked in Init, before EnemyService starts
+-- creating enemies, which are targets too.
+local placeHasTargets = false
+
 -- The ground right below a point, or the point itself if there is nothing below it.
 local function groundBelow(point: Vector3): Vector3
 	local result = Workspace:Raycast(point + Vector3.new(0, 50, 0), Vector3.new(0, -200, 0))
@@ -115,8 +119,12 @@ local function createDummy(kind: Kind, ground: Vector3)
 	end)
 end
 
+function TrainingDummyService:Init()
+	placeHasTargets = #Targets.all() > 0
+end
+
 function TrainingDummyService:Start()
-	if #Targets.all() > 0 then
+	if placeHasTargets then
 		return -- the place already has targets built in Studio
 	end
 	local center, side = rowCenter()

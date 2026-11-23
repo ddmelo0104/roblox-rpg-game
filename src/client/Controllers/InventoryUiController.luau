@@ -24,13 +24,6 @@ local HINT = "Clique num item da mochila para equipar, ou num slot para tirar."
 local EMPTY_SLOT_COLOR = Color3.fromRGB(70, 70, 80)
 local PANEL_COLOR = Color3.fromRGB(20, 20, 26)
 local SLOT_COLOR = Color3.fromRGB(35, 35, 44)
-local RARITY_COLORS = {
-	Color3.fromRGB(200, 200, 200),
-	Color3.fromRGB(90, 200, 90),
-	Color3.fromRGB(80, 150, 255),
-	Color3.fromRGB(180, 90, 255),
-	Color3.fromRGB(255, 160, 40),
-}
 local BONUS_NAMES = {
 	damage = "Dano",
 	health = "Vida",
@@ -117,7 +110,7 @@ local function showRecord(button: TextButton, record: any?, emptyText: string)
 	if record then
 		local definition = Items.definition(record.itemId)
 		button.Text = `{if definition then definition.name else record.itemId}\nT{record.tier}`
-		stroke.Color = RARITY_COLORS[record.rarity] or EMPTY_SLOT_COLOR
+		stroke.Color = InterfaceConfig.RARITY_COLORS[record.rarity] or EMPTY_SLOT_COLOR
 	else
 		button.Text = emptyText
 		stroke.Color = EMPTY_SLOT_COLOR

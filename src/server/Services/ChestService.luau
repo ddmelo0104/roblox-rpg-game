@@ -13,6 +13,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local InterfaceConfig = require(ReplicatedStorage.Shared.Config.Interface)
 local Items = require(ReplicatedStorage.Shared.Items)
 local Loot = require(ReplicatedStorage.Shared.Loot)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
@@ -74,6 +75,7 @@ local function setUpChest(chest: Instance)
 	prompt.ObjectText = TEST_CHEST_TEXT
 	prompt.HoldDuration = 0.3
 	prompt.MaxActivationDistance = LootConfig.CHEST_REACH
+	prompt.KeyboardKeyCode = InterfaceConfig.INTERACT_KEY
 	prompt.Parent = chest
 	prompt.Triggered:Connect(function(player)
 		open(player, chest)

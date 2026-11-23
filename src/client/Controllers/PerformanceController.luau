@@ -3,7 +3,8 @@
 	PerformanceController.luau
 	Performance overlay for the terrain spike (US-014). Once a second it shows the average FPS, the
 	slowest frame, the client memory, the ping and the streaming settings, so the measurements on a
-	modest PC and on a weak phone can be written down. Config/Debug.PERF_OVERLAY_KEY toggles it, and
+	modest PC and on a weak phone can be written down. It also shows the enemies the server
+	published (US-025): how many are awake and how much server time their AI takes. Config/Debug.PERF_OVERLAY_KEY toggles it, and
 	PERF_OVERLAY_VISIBLE shows it from the start.
 ]]
 
@@ -16,6 +17,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local DebugConfig = require(Shared:WaitForChild("Config"):WaitForChild("Debug") :: ModuleScript)
+local Enemies = require(Shared:WaitForChild("Enemies") :: ModuleScript)
 
 -- Seconds between updates of the numbers.
 local UPDATE_INTERVAL = 1
@@ -33,7 +35,7 @@ local function createLabel(): TextLabel
 	local label = Instance.new("TextLabel")
 	label.Name = "Numbers"
 	label.Position = UDim2.fromOffset(8, 8)
-	label.Size = UDim2.fromOffset(300, 92)
+	label.Size = UDim2.fromOffset(300, 110)
 	label.BackgroundColor3 = Color3.new(0, 0, 0)
 	label.BackgroundTransparency = 0.4
 	label.BorderSizePixel = 0
@@ -54,6 +56,17 @@ local function createLabel(): TextLabel
 	return label
 end
 
+-- The enemy numbers the server publishes on the Workspace (US-025).
+local function enemyLine(): string
+	local awake = Workspace:GetAttribute(Enemies.AWAKE_ATTRIBUTE)
+	local total = Workspace:GetAttribute(Enemies.TOTAL_ATTRIBUTE)
+	local aiTime = Workspace:GetAttribute(Enemies.AI_TIME_ATTRIBUTE)
+	if typeof(awake) ~= "number" or typeof(total) ~= "number" or typeof(aiTime) ~= "number" then
+		return "Enemies: none"
+	end
+	return `Enemies {awake}/{total} awake · AI {string.format("%.2f", aiTime)} ms/s on the server`
+end
+
 local function describe(frames: number, elapsed: number, slowest: number): string
 	local streaming = if Workspace.StreamingEnabled
 		then `on, target {Workspace.StreamingTargetRadius} / min {Workspace.StreamingMinRadius} studs`
@@ -63,6 +76,7 @@ local function describe(frames: number, elapsed: number, slowest: number): strin
 		`Memory {math.floor(Stats:GetTotalMemoryUsageMb() + 0.5)} MB`,
 		`Ping {math.floor(player:GetNetworkPing() * 1000 + 0.5)} ms`,
 		`Streaming {streaming}`,
+		enemyLine(),
 	}, "\n")
 end
 

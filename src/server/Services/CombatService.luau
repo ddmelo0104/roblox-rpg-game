@@ -25,6 +25,7 @@ local Validate = require(ReplicatedStorage.Shared.Validate)
 local Weapons = require(ReplicatedStorage.Shared.Weapons)
 local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
+local DamageService = require(script.Parent.DamageService)
 local EnergyService = require(script.Parent.EnergyService)
 local InventoryService = require(script.Parent.InventoryService)
 local StatsService = require(script.Parent.StatsService)
@@ -154,16 +155,13 @@ local function checkTarget(ability: Ability, origin: Vector3, requested: Instanc
 	return target, nil
 end
 
--- Takes health from the hit targets. Returns whether this hit knocked any of them down.
-local function applyDamage(hits: { Model }, damage: number): boolean
+-- Takes health from the hit targets, in the player's name (DamageService writes down who dealt it).
+-- Returns whether this hit knocked any of them down.
+local function applyDamage(player: Player, hits: { Model }, damage: number): boolean
 	local knockedDown = false
 	for _, target in hits do
-		local humanoid = target:FindFirstChildOfClass("Humanoid")
-		if humanoid and humanoid.Health > 0 then
-			humanoid:TakeDamage(damage)
-			if humanoid.Health <= 0 then
-				knockedDown = true
-			end
+		if DamageService.deal(target, damage, player) then
+			knockedDown = true
 		end
 	end
 	return knockedDown
@@ -283,7 +281,7 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 		then { lockedTarget }
 		elseif ability.shape == "Ground" and point then targetsAroundPoint(point, ability.radius)
 		else targetsInArea(ability, origin, forward)
-	local knockedDown = applyDamage(hits, damage)
+	local knockedDown = applyDamage(player, hits, damage)
 	if #hits > 0 then
 		CombatStateService.mark(player)
 	end
@@ -348,7 +346,7 @@ local function basicAttack(player: Player, requestedTarget: Instance?)
 
 	basicReadyAt[player] = now + basic.interval
 	local damage = basic.damage * StatsService.of(player).damageMultiplier
-	applyDamage({ target }, damage)
+	applyDamage(player, { target }, damage)
 	CombatStateService.mark(player)
 	usedEvent:FireAllClients(player, BASIC_ATTACK_ID, root.CFrame, { target }, damage, nil)
 end

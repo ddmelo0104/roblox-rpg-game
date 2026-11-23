@@ -139,6 +139,11 @@ local function checkLock(dt: number)
 		release()
 		return
 	end
+	-- An enemy going back home stops being a target (US-025): the lock lets go of it.
+	if not Targets.isTarget(current) and not Players:GetPlayerFromCharacter(current) then
+		release()
+		return
+	end
 	local origin = focusOf(root)
 	if (position - origin).Magnitude > CameraConfig.LOCK_RANGE then
 		release()
