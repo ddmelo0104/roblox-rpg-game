@@ -47,7 +47,7 @@ flowchart TB
 - [ ] Rede: Remotes puros ou um wrapper tipado? (sai da US-005) Proposta do dev, já implementada na US-005: Remotes puros criados pelo servidor a partir da lista única em `src/shared/Remotes.luau`, e todo pedido passa por `src/server/Network.luau` (limite por segundo e validação). Falta o Davi confirmar.
 - [ ] Topologia do mundo: um place com tudo ou um place por zona? (ADR-004, a escrever)
 - [ ] Instâncias de dungeon: no mesmo servidor ou em *reserved servers*? (ADR-007, a escrever)
-- [ ] Itens como instâncias com `uid` gerado só no servidor, contra duplicação (ADR-006, a escrever)
+- [ ] Itens como registros com `uid` gerado só no servidor, contra duplicação ([ADR-006](adr/ADR-006-itens-como-registros-com-uid-do-servidor.md), proposto em 23/11). Já é usado pelo inventário do EP-004. Falta o Davi aceitar.
 - [ ] Mercado entre servidores: armazenamento e transação atômica (ADR-008, a escrever, M2)
 - [ ] Detecção de acerto no servidor com tolerância de lag ([ADR-009](adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md), proposto em 05/11). Proposta: o servidor confere com as posições dele mais uma margem fixa no Config, já usada na US-012. Falta o Davi aceitar.
 - [ ] Validação de movimento no servidor, contra speed hack ([ADR-010](adr/ADR-010-validacao-de-movimento-no-servidor.md), proposto em 05/11). Proposta: conferência própria com margem e puxão de volta (US-011), e uma spike do Server Authority do Roblox antes do EP-002. Falta o Davi aceitar.

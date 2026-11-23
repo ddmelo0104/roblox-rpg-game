@@ -23,6 +23,9 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento:
   - US-001 a US-013 e US-015 em revisão, esperando o teste do Davi no Studio. A US-012 já foi testada por ele em 23/11 e só falta ele concluir.
   - US-014 (spike de terreno) em andamento: a parte do dev está pronta; faltam o terreno e a medição do Davi.
+- M1 em andamento, na ordem do `ROADMAP.md`:
+  - EP-004 (itens, inventário, equipamento e GS) com US-016 a US-020 em revisão: catálogo, inventário com `uid` (ADR-006 proposto), tela (I) e baú de teste.
+  - Próximo: o EP-003, combate por equipamento.
 - O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.

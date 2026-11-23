@@ -16,6 +16,22 @@ flowchart LR
 | M2 · Alpha | Todos os sistemas do MVP, com conteúdo provisório | — |
 | M3 · Beta / Lançamento | Conteúdo final, polimento e playtests | — |
 
+## Ordem de construção do M1
+Decidida pelo dev em 23/11, por delegação do Davi, seguindo as dependências entre os épicos. As histórias de cada épico são escritas quando a vez dele chega.
+
+1. **EP-004** · Itens, inventário, equipamento e GS (em andamento: US-016 a US-020).
+2. **EP-003** · Combate e habilidades por equipamento: kit de cada arma, ataque básico, peitoral e botas.
+3. **EP-008** · Inimigos, IA e facções, com drops pelo sorteio da US-020.
+4. **EP-005** · Fama, maestria e especialização.
+5. **EP-006** · Persistência do perfil (ADR-005).
+6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio.
+7. **EP-009** · Morte, derrubado e saque.
+8. **EP-010** · Dungeon aleatória solo.
+9. **EP-011** · HUD, UI e a quest de tutorial.
+10. **EP-012** · Conteúdo de grupo.
+
+O EP-002 (personagem, câmera e controles) já foi quase todo coberto pelas histórias do EP-001 (US-009 a US-011 e US-015). O que faltar vai junto com o EP-011.
+
 Os épicos de cada marco aparecem no [BACKLOG.md](BACKLOG.md). O corte aprovado do M1 está na aba [Visão do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) do doc de design, e os épicos dele (EP-002 a EP-012) estão em `epicos/`. Os candidatos de M2 em diante ainda não viraram arquivos:
 
 | # | Épico candidato | Marco | Depende de |

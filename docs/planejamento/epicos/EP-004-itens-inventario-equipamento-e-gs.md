@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-004
 titulo: Itens, inventário, equipamento e GS
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-004 · Itens, inventário, equipamento e GS
@@ -21,7 +21,7 @@ Pilares 1 (busca por loot) e 5 (jogue como quiser). Abas [Armas e Armaduras](htt
 
 ## Escopo
 **Dentro**
-- Itens definidos como dados em `src/shared/` e instâncias com `uid` gerado só no servidor (ADR-006, a escrever).
+- Itens definidos como dados em `src/shared/` e instâncias com `uid` gerado só no servidor ([ADR-006](../../arquitetura/adr/ADR-006-itens-como-registros-com-uid-do-servidor.md), proposto).
 - Inventário, e equipar ou desequipar validados no servidor.
 - Slots do M1: arma, elmo, peitoral e botas.
 - A base inicial: espada longa, besta, arco e cajado de fogo, e armaduras leve, média e tanque, mescláveis peça por peça.
@@ -53,6 +53,16 @@ Nenhum item duplicado nos testes de troca rápida e de sair do jogo no meio de u
 Os outros detalhes de itens estão nas abas [Armas e Armaduras](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#53e3dc55-5a40) e [Progressão](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#31c067be-9c32).
 
 ## Histórias
+Criadas pelo dev em 23/11, por delegação do Davi:
+
+| História | Depende de |
+| --- | --- |
+| [US-016 · Catálogo de itens e contas de GS](../historias/US-016-catalogo-de-itens-e-gs.md) | — |
+| [US-017 · Inventário no servidor com uid e kit inicial](../historias/US-017-inventario-no-servidor.md) | US-016 |
+| [US-018 · Equipar e desequipar, com GS e atributos do personagem](../historias/US-018-equipar-gs-e-atributos.md) | US-017 |
+| [US-019 · Tela de inventário e equipamento (PC)](../historias/US-019-tela-de-inventario.md) | US-018 |
+| [US-020 · Sorteio de loot e baú de teste](../historias/US-020-sorteio-de-loot-e-bau-de-teste.md) | US-017 |
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico

@@ -17,11 +17,11 @@ roblox-rpg-game/
     │   ├── Main.server.luau  # cria os Remotes e inicia os Services (Loader)
     │   ├── Network.luau      # limite por segundo e validação de tudo que chega do cliente
     │   ├── SparringDummy.luau # comportamento do boneco que ataca (US-013)
-    │   └── Services/         # um Service por sistema: Combat, Defense, Energy, Movement, MovementValidation, Ping, TrainingDummy…
+    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Defense, Energy, Inventory, Movement, MovementValidation, Ping, Stats, Status, TrainingDummy…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
-    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, desempenho…
+    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, desempenho…
     └── shared/               # → ReplicatedStorage.Shared
         ├── Project.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers
@@ -31,10 +31,14 @@ roblox-rpg-game/
         ├── Abilities.luau    # tipos e contas da área das habilidades (cliente e servidor)
         ├── Energy.luau       # onde o servidor publica a energia de cada jogador
         ├── Defense.luau      # tipos e conta pura da esquiva e do parry
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug…)
+        ├── Items.luau        # tipos de item e contas de GS e atributos
+        ├── Loot.luau         # sorteio de raridade, tier e item
+        ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
+        ├── CombatState.luau  # se o jogador está em combate
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface…)
 ```
 
-As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-014. As outras nascem com as histórias que precisarem delas:
+As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:
 
 | Pasta | Para quê |
 | --- | --- |
