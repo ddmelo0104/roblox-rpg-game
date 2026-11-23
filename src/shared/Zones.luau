@@ -20,6 +20,9 @@ local Zones = {}
 -- CollectionService tag of the zone regions built in Studio.
 Zones.TAG = "Zone"
 
+-- CollectionService tag of the return points, where players come back (EP-009).
+Zones.RETURN_TAG = "ReturnPoint"
+
 -- Player attributes the server sets (US-035, US-037).
 Zones.KIND_ATTRIBUTE = "ZoneKind"
 Zones.TIER_ATTRIBUTE = "ZoneTier"

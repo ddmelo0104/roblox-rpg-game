@@ -42,8 +42,7 @@ local ZONE_NOTICE_NAME = "Zona"
 local ZoneService = {}
 
 local regions: { BasePart } = {}
--- CollectionService tag of the return points.
-local RETURN_TAG = "ReturnPoint"
+local RETURN_TAG = Zones.RETURN_TAG
 local tracked: { [Player]: Tracked } = {}
 
 -- Two zones are the same zone if they come from the same region (or are both the default).
@@ -200,6 +199,12 @@ function ZoneService.canPvp(attacker: Player, victim: Player): boolean
 	return ZoneService.zoneOf(attacker).rules.pvp == true
 		and ZoneService.zoneOf(victim).rules.pvp == true
 		and not Zones.isProtected(victim)
+end
+
+-- The server is moving the player somewhere else (a dungeon, a portal): their next zone is taken as
+-- new, so the border rule does not pull them back.
+function ZoneService.forget(player: Player)
+	tracked[player] = nil
 end
 
 -- The player attacked (anything): the entry protection ends.

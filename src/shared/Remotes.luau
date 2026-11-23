@@ -32,6 +32,7 @@ local LIST: { string } = {
 	"Notice", -- US-020: server notice to one player, shown on the HUD (action name and reason or text)
 	"ProgressUpdate", -- US-029: server notice to one player (fame totals and the latest gain)
 	"RequestGiveUp", -- US-039: a downed player gives up (comes back now, or is finished in full-loot zones)
+	"RequestDungeonExit", -- US-042: start (true) or cancel (false) channeling out of a dungeon
 }
 
 local Remotes = {}

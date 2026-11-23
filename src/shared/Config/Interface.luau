@@ -18,6 +18,9 @@ return table.freeze({
 	-- Key of the prompt to finish a downed player (US-039), apart from reviving.
 	FINISH_KEY = Enum.KeyCode.H,
 
+	-- Starts or cancels channeling out of a dungeon (US-042).
+	DUNGEON_EXIT_KEY = Enum.KeyCode.X,
+
 	-- Color of each rarity (Common … Legendary): item borders and the glow of loot bags (US-026).
 	RARITY_COLORS = table.freeze({
 		Color3.fromRGB(200, 200, 200),

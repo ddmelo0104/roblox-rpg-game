@@ -14,6 +14,7 @@
 local EnemiesConfig = require(script.Parent.Config.Enemies)
 local Items = require(script.Parent.Items)
 local LootConfig = require(script.Parent.Config.Loot)
+local ProgressionConfig = require(script.Parent.Config.Progression)
 local Zones = require(script.Parent.Zones)
 
 export type DeathBlast = {
@@ -34,6 +35,8 @@ export type Kind = {
 	speed: number,
 	aggroRange: number,
 	deathBlast: DeathBlast?,
+	rank: ("MiniBoss" | "Boss")?,
+	scale: number?,
 	color: Color3,
 }
 
@@ -64,6 +67,16 @@ function Enemies.stats(kind: Kind, tier: number, elite: boolean): (number, numbe
 	local health = kind.health * strength * (if elite then EnemiesConfig.ELITE.health else 1)
 	local damage = kind.damage * strength * (if elite then EnemiesConfig.ELITE.damage else 1)
 	return health, damage
+end
+
+-- How many times a common enemy's fame this kind gives for its rank (US-043).
+function Enemies.rankFameMultiplier(kind: Kind): number
+	if kind.rank == "Boss" then
+		return ProgressionConfig.BOSS_FAME_MULTIPLIER
+	elseif kind.rank == "MiniBoss" then
+		return ProgressionConfig.MINIBOSS_FAME_MULTIPLIER
+	end
+	return 1
 end
 
 -- The name shown above the enemy.

@@ -9,6 +9,8 @@
 	  and the fame. Without them, the spawn point takes the tier and kind of the zone region it
 	  stands in (ZoneService, US-035).
 	- RespawnTime (number, default Config/Enemies.RESPAWN_TIME) and Radius (number, default 5)
+	- Respawns (boolean, default true): false for dungeon enemies, which never come back (US-043)
+	When a spawn point is removed (a dungeon instance going away), its enemies go with it.
 	If the place has no spawn point, test groups appear to the left of the spawn, one row through the
 	test zones (Config/Enemies.TEST_AREA).
 
@@ -58,7 +60,12 @@ type SpawnPoint = {
 	fameMultiplier: number,
 	respawnTime: number,
 	radius: number,
+	respawns: boolean,
 }
+
+-- A kill, for the listeners (DungeonService opens the chests of its bosses): the spawn point, the
+-- kind, where it fell and who earned it.
+export type Kill = { point: BasePart, kindId: string, position: Vector3, credited: { Player } }
 
 -- The stress test's enemies (Config/Debug.EXTRA_TEST_ENEMIES): how far ahead of the spawn, and the
 -- space between them (studs).
@@ -72,6 +79,7 @@ local folder: Folder
 local enemies: { Enemy } = {}
 local byModel: { [Model]: Enemy } = {}
 local pointOf: { [Enemy]: SpawnPoint } = {}
+local killListeners: { (kill: Kill) -> () } = {}
 
 -- AI cost, for the overlay: seconds spent thinking since `windowStart`.
 local aiTime = 0
@@ -123,6 +131,7 @@ local function readPoint(part: Instance): SpawnPoint?
 		fameMultiplier = rules.fame,
 		respawnTime = attribute(part, "RespawnTime", EnemiesConfig.RESPAWN_TIME),
 		radius = attribute(part, "Radius", 5),
+		respawns = attribute(part, "Respawns", true),
 	}
 end
 
@@ -163,6 +172,7 @@ local function awardFame(point: SpawnPoint, contributions: DamageService.Contrib
 		return
 	end
 	local fame = Mastery.killFame(point.tier, point.elite, point.fameMultiplier)
+		* Enemies.rankFameMultiplier(point.kind)
 	for _, player in Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE) do
 		if player.Parent then
 			MasteryService.award(player, fame * contributions[player] / total)
@@ -189,8 +199,19 @@ local function finish(enemy: Enemy, contributions: DamageService.Contributions?)
 		if contributions then
 			awardFame(point, contributions)
 			dropLoot(point, ground, contributions)
+			local kill: Kill = {
+				point = point.part,
+				kindId = point.kindId,
+				position = ground,
+				credited = Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE),
+			}
+			for _, listener in killListeners do
+				task.spawn(listener, kill)
+			end
 		end
-		task.delay(point.respawnTime, spawnOne, point)
+		if point.respawns then
+			task.delay(point.respawnTime, spawnOne, point)
+		end
 	end
 end
 
@@ -209,7 +230,7 @@ spawnOne = function(point: SpawnPoint)
 
 	local kind = point.kind
 	local health, damage = Enemies.stats(kind, point.tier, point.elite)
-	local scale = if point.elite then EnemiesConfig.ELITE.scale else 1
+	local scale = (kind.scale or 1) * (if point.elite then EnemiesConfig.ELITE.scale else 1)
 	local model, humanoid, root, torso = EnemyBody.build(
 		ground,
 		facing.Unit,
@@ -372,6 +393,23 @@ local function step()
 	end
 end
 
+-- The enemies of a spawn point that was removed go with it: no loot, no respawn.
+local function removePoint(part: Instance)
+	for _, enemy in table.clone(enemies) do
+		local point = pointOf[enemy]
+		if point and point.part == part then
+			EnemyBrain.die(enemy)
+			removeFromList(enemy)
+			enemy.model:Destroy()
+		end
+	end
+end
+
+-- Calls `listener` after every kill by players.
+function EnemyService.onKilled(listener: (kill: Kill) -> ())
+	table.insert(killListeners, listener)
+end
+
 function EnemyService:Init()
 	folder = Instance.new("Folder")
 	folder.Name = "Enemies"
@@ -393,6 +431,7 @@ function EnemyService:Start()
 	end)
 
 	CollectionService:GetInstanceAddedSignal(Enemies.SPAWN_TAG):Connect(addPoint)
+	CollectionService:GetInstanceRemovedSignal(Enemies.SPAWN_TAG):Connect(removePoint)
 	local existing = CollectionService:GetTagged(Enemies.SPAWN_TAG)
 	for _, part in existing do
 		addPoint(part)

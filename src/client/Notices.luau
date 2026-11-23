@@ -25,6 +25,7 @@ local REASON_TEXT: { [string]: string } = {
 	Downed = "derrubado",
 	Interrupted = "interrompido por dano",
 	NoPvp = "só numa zona com PvP",
+	InCombat = "em combate",
 }
 
 local Notices = {}

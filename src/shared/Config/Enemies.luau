@@ -14,6 +14,8 @@
 	  interval: seconds between the starts of two attacks
 	- speed: walk speed (studs/s); aggroRange: how close a living player must be to be noticed
 	- deathBlast (optional, US-028): after dying it explodes: radius (studs), damage, delay (s)
+	- rank (optional, US-043): "MiniBoss" or "Boss", for the fame (Config/Progression)
+	- scale (optional): body size, 1 by default (an elite is ELITE.scale times bigger still)
 	- color: body color (visual only)
 ]]
 
@@ -58,6 +60,37 @@ local KINDS: { [string]: any } = {
 		aggroRange = 30,
 		deathBlast = table.freeze({ radius = 10, damage = 25, delay = 1.2 }),
 		color = Color3.fromRGB(70, 60, 60),
+	}),
+	-- Dungeon bosses (US-043).
+	BanditCaptain = table.freeze({
+		name = "Capitão dos bandidos",
+		faction = "Bandits",
+		attack = "Melee",
+		health = 2400,
+		damage = 16,
+		range = 7,
+		windup = 0.8,
+		interval = 2.4,
+		speed = 14,
+		aggroRange = 35,
+		rank = "MiniBoss",
+		scale = 1.5,
+		color = Color3.fromRGB(120, 40, 40),
+	}),
+	BanditChief = table.freeze({
+		name = "Chefe dos bandidos",
+		faction = "Bandits",
+		attack = "Melee",
+		health = 6000,
+		damage = 22,
+		range = 8,
+		windup = 1,
+		interval = 2.6,
+		speed = 13,
+		aggroRange = 45,
+		rank = "Boss",
+		scale = 2,
+		color = Color3.fromRGB(80, 20, 20),
 	}),
 }
 

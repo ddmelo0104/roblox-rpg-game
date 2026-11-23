@@ -26,6 +26,9 @@ return table.freeze({
 	KILL_FAME_BASE = 10,
 	KILL_FAME_GROWTH = 1.5,
 	ELITE_FAME_MULTIPLIER = 3,
+	-- Dungeon bosses (US-043): a mini-boss gives ×10 and a boss ×30 the fame of a common enemy.
+	MINIBOSS_FAME_MULTIPLIER = 10,
+	BOSS_FAME_MULTIPLIER = 30,
 
 	-- Share of a fame gain that goes to the item worn in each slot. A line's mastery gets the sum of
 	-- what its items got.
