@@ -100,6 +100,7 @@ local function createDummy(kind: Kind, ground: Vector3)
 	humanoid.Health = TrainingConfig.DUMMY_HEALTH
 	humanoid.Parent = model
 
+	model:SetAttribute("TrainingDummy", true) -- the tutorial counts hits on dummies (US-045)
 	CollectionService:AddTag(model, Targets.TAG)
 	model.Parent = Workspace
 	if kind.onSpawn then

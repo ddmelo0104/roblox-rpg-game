@@ -36,6 +36,7 @@ local InventoryService = {}
 local inventories: { [Player]: Inventory } = {}
 local listeners: { (player: Player) -> () } = {}
 local equipRules: { (player: Player, record: ItemRecord) -> string? } = {}
+local equippedListeners: { (player: Player, record: ItemRecord) -> () } = {}
 
 local updateEvent = Remotes.event("InventoryUpdate")
 local noticeEvent = Remotes.event("Notice")
@@ -163,6 +164,11 @@ function InventoryService.wearDown(player: Player, points: number)
 	changed(player)
 end
 
+-- Runs `listener(player, record)` after the player equips an item (the tutorial, US-045).
+function InventoryService.onEquipped(listener: (player: Player, record: ItemRecord) -> ())
+	table.insert(equippedListeners, listener)
+end
+
 -- Adds a check to every equip: `rule` returns the text to show the player when they cannot wear the
 -- item (the mastery a tier needs, US-031), or nil. Rules must not yield.
 function InventoryService.addEquipRule(rule: (player: Player, record: ItemRecord) -> string?)
@@ -198,6 +204,9 @@ local function equip(player: Player, uid: string)
 	end
 	inventory.equipped[definition.slot] = record
 	changed(player)
+	for _, listener in equippedListeners do
+		task.spawn(listener, player, record)
+	end
 end
 
 -- Moves what the player wears in `slot` back to the bag, if there is room.

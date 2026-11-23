@@ -18,6 +18,9 @@
 	Parts with the "ReturnPoint" tag mark where players come back (EP-009): a player who gives up
 	comes back at the return point of their zone, and one who lost everything, at the nearest city.
 	The test layout has one in each zone.
+
+	Each player also gets the world's zones for the map (US-044, ZoneMap): the bounds of every
+	region on the ground, dungeons left out, again whenever the regions change.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -42,6 +45,9 @@ local ZONE_NOTICE_NAME = "Zona"
 local ZoneService = {}
 
 local regions: { BasePart } = {}
+local changedListeners: { (player: Player, zone: Zone) -> () } = {}
+-- The regions changed since the map was last sent.
+local mapDirty = false
 local RETURN_TAG = Zones.RETURN_TAG
 local tracked: { [Player]: Tracked } = {}
 
@@ -52,6 +58,7 @@ end
 
 local function addRegion(instance: Instance)
 	if instance:IsA("BasePart") and not table.find(regions, instance) then
+		mapDirty = true
 		-- A region only marks a place: it must not block players, sight or the ground checks.
 		instance.Anchored = true
 		instance.Transparency = 1
@@ -66,7 +73,37 @@ local function removeRegion(instance: Instance)
 	local index = table.find(regions, instance :: any)
 	if index then
 		table.remove(regions, index)
+		mapDirty = true
 	end
+end
+
+-- The world's zones for the map: the bounds of each region on the ground (dungeons left out).
+local function mapOfZones(): { any }
+	local list = {}
+	for _, region in regions do
+		if region:GetAttribute("Dungeon") ~= true then
+			local zone = Zones.fromRegion(region)
+			local half = region.Size / 2
+			local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
+			for _, sx in { -1, 1 } do
+				for _, sz in { -1, 1 } do
+					local corner = region.CFrame * Vector3.new(sx * half.X, 0, sz * half.Z)
+					minX, maxX = math.min(minX, corner.X), math.max(maxX, corner.X)
+					minZ, maxZ = math.min(minZ, corner.Z), math.max(maxZ, corner.Z)
+				end
+			end
+			table.insert(list, {
+				kind = zone.kind,
+				tier = zone.tier,
+				name = zone.name,
+				minX = minX,
+				maxX = maxX,
+				minZ = minZ,
+				maxZ = maxZ,
+			})
+		end
+	end
+	return list
 end
 
 -- The test layout: the M1 line of zones (Blue, city, Yellow, Red) to the left of the spawn.
@@ -122,6 +159,9 @@ end
 local function enter(player: Player, state: Tracked, zone: Zone)
 	state.zone = zone
 	publish(player, zone)
+	for _, listener in changedListeners do
+		task.spawn(listener, player, zone)
+	end
 	if zone.rules.pvp then
 		player:SetAttribute(Zones.PROTECTED_UNTIL, Workspace:GetServerTimeNow() + ZonesConfig.ENTRY_PROTECTION)
 	else
@@ -172,6 +212,11 @@ function ZoneService.returnPoint(near: Vector3, accepts: (zone: Zone) -> boolean
 		end
 	end
 	return if best then best.CFrame + Vector3.new(0, 4, 0) else nil
+end
+
+-- Runs `listener(player, zone)` whenever a player's zone changes (the tutorial, US-045).
+function ZoneService.onZoneChanged(listener: (player: Player, zone: Zone) -> ())
+	table.insert(changedListeners, listener)
 end
 
 -- The zone of a point (a spawn point, for example).
@@ -245,10 +290,23 @@ function ZoneService:Start()
 			onCharacter(player)
 		end)
 	end
+	local mapEvent = Remotes.event("ZoneMap")
+	mapEvent.OnServerEvent:Connect(function() end) -- a server notice only
+	Players.PlayerAdded:Connect(function(player)
+		mapEvent:FireClient(player, mapOfZones())
+	end)
+	for _, player in Players:GetPlayers() do
+		mapEvent:FireClient(player, mapOfZones())
+	end
+	mapDirty = false
 	task.spawn(function()
 		while true do
 			for _, player in Players:GetPlayers() do
 				check(player)
+			end
+			if mapDirty then
+				mapDirty = false
+				mapEvent:FireAllClients(mapOfZones())
 			end
 			task.wait(ZonesConfig.ZONE_CHECK_INTERVAL)
 		end

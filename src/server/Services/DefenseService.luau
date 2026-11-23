@@ -48,6 +48,8 @@ local DefenseService = {}
 local states: { [Player]: State } = {}
 -- When each player last lost health to a hit (os.clock), so a revive or a finish can be interrupted.
 local lastDamagedAt: { [Player]: number } = {}
+-- Called after every dodged or parried hit (the tutorial counts them, US-045).
+local defendedListeners: { (player: Player, result: Defense.Result) -> () } = {}
 -- Called instead of the damage when a hit would kill a player (set by KnockdownService).
 local lethalHandler: ((player: Player, attacker: Instance?) -> ())? = nil
 
@@ -197,6 +199,11 @@ function DefenseService.receiveHit(
 		CombatStateService.mark(player)
 	end
 	resultEvent:FireAllClients(player, result, attacker, if result == "Hit" then damage else 0)
+	if result == "Dodged" or result == "Parried" then
+		for _, listener in defendedListeners do
+			task.spawn(listener, player, result)
+		end
+	end
 	return result
 end
 
@@ -212,6 +219,11 @@ end
 function DefenseService.secondsSinceDamaged(player: Player): number
 	local at = lastDamagedAt[player]
 	return if at then os.clock() - at else math.huge
+end
+
+-- Calls `listener` after every hit the player dodged or parried.
+function DefenseService.onDefended(listener: (player: Player, result: Defense.Result) -> ())
+	table.insert(defendedListeners, listener)
 end
 
 -- Sets who handles a hit that would kill a player. It must not yield.

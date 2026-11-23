@@ -159,6 +159,7 @@ function DungeonBuilder.build(layout: DungeonLayout.Layout, origin: CFrame, zone
 	region:SetAttribute("Zone", zone.kind)
 	region:SetAttribute("Tier", zone.tier)
 	region:SetAttribute("ZoneName", `Dungeon · {zone.name}`)
+	region:SetAttribute("Dungeon", true) -- not shown on the world map (US-044)
 	CollectionService:AddTag(region, Zones.TAG)
 
 	-- Giving up inside comes back at the first room.

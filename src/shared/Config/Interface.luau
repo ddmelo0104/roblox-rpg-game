@@ -21,6 +21,9 @@ return table.freeze({
 	-- Starts or cancels channeling out of a dungeon (US-042).
 	DUNGEON_EXIT_KEY = Enum.KeyCode.X,
 
+	-- Opens the world map (US-044).
+	MAP_KEY = Enum.KeyCode.M,
+
 	-- Color of each rarity (Common … Legendary): item borders and the glow of loot bags (US-026).
 	RARITY_COLORS = table.freeze({
 		Color3.fromRGB(200, 200, 200),
