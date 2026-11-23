@@ -22,6 +22,7 @@ local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Long
 local AREA_DURATION = 0.35
 local NUMBER_DURATION = 0.8
 local NUMBER_RISE = 2
+local DAMAGE_COLOR = Color3.fromRGB(255, 230, 120)
 local SHAPE_COLORS: { [string]: Color3 } = {
 	Front = Color3.fromRGB(255, 220, 120),
 	Target = Color3.fromRGB(255, 120, 90),
@@ -96,15 +97,15 @@ function CombatEffectsController.draw(ability: any, origin: CFrame, target: Mode
 	return part
 end
 
--- Shows the damage rising and fading above the target.
-function CombatEffectsController.showDamage(target: Model, damage: number)
-	local root = target.PrimaryPart or target:FindFirstChild("HumanoidRootPart")
+-- Shows `text` rising and fading above `model` (a target or a character).
+function CombatEffectsController.showText(model: Model, text: string, color: Color3, textSize: number)
+	local root = model.PrimaryPart or model:FindFirstChild("HumanoidRootPart")
 	if not root or not root:IsA("BasePart") then
 		return
 	end
 
 	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.fromOffset(80, 30)
+	billboard.Size = UDim2.fromOffset(200, 40)
 	billboard.StudsOffset = Vector3.new(0, 3, 0)
 	billboard.AlwaysOnTop = true
 	billboard.Adornee = root
@@ -112,10 +113,10 @@ function CombatEffectsController.showDamage(target: Model, damage: number)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
-	label.TextSize = 24
-	label.TextColor3 = Color3.fromRGB(255, 230, 120)
+	label.TextSize = textSize
+	label.TextColor3 = color
 	label.TextStrokeTransparency = 0.3
-	label.Text = tostring(math.floor(damage + 0.5))
+	label.Text = text
 	label.Parent = billboard
 	billboard.Parent = effectsFolder()
 
@@ -126,6 +127,11 @@ function CombatEffectsController.showDamage(target: Model, damage: number)
 	task.delay(NUMBER_DURATION, function()
 		billboard:Destroy()
 	end)
+end
+
+-- Shows the damage rising and fading above the target.
+function CombatEffectsController.showDamage(target: Model, damage: number)
+	CombatEffectsController.showText(target, tostring(math.floor(damage + 0.5)), DAMAGE_COLOR, 24)
 end
 
 -- The server's notice: someone used an ability from `origin` and hit `hits`.

@@ -22,18 +22,7 @@ local CombatConfig = require(Shared:WaitForChild("Config"):WaitForChild("Combat"
 local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
 local CombatEffectsController = require(script.Parent.CombatEffectsController)
 local TargetController = require(script.Parent.TargetController)
-
--- What the player reads for each reason (game text, so it stays in Portuguese). The server sends the
--- reasons in Shared.Abilities; "NoLockedTarget" only comes from the client.
-local REASON_TEXT: { [string]: string } = {
-	NoCharacter = "sem personagem",
-	OnCooldown = "em recarga",
-	InvalidTarget = "alvo inválido",
-	OutOfRange = "fora de alcance",
-	NoLineOfSight = "sem linha de visão",
-	NoEnergy = "sem energia",
-	NoLockedTarget = "trave um inimigo primeiro",
-}
+local Notices = require(script.Parent.Parent.Notices)
 
 local CombatController = {}
 
@@ -44,15 +33,6 @@ local readyAt: { [string]: number } = {}
 
 -- The effect drawn right away for each ability, to remove if the server rejects the request.
 local predictedEffect: { [string]: BasePart? } = {}
-
-local lastNotice: string? = nil
-local lastNoticeTime = 0
-
--- Shows "<ability name>: <reason>" on the HUD.
-local function notify(abilityName: string, reason: string)
-	lastNotice = `{abilityName}: {REASON_TEXT[reason] or reason}`
-	lastNoticeTime = os.clock()
-end
 
 local function aliveRoot(): BasePart?
 	local character = player.Character
@@ -104,7 +84,7 @@ local function useAbility(ability: any, event: RemoteEvent)
 	end
 	local direction, target, reason = prepareRequest(ability, root)
 	if reason then
-		notify(ability.name, reason)
+		Notices.showReason(ability.name, reason)
 		return
 	end
 	local forward = direction or Abilities.flatDirection(root.CFrame.LookVector) or Vector3.new(0, 0, -1)
@@ -128,17 +108,12 @@ local function onServerResponse(id: string, ready: number, reason: string?)
 		effect:Destroy()
 	end
 	local ability = Abilities.byId(LongswordConfig, id)
-	notify(if ability then ability.name else id, reason)
+	Notices.showReason(if ability then ability.name else id, reason)
 end
 
 -- Server time at which the ability is ready again (0 if it already is). Used by the HUD.
 function CombatController.getReadyAt(id: string): number
 	return readyAt[id] or 0
-end
-
--- The last notice for the player and when it appeared (os.clock). Used by the HUD.
-function CombatController.getLastNotice(): (string?, number)
-	return lastNotice, lastNoticeTime
 end
 
 function CombatController:Start()

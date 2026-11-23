@@ -1,9 +1,10 @@
 --!strict
 --[[
 	TrainingDummyService.luau
-	Training dummies of the prototype (US-009, US-012). If the place has no model with the target
-	tag, it creates a row of simple dummies in front of the spawn, to test the target lock and the
-	abilities (Config/Training says how many and the spacing between them).
+	Training dummies of the prototype (US-009, US-012, US-013). If the place has no model with the
+	target tag, it creates a row of simple dummies in front of the spawn, to test the target lock and
+	the abilities, plus a sparring dummy at the end of the row that strikes back, to train the dodge
+	and the parry (Config/Training says how many, where and how they behave).
 	When a dummy's health reaches zero, it comes back after Config/Training.DUMMY_RESPAWN_TIME.
 	It is a placeholder: real models are built in Studio and only need the tag (Shared.Targets.TAG).
 ]]
@@ -14,10 +15,29 @@ local Workspace = game:GetService("Workspace")
 
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local TrainingConfig = require(ReplicatedStorage.Shared.Config.Training)
+local SparringDummy = require(script.Parent.Parent.SparringDummy)
 
--- Visual only: the dummies' color and the name shown above them (player-facing, in Portuguese).
+-- Visual only: the dummies' colors and the names shown above them (player-facing, in Portuguese).
 local DUMMY_COLOR = Color3.fromRGB(196, 160, 110)
+local SPARRING_COLOR = Color3.fromRGB(150, 120, 90)
 local DISPLAY_NAME = "Boneco de treino"
+local SPARRING_DISPLAY_NAME = "Boneco que ataca"
+
+type Kind = {
+	name: string,
+	displayName: string,
+	color: Color3,
+	-- Runs on every new copy of the dummy (also after a respawn).
+	onSpawn: ((model: Model) -> ())?,
+}
+
+local TRAINING: Kind = { name = "TrainingDummy", displayName = DISPLAY_NAME, color = DUMMY_COLOR }
+local SPARRING: Kind = {
+	name = "SparringDummy",
+	displayName = SPARRING_DISPLAY_NAME,
+	color = SPARRING_COLOR,
+	onSpawn = SparringDummy.start,
+}
 
 local TrainingDummyService = {}
 
@@ -41,35 +61,36 @@ local function rowCenter(): (Vector3, Vector3)
 	return Vector3.new(0, 0, -TrainingConfig.DISTANCE_FROM_SPAWN), Vector3.new(1, 0, 0)
 end
 
-local function newPart(name: string, size: Vector3, center: Vector3, model: Model): Part
+local function newPart(name: string, size: Vector3, center: Vector3, color: Color3, model: Model): Part
 	local part = Instance.new("Part")
 	part.Name = name
 	part.Size = size
 	part.CFrame = CFrame.new(center)
 	part.Anchored = true
-	part.Color = DUMMY_COLOR
+	part.Color = color
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
 	part.Parent = model
 	return part
 end
 
--- Builds a dummy with its feet on `ground` and puts it in the Workspace with the target tag.
-local function createDummy(ground: Vector3)
+-- Builds a dummy of the given kind with its feet on `ground`, puts it in the Workspace with the
+-- target tag, and brings it back after it is knocked down.
+local function createDummy(kind: Kind, ground: Vector3)
 	local model = Instance.new("Model")
-	model.Name = "TrainingDummy"
+	model.Name = kind.name
 
-	newPart("LeftLeg", Vector3.new(1, 2, 1), ground + Vector3.new(-0.5, 1, 0), model)
-	newPart("RightLeg", Vector3.new(1, 2, 1), ground + Vector3.new(0.5, 1, 0), model)
-	newPart("Torso", Vector3.new(2, 2, 1), ground + Vector3.new(0, 3, 0), model)
-	newPart("Head", Vector3.new(2, 1, 1), ground + Vector3.new(0, 4.5, 0), model)
-	local root = newPart("HumanoidRootPart", Vector3.new(2, 2, 1), ground + Vector3.new(0, 3, 0), model)
+	newPart("LeftLeg", Vector3.new(1, 2, 1), ground + Vector3.new(-0.5, 1, 0), kind.color, model)
+	newPart("RightLeg", Vector3.new(1, 2, 1), ground + Vector3.new(0.5, 1, 0), kind.color, model)
+	newPart("Torso", Vector3.new(2, 2, 1), ground + Vector3.new(0, 3, 0), kind.color, model)
+	newPart("Head", Vector3.new(2, 1, 1), ground + Vector3.new(0, 4.5, 0), kind.color, model)
+	local root = newPart("HumanoidRootPart", Vector3.new(2, 2, 1), ground + Vector3.new(0, 3, 0), kind.color, model)
 	root.Transparency = 1
 	root.CanCollide = false
 	model.PrimaryPart = root
 
 	local humanoid = Instance.new("Humanoid")
-	humanoid.DisplayName = DISPLAY_NAME
+	humanoid.DisplayName = kind.displayName
 	humanoid.RequiresNeck = false
 	humanoid.MaxHealth = TrainingConfig.DUMMY_HEALTH
 	humanoid.Health = TrainingConfig.DUMMY_HEALTH
@@ -77,6 +98,9 @@ local function createDummy(ground: Vector3)
 
 	CollectionService:AddTag(model, Targets.TAG)
 	model.Parent = Workspace
+	if kind.onSpawn then
+		kind.onSpawn(model)
+	end
 
 	local respawning = false
 	humanoid.HealthChanged:Connect(function(health)
@@ -86,7 +110,7 @@ local function createDummy(ground: Vector3)
 		respawning = true
 		task.delay(TrainingConfig.DUMMY_RESPAWN_TIME, function()
 			model:Destroy()
-			createDummy(ground)
+			createDummy(kind, ground)
 		end)
 	end)
 end
@@ -99,8 +123,12 @@ function TrainingDummyService:Start()
 	local count = TrainingConfig.DUMMY_COUNT
 	for i = 1, count do
 		local offset = (i - (count + 1) / 2) * TrainingConfig.DUMMY_SPACING
-		createDummy(groundBelow(center + side * offset))
+		createDummy(TRAINING, groundBelow(center + side * offset))
 	end
+
+	-- The sparring dummy stands at the end of the row, far enough not to reach the other dummies' area.
+	local rowHalfWidth = (count - 1) / 2 * TrainingConfig.DUMMY_SPACING
+	createDummy(SPARRING, groundBelow(center + side * (rowHalfWidth + TrainingConfig.SPARRING_GAP)))
 end
 
 return TrainingDummyService

@@ -21,6 +21,10 @@ local LIST: { string } = {
 	"RequestSprint", -- US-010: ask to sprint (true) or to stop (false)
 	"RequestAbility", -- US-012: use an ability (id, direction and, for the target strike, the locked target)
 	"AbilityUsed", -- US-012: server notice to everyone (who used which ability, from where, who was hit, damage)
+	"RequestDodge", -- US-013: dodge (the client dashes on its own; the server opens the invulnerability)
+	"RequestParry", -- US-013: open the parry window
+	"DefenseState", -- US-013: server notice to one player (when dodge and parry are ready, lockout, rejection)
+	"DefenseEvent", -- US-013: server notice to everyone (dodged, parried, parry missed or hit, and the damage)
 }
 
 local Remotes = {}

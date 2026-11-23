@@ -1,9 +1,10 @@
 --!strict
 --[[
 	CombatHudController.luau
-	Minimal prototype HUD (US-012): the energy bar, one slot per ability with its key, name and
-	cooldown, and the last notice ("sem energia", "em recarga"…). A slot's border turns red when
-	there is not enough energy for the ability. The real UI belongs to EP-011.
+	Minimal prototype HUD (US-012, US-013): the energy bar, one slot per ability and per defense
+	action (dodge and parry) with its key, name and cooldown, and the last notice ("sem energia",
+	"em recarga"…). A slot's border turns red when there is not enough energy for the ability, or
+	while a missed parry leaves the player vulnerable. The real UI belongs to EP-011.
 ]]
 
 local Players = game:GetService("Players")
@@ -14,6 +15,8 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Energy = require(Shared:WaitForChild("Energy") :: ModuleScript)
 local CombatController = require(script.Parent.CombatController)
+local DefenseController = require(script.Parent.DefenseController)
+local Notices = require(script.Parent.Parent.Notices)
 local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
 
 -- Visual only: sizes (in pixels), how long a notice stays on screen, and colors.
@@ -23,13 +26,22 @@ local ENERGY_BAR_HEIGHT = 14
 local NOTICE_DURATION = 1.5
 local BACKGROUND_COLOR = Color3.fromRGB(25, 25, 30)
 local ENERGY_COLOR = Color3.fromRGB(80, 170, 255)
-local NO_ENERGY_COLOR = Color3.fromRGB(220, 70, 70)
+local BLOCKED_COLOR = Color3.fromRGB(220, 70, 70)
 local NOTICE_COLOR = Color3.fromRGB(255, 200, 120)
 
-type Slot = {
+-- What a slot shows and where it reads its state from.
+type SlotSpec = {
 	id: string,
+	keyLabel: string,
+	name: string,
 	cooldown: number,
 	energyCost: number,
+	getReadyAt: () -> number,
+	isLocked: () -> boolean,
+}
+
+type Slot = {
+	spec: SlotSpec,
 	shade: Frame,
 	timer: TextLabel,
 	border: UIStroke,
@@ -46,6 +58,40 @@ local CombatHudController = {}
 
 local player = Players.LocalPlayer
 
+-- The abilities of the weapon, then the two defense actions.
+local function slotSpecs(): { SlotSpec }
+	local specs: { SlotSpec } = {}
+	for _, ability in LongswordConfig do
+		table.insert(specs, {
+			id = ability.id,
+			keyLabel = ability.key.Name,
+			name = ability.name,
+			cooldown = ability.cooldown,
+			energyCost = ability.energyCost,
+			getReadyAt = function()
+				return CombatController.getReadyAt(ability.id)
+			end,
+			isLocked = function()
+				return false
+			end,
+		})
+	end
+	for _, action in DefenseController.ACTIONS do
+		table.insert(specs, {
+			id = action.id,
+			keyLabel = action.keyLabel,
+			name = action.name,
+			cooldown = action.cooldown,
+			energyCost = 0,
+			getReadyAt = function()
+				return DefenseController.getReadyAt(action.id)
+			end,
+			isLocked = DefenseController.isVulnerable,
+		})
+	end
+	return specs
+end
+
 local function newLabel(name: string, textSize: number, parent: Instance): TextLabel
 	local label = Instance.new("TextLabel")
 	label.Name = name
@@ -57,9 +103,9 @@ local function newLabel(name: string, textSize: number, parent: Instance): TextL
 	return label
 end
 
-local function newSlot(ability: any, index: number, parent: Instance): Slot
+local function newSlot(spec: SlotSpec, index: number, parent: Instance): Slot
 	local frame = Instance.new("Frame")
-	frame.Name = ability.id
+	frame.Name = spec.id
 	frame.Size = UDim2.fromOffset(SLOT_SIZE, SLOT_SIZE)
 	frame.Position = UDim2.fromOffset((index - 1) * (SLOT_SIZE + GAP), ENERGY_BAR_HEIGHT + GAP)
 	frame.BackgroundColor3 = BACKGROUND_COLOR
@@ -72,13 +118,13 @@ local function newSlot(ability: any, index: number, parent: Instance): Slot
 	border.Parent = frame
 
 	local key = newLabel("Key", 14, frame)
-	key.Text = ability.key.Name
+	key.Text = spec.keyLabel
 	key.TextXAlignment = Enum.TextXAlignment.Left
 	key.Size = UDim2.fromOffset(24, 18)
 	key.Position = UDim2.fromOffset(4, 2)
 
-	local name = newLabel("AbilityName", 11, frame)
-	name.Text = ability.name
+	local name = newLabel("ActionName", 11, frame)
+	name.Text = spec.name
 	name.TextWrapped = true
 	name.Size = UDim2.new(1, -4, 0, 28)
 	name.Position = UDim2.new(0, 2, 1, -30)
@@ -99,14 +145,7 @@ local function newSlot(ability: any, index: number, parent: Instance): Slot
 	timer.Size = UDim2.fromScale(1, 1)
 	timer.ZIndex = 3
 
-	return {
-		id = ability.id,
-		cooldown = ability.cooldown,
-		energyCost = ability.energyCost,
-		shade = shade,
-		timer = timer,
-		border = border,
-	}
+	return { spec = spec, shade = shade, timer = timer, border = border }
 end
 
 local function createHud(): Hud
@@ -114,7 +153,8 @@ local function createHud(): Hud
 	gui.Name = "CombatHud"
 	gui.ResetOnSpawn = false
 
-	local count = #LongswordConfig
+	local specs = slotSpecs()
+	local count = #specs
 	local bar = Instance.new("Frame")
 	bar.Name = "Bar"
 	bar.AnchorPoint = Vector2.new(0.5, 1)
@@ -149,8 +189,8 @@ local function createHud(): Hud
 	notice.TextStrokeTransparency = 0.5
 
 	local slots: { Slot } = {}
-	for index, ability in LongswordConfig do
-		table.insert(slots, newSlot(ability, index, bar))
+	for index, spec in specs do
+		table.insert(slots, newSlot(spec, index, bar))
 	end
 
 	gui.Parent = player:WaitForChild("PlayerGui")
@@ -170,14 +210,16 @@ local function update(hud: Hud)
 
 	local now = Workspace:GetServerTimeNow()
 	for _, slot in hud.slots do
-		local remaining = math.max(0, CombatController.getReadyAt(slot.id) - now)
-		local fraction = if slot.cooldown > 0 then math.clamp(remaining / slot.cooldown, 0, 1) else 0
+		local spec = slot.spec
+		local remaining = math.max(0, spec.getReadyAt() - now)
+		local fraction = if spec.cooldown > 0 then math.clamp(remaining / spec.cooldown, 0, 1) else 0
 		slot.shade.Size = UDim2.fromScale(1, fraction)
 		slot.timer.Text = if remaining > 0 then string.format("%.1f", remaining) else ""
-		slot.border.Color = if current < slot.energyCost then NO_ENERGY_COLOR else BACKGROUND_COLOR
+		local blocked = current < spec.energyCost or spec.isLocked()
+		slot.border.Color = if blocked then BLOCKED_COLOR else BACKGROUND_COLOR
 	end
 
-	local text, shownAt = CombatController.getLastNotice()
+	local text, shownAt = Notices.last()
 	hud.notice.Text = if text and os.clock() - shownAt < NOTICE_DURATION then text else ""
 end
 
