@@ -54,7 +54,7 @@ Criadas pelo dev em 23/11, por delegação do Davi. As facções das zonas e as 
 
 | História | Depende de |
 | --- | --- |
-| [US-025 · Inimigo com IA: perceber, perseguir, atacar e voltar](../historias/US-025-inimigo-com-ia.md) | US-013 |
+| [US-025 · Inimigo com IA que percebe, persegue, ataca e volta](../historias/US-025-inimigo-com-ia.md) | US-013 |
 | [US-026 · Crédito por dano, abate e bolsa de loot](../historias/US-026-abate-e-bolsa-de-loot.md) | US-025, US-020 |
 | [US-027 · Tipos de inimigo, elite, escala por tier e pontos de spawn](../historias/US-027-tipos-de-inimigo-elite-e-tier.md) | US-025 |
 | [US-028 · Inimigo que explode ao morrer](../historias/US-028-inimigo-que-explode-ao-morrer.md) | US-027 |

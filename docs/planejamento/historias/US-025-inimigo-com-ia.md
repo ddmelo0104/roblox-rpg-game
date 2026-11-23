@@ -1,7 +1,7 @@
 ---
 tipo: historia
 id: US-025
-titulo: Inimigo com IA: perceber, perseguir, atacar e voltar
+titulo: Inimigo com IA que percebe, persegue, ataca e volta
 status: revisao
 prioridade: must
 epico: EP-008
@@ -12,7 +12,7 @@ atualizado: 2026-11-23
 concluido_em:
 ---
 
-# US-025 · Inimigo com IA: perceber, perseguir, atacar e voltar
+# US-025 · Inimigo com IA que percebe, persegue, ataca e volta
 
 ## História
 **Como** jogador,
