@@ -21,7 +21,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | em-andamento | must | M1 | 0/3 histórias · 0/15 pts |
 | [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 | [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | em-andamento | must | M1 | 0/2 histórias · 0/5 pts |
-| [EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)](epicos/EP-012-conteudo-de-grupo.md) | backlog | must | M1 | sem histórias |
+| [EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)](epicos/EP-012-conteudo-de-grupo.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 
 ## Em andamento e em revisão
 
@@ -70,6 +70,9 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-043 · Mini-chefe, chefe e baús divididos](historias/US-043-chefes-e-baus-da-dungeon.md) | revisao | EP-010 | must | 5 |
 | [US-044 · Mapa do mundo com as zonas](historias/US-044-mapa-do-mundo.md) | revisao | EP-011 | must | 2 |
 | [US-045 · Quest de tutorial na zona Azul](historias/US-045-quest-de-tutorial.md) | revisao | EP-011 | must | 3 |
+| [US-046 · Grupo mínimo com convite, fama e bolsas divididas](historias/US-046-grupo-minimo.md) | revisao | EP-012 | must | 5 |
+| [US-047 · Acampamentos para grupos de 2 a 4](historias/US-047-acampamentos-para-grupos.md) | revisao | EP-012 | must | 3 |
+| [US-048 · Dungeon de grupo de teste](historias/US-048-dungeon-de-grupo-de-teste.md) | revisao | EP-012 | must | 5 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 

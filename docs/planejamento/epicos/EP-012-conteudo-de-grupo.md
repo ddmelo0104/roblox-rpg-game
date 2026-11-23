@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-012
 titulo: Conteúdo de grupo (dungeon de teste e acampamentos)
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)
@@ -49,6 +49,16 @@ No playtest, um grupo de amigos termina a dungeon e quer repetir.
 Se a dungeon de grupo substitui os acampamentos, se o M1 precisa de grupo, quantos jogadores e onde a dungeon fica estão na aba [Dungeons](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#1f67c338-4738).
 
 ## Histórias
+Criadas pelo dev em 23/11, por delegação do Davi. A pergunta da aba Dungeons ("a dungeon de grupo substitui os acampamentos?") ficou com a proposta: os dois, com um grupo mínimo.
+
+| História | Depende de |
+| --- | --- |
+| [US-046 · Grupo mínimo com convite, fama e bolsas divididas](../historias/US-046-grupo-minimo.md) | US-029, US-026 |
+| [US-047 · Acampamentos para grupos de 2 a 4](../historias/US-047-acampamentos-para-grupos.md) | US-046, US-027 |
+| [US-048 · Dungeon de grupo de teste](../historias/US-048-dungeon-de-grupo-de-teste.md) | US-046, US-043 |
+
+**Ainda a escrever:** espalhar cópias da dungeon de grupo pelas áreas (depois do M1) e a fama de grupo em baús de dungeon.
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico

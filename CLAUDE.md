@@ -38,7 +38,8 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
   - EP-009 (morte) com US-038 a US-040 em revisão: derrubado com os tempos de cada zona, reanimar (G), finalizar (H) na Vermelha, desistir, saque total com 25% destruídos e kit de recomeço. Falta o anti *combat logging*.
   - EP-010 (dungeon solo) com US-041 a US-043 em revisão, seguindo o ADR-007 (proposto, instâncias no mesmo servidor): gerador por semente, salas provisórias, entradas que somem, saída pelo portal ou canal de 30 s (X), mini-chefe e chefe com baús divididos.
   - EP-011 (UI) com US-044 e US-045 em revisão: mapa do mundo (M) e quest de tutorial de 5 passos, salva no perfil.
-  - Próximo: o EP-012, conteúdo de grupo.
+  - EP-012 (grupo) com US-046 a US-048 em revisão: grupo mínimo (convite V, até 4, fama e bolsas divididas, sem dano entre membros), acampamentos e a dungeon de grupo de teste.
+  - Todos os épicos do M1 têm código em revisão. Próximo: o que cada épico lista em "Ainda a escrever", começando pela cidade (moeda, banco, vendedor e conserto) e pelo anti *combat logging*.
 - O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.

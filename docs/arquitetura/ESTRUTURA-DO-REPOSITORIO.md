@@ -20,11 +20,13 @@ roblox-rpg-game/
     │   ├── EnemyBrain.luau   # a IA de um inimigo: perceber, perseguir, atacar e voltar (US-025)
     │   ├── EnemyBody.luau    # o corpo provisório dos inimigos (US-025)
     │   ├── DungeonBuilder.luau # monta as salas de uma instância de dungeon (US-041)
-    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Damage, Defense, Dungeon, Enemy, Energy, Inventory, Knockdown, LootBag, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Tutorial, Zone…
+    │   ├── SplitChest.luau   # baú cujos itens são divididos entre jogadores (dungeons e acampamentos)
+    │   ├── Teleport.luau     # teleporte para longe dentro do place (dungeons)
+    │   └── Services/         # um Service por sistema: Camp, Chest, Combat, CombatState, Damage, Defense, Dungeon, Enemy, Energy, Group, GroupDungeon, Inventory, Knockdown, LootBag, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Tutorial, Zone…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
-    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, desempenho…
+    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, grupo, desempenho…
     └── shared/               # → ReplicatedStorage.Shared
         ├── Project.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers
@@ -44,7 +46,7 @@ roblox-rpg-game/
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown, Dungeons, Tutorial…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown, Dungeons, Tutorial, Groups, Camps…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:
