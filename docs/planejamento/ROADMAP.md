@@ -25,8 +25,8 @@ Decidida pelo dev em 23/11, por delegação do Davi, seguindo as dependências e
 4. **EP-005** · Fama, maestria e especialização (em revisão: US-029 a US-032; as habilidades alternativas vêm depois do EP-006).
 5. **EP-006** · Persistência do perfil (ADR-005, proposto) (em revisão: US-033 e US-034).
 6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio (em revisão: US-035 a US-037; faltam o mapa e a cidade).
-7. **EP-009** · Morte, derrubado e saque (próximo).
-8. **EP-010** · Dungeon aleatória solo.
+7. **EP-009** · Morte, derrubado e saque (em revisão: US-038 a US-040; falta o anti *combat logging*).
+8. **EP-010** · Dungeon aleatória solo (próximo).
 9. **EP-011** · HUD, UI e a quest de tutorial.
 10. **EP-012** · Conteúdo de grupo.
 

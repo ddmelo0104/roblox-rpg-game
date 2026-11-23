@@ -19,11 +19,11 @@ roblox-rpg-game/
     │   ├── SparringDummy.luau # comportamento do boneco que ataca (US-013)
     │   ├── EnemyBrain.luau   # a IA de um inimigo: perceber, perseguir, atacar e voltar (US-025)
     │   ├── EnemyBody.luau    # o corpo provisório dos inimigos (US-025)
-    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Damage, Defense, Enemy, Energy, Inventory, LootBag, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Zone…
+    │   └── Services/         # um Service por sistema: Chest, Combat, CombatState, Damage, Defense, Enemy, Energy, Inventory, Knockdown, LootBag, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Zone…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
-    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, fama, maestria, zona, desempenho…
+    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, fama, maestria, zona, derrubado, desempenho…
     └── shared/               # → ReplicatedStorage.Shared
         ├── Project.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers
@@ -38,10 +38,11 @@ roblox-rpg-game/
         ├── Enemies.luau      # regras puras dos inimigos: tipos, escala por tier, elite e crédito do abate
         ├── Mastery.luau      # regras puras de fama, especialização, maestria e tiers liberados
         ├── Zones.luau        # em que zona está um ponto, e onde o servidor publica a zona do jogador
+        ├── Knockdown.luau    # onde o servidor publica que o jogador está derrubado
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:

@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-009
 titulo: Morte, derrubado e saque
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-009 · Morte, derrubado e saque
@@ -50,6 +50,16 @@ Num playtest, quem morre na Vermelha entende o que perdeu e por quê.
 Morte por monstro na Vermelha, os 25% e a moeda carregada estão na aba [Zonas e Risco](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#117aa7d2-031b).
 
 ## Histórias
+Criadas pelo dev em 23/11, por delegação do Davi.
+
+| História | Depende de |
+| --- | --- |
+| [US-038 · Derrubado em vez de morrer, com os tempos de cada zona](../historias/US-038-derrubado-em-vez-de-morrer.md) | US-035, US-013 |
+| [US-039 · Reanimar, finalizar e desistir](../historias/US-039-reanimar-finalizar-e-desistir.md) | US-038, US-036 |
+| [US-040 · Saque total na Vermelha e kit de recomeço](../historias/US-040-saque-total-e-kit-de-recomeco.md) | US-039, US-026, US-034 |
+
+**Ainda a escrever:** o anti *combat logging* (quem sai derrubado ou em combate numa zona de risco deixa o personagem 30 s no mundo, e o perfil só é salvo e liberado depois). Ele junta este épico e o EP-006.
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico

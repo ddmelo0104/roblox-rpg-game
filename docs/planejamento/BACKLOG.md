@@ -18,7 +18,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | em-andamento | must | M1 | 0/2 histórias · 0/8 pts |
 | [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 | [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
-| [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | backlog | must | M1 | sem histórias |
+| [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | em-andamento | must | M1 | 0/3 histórias · 0/15 pts |
 | [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | backlog | must | M1 | sem histórias |
 | [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | backlog | must | M1 | sem histórias |
 | [EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)](epicos/EP-012-conteudo-de-grupo.md) | backlog | must | M1 | sem histórias |
@@ -62,6 +62,9 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-035 · Zonas como regiões do mundo, com a zona atual no HUD](historias/US-035-zonas-como-regioes.md) | revisao | EP-007 | must | 5 |
 | [US-036 · PvP na zona Vermelha](historias/US-036-pvp-na-zona-vermelha.md) | revisao | EP-007 | must | 5 |
 | [US-037 · Fronteira travada em combate, proteção de entrada e aviso de risco](historias/US-037-fronteira-em-combate-e-protecao.md) | revisao | EP-007 | must | 3 |
+| [US-038 · Derrubado em vez de morrer, com os tempos de cada zona](historias/US-038-derrubado-em-vez-de-morrer.md) | revisao | EP-009 | must | 5 |
+| [US-039 · Reanimar, finalizar e desistir](historias/US-039-reanimar-finalizar-e-desistir.md) | revisao | EP-009 | must | 5 |
+| [US-040 · Saque total na Vermelha e kit de recomeço](historias/US-040-saque-total-e-kit-de-recomeco.md) | revisao | EP-009 | must | 5 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 
