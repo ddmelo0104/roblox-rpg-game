@@ -3,8 +3,9 @@
 	SparringDummy.luau
 	Behavior of the sparring dummy (US-013): it strikes the nearest player in range after a wind-up
 	that can be read (it turns to the player and its torso turns red), so players can train the
-	timing of the dodge and the parry. The strike goes through DefenseService. The numbers live in
-	Config/Training. TrainingDummyService creates the dummy and starts this behavior.
+	timing of the dodge and the parry. The strike goes through DefenseService, and a stunned dummy (a
+	successful parry) does not start a new strike. The numbers live in Config/Training.
+	TrainingDummyService creates the dummy and starts this behavior.
 ]]
 
 local Players = game:GetService("Players")
@@ -12,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Abilities = require(ReplicatedStorage.Shared.Abilities)
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
+local Status = require(ReplicatedStorage.Shared.Status)
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local TrainingConfig = require(ReplicatedStorage.Shared.Config.Training)
 local DefenseService = require(script.Parent.Services.DefenseService)
@@ -101,7 +103,7 @@ function SparringDummy.start(model: Model)
 	task.spawn(function()
 		while model.Parent and Targets.isAlive(model) do
 			local origin = Targets.position(model)
-			local target = if origin then nearestPlayer(origin) else nil
+			local target = if origin and not Status.isStunned(model) then nearestPlayer(origin) else nil
 			if target then
 				strike(model, torso, target)
 				task.wait(TrainingConfig.SPARRING_COOLDOWN)

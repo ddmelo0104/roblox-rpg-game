@@ -20,6 +20,7 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local Validate = require(ReplicatedStorage.Shared.Validate)
 local Network = require(script.Parent.Parent.Network)
+local CombatStateService = require(script.Parent.CombatStateService)
 local EnergyService = require(script.Parent.EnergyService)
 
 type Ability = Abilities.Ability
@@ -190,6 +191,9 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 
 	local hits = if lockedTarget then { lockedTarget } else targetsInArea(ability, origin, forward)
 	local knockedDown = applyDamage(hits, ability.damage)
+	if #hits > 0 then
+		CombatStateService.mark(player)
+	end
 
 	readyTimes[id] = if knockedDown and ability.resetOnKill then now else now + ability.cooldown
 	respond(player, id, nil)

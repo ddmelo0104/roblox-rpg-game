@@ -35,7 +35,14 @@ return table.freeze({
 	PARRY_WINDOW = 0.3, -- seconds
 	PARRY_MISS_LOCKOUT = 1, -- seconds
 
+	-- A successful parry stuns the attacker for this many seconds (Davi, 2026-11-23).
+	PARRY_STUN_TIME = 0.5,
+
 	-- A defense still counts if it started up to this many seconds after the hit: the defender wins
 	-- close calls caused by lag (proposal of the Combat tab).
 	DEFENSE_GRACE = 0.1,
+
+	-- US-015: a player is in combat for this many seconds after dealing or taking damage (TEMPO_COMBATE
+	-- in the Zones and Risk tab).
+	COMBAT_TIME = 15,
 })

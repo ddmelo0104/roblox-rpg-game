@@ -2,9 +2,10 @@
 --[[
 	CombatHudController.luau
 	Minimal prototype HUD (US-012, US-013): the energy bar, one slot per ability and per defense
-	action (dodge and parry) with its key, name and cooldown, and the last notice ("sem energia",
-	"em recarga"…). A slot's border turns red when there is not enough energy for the ability, or
-	while a missed parry leaves the player vulnerable. The real UI belongs to EP-011.
+	action (dodge and parry) with its key, name and cooldown, the last notice ("sem energia",
+	"em recarga"…) and "Em combate" (US-015). A slot's border turns red when there is not enough
+	energy for the ability, or while a missed parry leaves the player vulnerable. The real UI belongs
+	to EP-011.
 ]]
 
 local Players = game:GetService("Players")
@@ -13,6 +14,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local CombatState = require(Shared:WaitForChild("CombatState") :: ModuleScript)
 local Energy = require(Shared:WaitForChild("Energy") :: ModuleScript)
 local CombatController = require(script.Parent.CombatController)
 local DefenseController = require(script.Parent.DefenseController)
@@ -28,6 +30,8 @@ local BACKGROUND_COLOR = Color3.fromRGB(25, 25, 30)
 local ENERGY_COLOR = Color3.fromRGB(80, 170, 255)
 local BLOCKED_COLOR = Color3.fromRGB(220, 70, 70)
 local NOTICE_COLOR = Color3.fromRGB(255, 200, 120)
+local IN_COMBAT_TEXT = "Em combate"
+local IN_COMBAT_COLOR = Color3.fromRGB(255, 110, 90)
 
 -- What a slot shows and where it reads its state from.
 type SlotSpec = {
@@ -51,6 +55,7 @@ type Hud = {
 	energyFill: Frame,
 	energyText: TextLabel,
 	notice: TextLabel,
+	inCombat: TextLabel,
 	slots: { Slot },
 }
 
@@ -188,6 +193,16 @@ local function createHud(): Hud
 	notice.TextColor3 = NOTICE_COLOR
 	notice.TextStrokeTransparency = 0.5
 
+	-- "Em combate", to the left of the energy bar (US-015).
+	local inCombat = newLabel("InCombat", 14, bar)
+	inCombat.AnchorPoint = Vector2.new(1, 0)
+	inCombat.Position = UDim2.fromOffset(-8, 0)
+	inCombat.Size = UDim2.fromOffset(100, ENERGY_BAR_HEIGHT)
+	inCombat.TextXAlignment = Enum.TextXAlignment.Right
+	inCombat.TextColor3 = IN_COMBAT_COLOR
+	inCombat.Text = IN_COMBAT_TEXT
+	inCombat.Visible = false
+
 	local slots: { Slot } = {}
 	for index, spec in specs do
 		table.insert(slots, newSlot(spec, index, bar))
@@ -198,6 +213,7 @@ local function createHud(): Hud
 		energyFill = energyFill,
 		energyText = energyText,
 		notice = notice,
+		inCombat = inCombat,
 		slots = slots,
 	}
 end
@@ -218,6 +234,8 @@ local function update(hud: Hud)
 		local blocked = current < spec.energyCost or spec.isLocked()
 		slot.border.Color = if blocked then BLOCKED_COLOR else BACKGROUND_COLOR
 	end
+
+	hud.inCombat.Visible = CombatState.isInCombat(player)
 
 	local text, shownAt = Notices.last()
 	hud.notice.Text = if text and os.clock() - shownAt < NOTICE_DURATION then text else ""

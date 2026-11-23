@@ -18,6 +18,11 @@ return table.freeze({
 	-- Hold to sprint. Provisional: the PC keys are an open question in the tab.
 	SPRINT_KEY = Enum.KeyCode.LeftShift,
 
+	-- US-015: in combat, a jump can only follow the previous one after this many seconds (Davi asked for
+	-- a limited jump in combat on 2026-11-23; the interval is the dev's choice). Out of combat, jumping
+	-- is free.
+	JUMP_COOLDOWN_IN_COMBAT = 1.5,
+
 	-- US-011, ADR-010 (proposed): the server checks how far each character moves.
 	-- Seconds between checks.
 	VALIDATION_INTERVAL = 0.5,

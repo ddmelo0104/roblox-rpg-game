@@ -6,7 +6,7 @@
 	Every hit on a player goes through `receiveHit`: it waits DEFENSE_GRACE, so the defender wins
 	close calls, resolves the hit as dodged, parried or hit, applies the damage and tells every
 	client. A parry that catches no hit leaves the player vulnerable for a moment: no dodge and no
-	parry. A successful parry has no reward yet: that is an open question of the design tab.
+	parry. A successful parry stuns the attacker (Davi, 2026-11-23).
 	Numbers in Config/Combat.
 ]]
 
@@ -18,7 +18,9 @@ local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
 local Defense = require(ReplicatedStorage.Shared.Defense)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Network = require(script.Parent.Parent.Network)
+local CombatStateService = require(script.Parent.CombatStateService)
 local MovementValidationService = require(script.Parent.MovementValidationService)
+local StatusService = require(script.Parent.StatusService)
 
 type State = {
 	dodgeReadyAt: number,
@@ -161,11 +163,15 @@ function DefenseService.receiveHit(
 
 	if result == "Parried" then
 		state.parryCaughtHit = true
+		if attacker and attacker:IsA("Model") then
+			StatusService.stun(attacker, CombatConfig.PARRY_STUN_TIME)
+		end
 	elseif result == "Hit" then
 		local humanoid = humanoidOf(player)
 		if humanoid then
 			humanoid:TakeDamage(damage)
 		end
+		CombatStateService.mark(player)
 	end
 	resultEvent:FireAllClients(player, result, attacker, if result == "Hit" then damage else 0)
 	return result

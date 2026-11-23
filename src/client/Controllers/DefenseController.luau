@@ -6,7 +6,8 @@
 	stands still, and asks the server for the invulnerability. The parry input asks the server to
 	open the parry window. The server's answer (DefenseState) says when each one is ready again and
 	until when the player is vulnerable after a missed parry. DefenseEvent shows the results to
-	everyone: dodged, parried (a strong signal), parry missed, or the damage taken.
+	everyone: dodged, parried (a strong signal, and the attacker is stunned), parry missed, or the
+	damage taken.
 ]]
 
 local Players = game:GetService("Players")
@@ -33,6 +34,8 @@ local RESULT_STYLES: { [string]: ResultStyle } = {
 	ParryMissed = { text = "Errou o tempo", color = Color3.fromRGB(255, 110, 90), size = 20 },
 }
 local HIT_COLOR = Color3.fromRGB(255, 90, 90)
+local STUNNED_TEXT = "Atordoado"
+local STUNNED_COLOR = Color3.fromRGB(255, 240, 150)
 local GUARD_COLOR = Color3.fromRGB(255, 255, 255)
 local FLASH_COLOR = Color3.fromRGB(255, 240, 200)
 local FLASH_DURATION = 0.35
@@ -232,8 +235,14 @@ local function onDefenseEvent(defender: Player, result: string, attacker: Instan
 			CombatEffectsController.showText(character, style.text, style.color, style.size)
 		end
 	end
-	if result == "Parried" and defender == player then
-		flashScreen()
+	if result == "Parried" then
+		-- A successful parry stuns the attacker.
+		if attacker and attacker:IsA("Model") then
+			CombatEffectsController.showText(attacker, STUNNED_TEXT, STUNNED_COLOR, 20)
+		end
+		if defender == player then
+			flashScreen()
+		end
 	end
 end
 
