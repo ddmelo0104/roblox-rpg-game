@@ -17,6 +17,8 @@ local REASON_TEXT: { [string]: string } = {
 	NoEnergy = "sem energia",
 	NoLockedTarget = "trave um inimigo primeiro",
 	Vulnerable = "vulnerável",
+	BagFull = "mochila cheia",
+	TooFar = "longe demais",
 }
 
 local Notices = {}

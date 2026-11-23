@@ -22,6 +22,7 @@ local Validate = require(ReplicatedStorage.Shared.Validate)
 local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
 local EnergyService = require(script.Parent.EnergyService)
+local StatsService = require(script.Parent.StatsService)
 
 type Ability = Abilities.Ability
 type RejectReason = Abilities.RejectReason
@@ -189,15 +190,20 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 		return
 	end
 
+	-- The equipment scales the damage and shortens the cooldown (US-018).
+	local stats = StatsService.of(player)
+	local damage = ability.damage * stats.damageMultiplier
 	local hits = if lockedTarget then { lockedTarget } else targetsInArea(ability, origin, forward)
-	local knockedDown = applyDamage(hits, ability.damage)
+	local knockedDown = applyDamage(hits, damage)
 	if #hits > 0 then
 		CombatStateService.mark(player)
 	end
 
-	readyTimes[id] = if knockedDown and ability.resetOnKill then now else now + ability.cooldown
+	readyTimes[id] = if knockedDown and ability.resetOnKill
+		then now
+		else now + ability.cooldown * stats.cooldownMultiplier
 	respond(player, id, nil)
-	usedEvent:FireAllClients(player, id, CFrame.lookAt(origin, origin + forward), hits, ability.damage)
+	usedEvent:FireAllClients(player, id, CFrame.lookAt(origin, origin + forward), hits, damage)
 end
 
 function CombatService:Start()

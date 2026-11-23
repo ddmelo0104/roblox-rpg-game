@@ -58,6 +58,17 @@ function Validate.vector(value: any, min: number, max: number): (boolean, string
 	return true, nil
 end
 
+-- A string with at most `maxLength` characters (for example, an item uid).
+function Validate.shortString(value: any, maxLength: number): (boolean, string?)
+	if typeof(value) ~= "string" then
+		return false, `expected string, got {typeof(value)}`
+	end
+	if #value == 0 or #value > maxLength then
+		return false, `string length outside the range 1 to {maxLength}`
+	end
+	return true, nil
+end
+
 -- Nothing (nil) or an Instance. The caller checks class, tag and distance.
 function Validate.instanceOrNil(value: any): (boolean, string?)
 	if value == nil or typeof(value) == "Instance" then

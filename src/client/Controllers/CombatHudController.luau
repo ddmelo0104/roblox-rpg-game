@@ -16,6 +16,8 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local CombatState = require(Shared:WaitForChild("CombatState") :: ModuleScript)
 local Energy = require(Shared:WaitForChild("Energy") :: ModuleScript)
+local Items = require(Shared:WaitForChild("Items") :: ModuleScript)
+local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
 local CombatController = require(script.Parent.CombatController)
 local DefenseController = require(script.Parent.DefenseController)
 local Notices = require(script.Parent.Parent.Notices)
@@ -222,7 +224,8 @@ local function update(hud: Hud)
 	local current, max = Energy.of(player)
 	local energyFraction = if max > 0 then math.clamp(current / max, 0, 1) else 0
 	hud.energyFill.Size = UDim2.fromScale(energyFraction, 1)
-	hud.energyText.Text = `{current} / {max}`
+	local gearScore = player:GetAttribute(Items.GEAR_SCORE_ATTRIBUTE)
+	hud.energyText.Text = `{current} / {max}  ·  GS {if typeof(gearScore) == "number" then gearScore else "?"}`
 
 	local now = Workspace:GetServerTimeNow()
 	for _, slot in hud.slots do
@@ -242,6 +245,11 @@ local function update(hud: Hud)
 end
 
 function CombatHudController:Start()
+	-- Short notices from the server (bag full, item found…).
+	Remotes.event("Notice").OnClientEvent:Connect(function(actionName: string, reason: string)
+		Notices.showReason(actionName, reason)
+	end)
+
 	local hud = createHud()
 	RunService.RenderStepped:Connect(function()
 		update(hud)

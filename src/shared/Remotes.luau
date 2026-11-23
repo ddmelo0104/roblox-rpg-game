@@ -25,6 +25,10 @@ local LIST: { string } = {
 	"RequestParry", -- US-013: open the parry window
 	"DefenseState", -- US-013: server notice to one player (when dodge and parry are ready, lockout, rejection)
 	"DefenseEvent", -- US-013: server notice to everyone (dodged, parried, parry missed or hit, and the damage)
+	"InventoryUpdate", -- US-017: server notice to one player (a copy of the bag and of the equipment)
+	"RequestEquip", -- US-018: equip the bag item with this uid
+	"RequestUnequip", -- US-018: move what is worn in this slot back to the bag
+	"Notice", -- US-020: server notice to one player, shown on the HUD (action name and reason or text)
 }
 
 local Remotes = {}

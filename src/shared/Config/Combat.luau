@@ -7,6 +7,10 @@
 ]]
 
 return table.freeze({
+	-- Health of a character with GS 100 and no health bonus (the Roblox default). The equipment scales
+	-- it (US-018).
+	BASE_HEALTH = 100,
+
 	-- Max energy and how much comes back per second, in or out of combat (ENERGIA_MAX and
 	-- ENERGIA_REGEN in the design doc). Provisional.
 	MAX_ENERGY = 100,

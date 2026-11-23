@@ -21,6 +21,7 @@ local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
 local CombatConfig = require(Shared:WaitForChild("Config"):WaitForChild("Combat") :: ModuleScript)
 local LongswordConfig = require(Shared:WaitForChild("Config"):WaitForChild("Longsword") :: ModuleScript)
 local CombatEffectsController = require(script.Parent.CombatEffectsController)
+local InventoryController = require(script.Parent.InventoryController)
 local TargetController = require(script.Parent.TargetController)
 local Notices = require(script.Parent.Parent.Notices)
 
@@ -90,7 +91,8 @@ local function useAbility(ability: any, event: RemoteEvent)
 	local forward = direction or Abilities.flatDirection(root.CFrame.LookVector) or Vector3.new(0, 0, -1)
 
 	-- Prediction: cooldown and effect right away; the server confirms or undoes them.
-	readyAt[ability.id] = Workspace:GetServerTimeNow() + ability.cooldown
+	local cooldown = ability.cooldown * InventoryController.stats().cooldownMultiplier
+	readyAt[ability.id] = Workspace:GetServerTimeNow() + cooldown
 	local origin = CFrame.lookAt(root.Position, root.Position + forward)
 	predictedEffect[ability.id] = CombatEffectsController.draw(ability, origin, target)
 	event:FireServer(ability.id, forward, target)

@@ -20,6 +20,7 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
 local MovementValidationService = require(script.Parent.MovementValidationService)
+local StatsService = require(script.Parent.StatsService)
 local StatusService = require(script.Parent.StatusService)
 
 type State = {
@@ -167,6 +168,8 @@ function DefenseService.receiveHit(
 			StatusService.stun(attacker, CombatConfig.PARRY_STUN_TIME)
 		end
 	elseif result == "Hit" then
+		-- The equipment's resistance removes part of the damage (US-018).
+		damage *= 1 - StatsService.of(player).resistance
 		local humanoid = humanoidOf(player)
 		if humanoid then
 			humanoid:TakeDamage(damage)
