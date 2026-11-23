@@ -53,6 +53,9 @@ for _, ability in LIST do
 end
 
 return table.freeze({
+	-- How the defense sees this weapon's hits on a player (US-036): "Melee" (dodge or parry) or
+	-- "Ranged" (only the dodge).
+	HIT_KIND = "Ranged",
 	BASIC_ATTACK = table.freeze({ range = 35, damage = 35, interval = 1.1, coneAngle = 30 }),
 	ABILITIES = table.freeze(LIST),
 })

@@ -25,7 +25,8 @@ return table.freeze({
 	-- Seconds without line of sight before the lock releases by itself.
 	LOST_SIGHT_RELEASE_TIME = 1.5,
 
-	-- Provisional: whether the lock picks other players in PvP is an open question in the tab.
+	-- The lock also picks other players, only where the two can fight (US-036, decided by the dev
+	-- under the delegation of 2026-11-23).
 	LOCK_ON_PLAYERS = true,
 
 	-- Provisional keys (open question in the tab). The middle mouse button also locks and releases.

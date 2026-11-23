@@ -5,10 +5,12 @@
 	spawn point (US-027); its attributes say what appears there:
 	- Enemy (string): the kind, a key of Config/Enemies.KINDS
 	- Count (number, default 1) and Elite (boolean, default false)
-	- Tier (number, default 1): the zone's tier, for the strength, the loot and the fame
-	- Zone (string, default "Blue"): the zone's color, for the loot's luck and the fame (Config/Zones)
+	- Tier (number) and Zone (string: the zone kind, Config/Zones), for the strength, the loot's luck
+	  and the fame. Without them, the spawn point takes the tier and kind of the zone region it
+	  stands in (ZoneService, US-035).
 	- RespawnTime (number, default Config/Enemies.RESPAWN_TIME) and Radius (number, default 5)
-	If the place has no spawn point, a test area appears next to the spawn (Config/Enemies.TEST_AREA).
+	If the place has no spawn point, test groups appear to the left of the spawn, one row through the
+	test zones (Config/Enemies.TEST_AREA).
 
 	One loop runs the AI of every enemy (EnemyBrain), with sleeping enemies checked only once in a
 	while, and publishes once a second how many are awake and how much server time the AI took, for
@@ -32,6 +34,7 @@ local EnemiesConfig = require(ReplicatedStorage.Shared.Config.Enemies)
 local Loot = require(ReplicatedStorage.Shared.Loot)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
 local Mastery = require(ReplicatedStorage.Shared.Mastery)
+local Zones = require(ReplicatedStorage.Shared.Zones)
 local ZonesConfig = require(ReplicatedStorage.Shared.Config.Zones)
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local EnemyBody = require(script.Parent.Parent.EnemyBody)
@@ -40,6 +43,7 @@ local DamageService = require(script.Parent.DamageService)
 local InventoryService = require(script.Parent.InventoryService)
 local LootBagService = require(script.Parent.LootBagService)
 local MasteryService = require(script.Parent.MasteryService)
+local ZoneService = require(script.Parent.ZoneService)
 
 type Enemy = EnemyBrain.Enemy
 
@@ -95,12 +99,13 @@ local function readPoint(part: Instance): SpawnPoint?
 		warn(`[EnemyService] spawn point {part:GetFullName()} has no valid Enemy attribute: "{kindId}"`)
 		return nil
 	end
-	local zoneName = attribute(part, "Zone", ZonesConfig.DEFAULT_ZONE)
-	local zone = ZonesConfig.COLORS[zoneName]
-	if not zone then
-		warn(`[EnemyService] spawn point {part:GetFullName()} has an unknown Zone: "{zoneName}"`)
-		zone = ZonesConfig.COLORS[ZonesConfig.DEFAULT_ZONE]
+	-- Without its own Tier and Zone, a spawn point takes those of the zone region it stands in.
+	local here = ZoneService.zoneAt(part.Position)
+	local zoneKind = attribute(part, "Zone", here.kind)
+	if not ZonesConfig.KINDS[zoneKind] then
+		warn(`[EnemyService] spawn point {part:GetFullName()} has an unknown Zone: "{zoneKind}"`)
 	end
+	local rules = Zones.rules(zoneKind)
 	-- A spawn point only marks a place: it must not block players, sight or the ground check.
 	part.Anchored = true
 	part.Transparency = 1
@@ -112,9 +117,9 @@ local function readPoint(part: Instance): SpawnPoint?
 		kindId = kindId,
 		kind = kind,
 		elite = attribute(part, "Elite", false),
-		tier = attribute(part, "Tier", 1),
-		luck = zone.luck,
-		fameMultiplier = zone.fame,
+		tier = attribute(part, "Tier", here.tier),
+		luck = rules.luck,
+		fameMultiplier = rules.fame,
 		respawnTime = attribute(part, "RespawnTime", EnemiesConfig.RESPAWN_TIME),
 		radius = attribute(part, "Radius", 5),
 	}
@@ -257,14 +262,13 @@ local function addPoint(part: Instance)
 	end
 end
 
-local function newPointPart(parent: Instance, cframe: CFrame, kindId: string, tier: number, zone: string): Part
+-- A spawn point made by code. It has no Tier or Zone: it takes those of the zone it stands in.
+local function newPointPart(parent: Instance, cframe: CFrame, kindId: string): Part
 	local part = Instance.new("Part")
 	part.Name = "EnemySpawn"
 	part.Size = Vector3.new(1, 1, 1)
 	part.CFrame = cframe
 	part:SetAttribute("Enemy", kindId)
-	part:SetAttribute("Tier", tier)
-	part:SetAttribute("Zone", zone)
 	part.Parent = parent
 	return part
 end
@@ -274,8 +278,8 @@ local function spawnFrame(): CFrame
 	return if spawnLocation and spawnLocation:IsA("BasePart") then spawnLocation.CFrame else CFrame.new()
 end
 
--- The test area (US-027): groups in a row to the left of the spawn, away from the dummies and the
--- test chest.
+-- The test groups (US-027): a row to the left of the spawn, through the test zones (US-035), away
+-- from the dummies and the test chest.
 local function createTestArea()
 	local area = EnemiesConfig.TEST_AREA
 	local areaFolder = Instance.new("Folder")
@@ -283,7 +287,7 @@ local function createTestArea()
 	areaFolder.Parent = Workspace
 	for _, group in area.groups do
 		local cframe = spawnFrame() * CFrame.new(-group.left, 0, -area.ahead)
-		local part = newPointPart(areaFolder, cframe, group.kind, area.tier, area.zone)
+		local part = newPointPart(areaFolder, cframe, group.kind)
 		part:SetAttribute("Count", group.count)
 		part:SetAttribute("Elite", group.elite)
 		part:SetAttribute("Radius", area.radius)
@@ -300,7 +304,7 @@ local function createStressTest(count: number)
 	local base = spawnFrame() * CFrame.new(-columns * STRESS_SPACING / 2, 0, -STRESS_DISTANCE)
 	for i = 0, count - 1 do
 		local offset = CFrame.new((i % columns) * STRESS_SPACING, 0, -math.floor(i / columns) * STRESS_SPACING)
-		local part = newPointPart(stressFolder, base * offset, "BanditThug", 1, ZonesConfig.DEFAULT_ZONE)
+		local part = newPointPart(stressFolder, base * offset, "BanditThug")
 		part:SetAttribute("Radius", 0)
 		CollectionService:AddTag(part, Enemies.SPAWN_TAG)
 	end

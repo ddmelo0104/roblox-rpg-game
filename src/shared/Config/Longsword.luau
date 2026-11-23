@@ -70,6 +70,9 @@ end
 
 return table.freeze({
 	-- Basic attack (US-023): no energy, aim assist. Range in studs, interval in seconds, cone in degrees.
+	-- How the defense sees this weapon's hits on a player (US-036): "Melee" (dodge or parry) or
+	-- "Ranged" (only the dodge).
+	HIT_KIND = "Melee",
 	BASIC_ATTACK = table.freeze({ range = 1.5 * METER, damage = 40, interval = 0.9, coneAngle = 60 }),
 	ABILITIES = table.freeze(LIST),
 })

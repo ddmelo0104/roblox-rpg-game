@@ -20,6 +20,8 @@ local REASON_TEXT: { [string]: string } = {
 	BagFull = "mochila cheia",
 	TooFar = "longe demais",
 	NotYours = "ainda é de quem lutou",
+	Stunned = "atordoado",
+	InCombatBorder = "em combate, não dá para trocar de zona",
 }
 
 local Notices = {}

@@ -17,6 +17,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local CameraConfig = require(Shared:WaitForChild("Config"):WaitForChild("Camera") :: ModuleScript)
 local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
+local Zones = require(Shared:WaitForChild("Zones") :: ModuleScript)
 local CameraController = require(script.Parent.CameraController)
 
 -- Outline color of the locked target (visual only).
@@ -45,14 +46,22 @@ local function focusOf(root: BasePart): Vector3
 	return root.Position + Vector3.new(0, CameraConfig.FOCUS_HEIGHT, 0)
 end
 
+-- Whether this player and `other` can fight where they are (US-036): both in a PvP zone, and `other`
+-- no longer protected after entering it. It reads what the server publishes; the server decides.
+local function canFight(other: Player): boolean
+	local mine = Zones.rules(player:GetAttribute(Zones.KIND_ATTRIBUTE) or "")
+	local theirs = Zones.rules(other:GetAttribute(Zones.KIND_ATTRIBUTE) or "")
+	return other ~= player and mine.pvp == true and theirs.pvp == true and not Zones.isProtected(other)
+end
+
 -- The models that can be locked: the ones with the target tag and, if the Config allows it, the
--- other players.
+-- other players this one can fight.
 local function candidates(): { Model }
 	local list = Targets.all()
 	if CameraConfig.LOCK_ON_PLAYERS then
 		for _, other in Players:GetPlayers() do
 			local character = other.Character
-			if other ~= player and character then
+			if character and canFight(other) then
 				table.insert(list, character)
 			end
 		end
@@ -139,8 +148,11 @@ local function checkLock(dt: number)
 		release()
 		return
 	end
-	-- An enemy going back home stops being a target (US-025): the lock lets go of it.
-	if not Targets.isTarget(current) and not Players:GetPlayerFromCharacter(current) then
+	-- An enemy going back home stops being a target (US-025), and a player stops being one outside
+	-- PvP (US-036): the lock lets go.
+	local lockedPlayer = Players:GetPlayerFromCharacter(current)
+	local stillValid = if lockedPlayer then canFight(lockedPlayer) else Targets.isTarget(current)
+	if not stillValid then
 		release()
 		return
 	end

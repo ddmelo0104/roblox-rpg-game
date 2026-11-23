@@ -7,7 +7,10 @@
 	"on this point"); the server checks that the ability belongs to what the player wears, then the
 	cooldown, target, range, line of sight and energy, works out who was hit with the math in
 	Shared.Abilities and the lag margin (ADR-009), applies the damage and tells every client.
-	Only models with the target tag take damage: PvP depends on the zone rules (EP-007).
+	Models with the target tag (dummies and enemies) take damage through DamageService. Other
+	players are targets only where the zone rules allow PvP (US-036, ZoneService.canPvp); a hit on a
+	player goes through DefenseService, so their dodge and parry work, and a stunned character (a
+	parried attacker) cannot use abilities. Attacking ends a player's zone entry protection.
 ]]
 
 local Players = game:GetService("Players")
@@ -20,15 +23,18 @@ local CameraConfig = require(ReplicatedStorage.Shared.Config.Camera)
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
 local Items = require(ReplicatedStorage.Shared.Items)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
+local Status = require(ReplicatedStorage.Shared.Status)
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local Validate = require(ReplicatedStorage.Shared.Validate)
 local Weapons = require(ReplicatedStorage.Shared.Weapons)
 local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
 local DamageService = require(script.Parent.DamageService)
+local DefenseService = require(script.Parent.DefenseService)
 local EnergyService = require(script.Parent.EnergyService)
 local InventoryService = require(script.Parent.InventoryService)
 local StatsService = require(script.Parent.StatsService)
+local ZoneService = require(script.Parent.ZoneService)
 
 type Ability = Abilities.Ability
 type RejectReason = Abilities.RejectReason
@@ -115,11 +121,33 @@ local function eyeOf(origin: Vector3): Vector3
 	return origin + Vector3.new(0, CameraConfig.FOCUS_HEIGHT, 0)
 end
 
+-- What `player` may hit: the tagged targets, plus the characters of the players the zone rules let
+-- them fight (US-036).
+local function candidatesFor(player: Player): { Model }
+	local list = Targets.all()
+	for _, other in Players:GetPlayers() do
+		local character = other.Character
+		if character and ZoneService.canPvp(player, other) then
+			table.insert(list, character)
+		end
+	end
+	return list
+end
+
+-- Whether `instance` is something `player` may hit.
+local function isValidTarget(player: Player, instance: Instance): boolean
+	if Targets.isTarget(instance) then
+		return true
+	end
+	local victim = Players:GetPlayerFromCharacter(instance)
+	return victim ~= nil and ZoneService.canPvp(player, victim)
+end
+
 -- The living targets inside the area (Front or Around) that the attacker can see.
-local function targetsInArea(ability: Ability, origin: Vector3, forward: Vector3): { Model }
+local function targetsInArea(player: Player, ability: Ability, origin: Vector3, forward: Vector3): { Model }
 	local ignore = nonBlocking()
 	local hits: { Model } = {}
-	for _, target in Targets.all() do
+	for _, target in candidatesFor(player) do
 		local position = Targets.position(target)
 		if not position or not Targets.isAlive(target) then
 			continue
@@ -136,8 +164,13 @@ local function targetsInArea(ability: Ability, origin: Vector3, forward: Vector3
 end
 
 -- Checks the locked target of the target strike. Returns the target, or nil and the reject reason.
-local function checkTarget(ability: Ability, origin: Vector3, requested: Instance?): (Model?, RejectReason?)
-	if not requested or not Targets.isTarget(requested) then
+local function checkTarget(
+	player: Player,
+	ability: Ability,
+	origin: Vector3,
+	requested: Instance?
+): (Model?, RejectReason?)
+	if not requested or not isValidTarget(player, requested) then
 		return nil, "InvalidTarget"
 	end
 	local target = requested :: Model
@@ -156,11 +189,15 @@ local function checkTarget(ability: Ability, origin: Vector3, requested: Instanc
 end
 
 -- Takes health from the hit targets, in the player's name (DamageService writes down who dealt it).
--- Returns whether this hit knocked any of them down.
-local function applyDamage(player: Player, hits: { Model }, damage: number): boolean
+-- A hit on another player goes through their defense (dodge and parry), as a `hitKind` hit. Returns
+-- whether this hit knocked a target down (a player's defense answers later, so it never counts).
+local function applyDamage(player: Player, hits: { Model }, damage: number, hitKind: any): boolean
 	local knockedDown = false
 	for _, target in hits do
-		if DamageService.deal(target, damage, player) then
+		local victim = Players:GetPlayerFromCharacter(target)
+		if victim then
+			task.spawn(DefenseService.receiveHit, victim, damage, hitKind, player.Character)
+		elseif DamageService.deal(target, damage, player) then
 			knockedDown = true
 		end
 	end
@@ -168,9 +205,9 @@ local function applyDamage(player: Player, hits: { Model }, damage: number): boo
 end
 
 -- The living targets within `radius` of `point` (a Ground ability).
-local function targetsAroundPoint(point: Vector3, radius: number): { Model }
+local function targetsAroundPoint(player: Player, point: Vector3, radius: number): { Model }
 	local hits: { Model } = {}
-	for _, target in Targets.all() do
+	for _, target in candidatesFor(player) do
 		local position = Targets.position(target)
 		if
 			position
@@ -219,6 +256,10 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 		respond(player, id, "NoCharacter")
 		return
 	end
+	if Status.isStunned(player.Character :: Model) then
+		respond(player, id, "Stunned")
+		return
+	end
 	local now = Workspace:GetServerTimeNow()
 
 	-- The chest ability, if the request is for the chest the player wears.
@@ -249,7 +290,7 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 
 	local lockedTarget: Model? = nil
 	if ability.shape == "Target" then
-		local target, reason = checkTarget(ability, origin, requestedTarget)
+		local target, reason = checkTarget(player, ability, origin, requestedTarget)
 		if not target then
 			respond(player, id, reason)
 			return
@@ -279,9 +320,10 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 	local damage = ability.damage * stats.damageMultiplier
 	local hits = if lockedTarget
 		then { lockedTarget }
-		elseif ability.shape == "Ground" and point then targetsAroundPoint(point, ability.radius)
-		else targetsInArea(ability, origin, forward)
-	local knockedDown = applyDamage(player, hits, damage)
+		elseif ability.shape == "Ground" and point then targetsAroundPoint(player, point, ability.radius)
+		else targetsInArea(player, ability, origin, forward)
+	local knockedDown = applyDamage(player, hits, damage, kit.HIT_KIND)
+	ZoneService.onAttack(player)
 	if #hits > 0 then
 		CombatStateService.mark(player)
 	end
@@ -299,6 +341,9 @@ local function basicAttack(player: Player, requestedTarget: Instance?)
 	local humanoid, root = partsOf(player)
 	local kit = kitOf(player)
 	if not humanoid or not root or humanoid.Health <= 0 or not kit then
+		return
+	end
+	if Status.isStunned(player.Character :: Model) then
 		return
 	end
 	local now = Workspace:GetServerTimeNow()
@@ -320,12 +365,12 @@ local function basicAttack(player: Player, requestedTarget: Instance?)
 	end
 
 	local target: Model? = nil
-	if requestedTarget and Targets.isTarget(requestedTarget) and reachable(requestedTarget :: Model) then
+	if requestedTarget and isValidTarget(player, requestedTarget) and reachable(requestedTarget :: Model) then
 		target = requestedTarget :: Model
 	else
 		local forward = Abilities.flatDirection(root.CFrame.LookVector) or Vector3.new(0, 0, -1)
 		local bestDistance = math.huge
-		for _, candidate in Targets.all() do
+		for _, candidate in candidatesFor(player) do
 			local position = Targets.position(candidate)
 			if
 				position
@@ -346,8 +391,9 @@ local function basicAttack(player: Player, requestedTarget: Instance?)
 
 	basicReadyAt[player] = now + basic.interval
 	local damage = basic.damage * StatsService.of(player).damageMultiplier
-	applyDamage(player, { target }, damage)
+	applyDamage(player, { target }, damage, kit.HIT_KIND)
 	CombatStateService.mark(player)
+	ZoneService.onAttack(player)
 	usedEvent:FireAllClients(player, BASIC_ATTACK_ID, root.CFrame, { target }, damage, nil)
 end
 

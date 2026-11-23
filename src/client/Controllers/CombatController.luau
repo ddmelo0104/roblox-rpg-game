@@ -74,7 +74,8 @@ local function prepareRequest(ability: any, root: BasePart): (Vector3?, Model?, 
 	end
 
 	if ability.shape == "Target" then
-		if not locked or not lockedPosition or not Targets.isTarget(locked) or not Targets.isAlive(locked) then
+		local isTarget = locked ~= nil and (Targets.isTarget(locked) or Players:GetPlayerFromCharacter(locked) ~= nil)
+		if not locked or not lockedPosition or not isTarget or not Targets.isAlive(locked) then
 			return nil, nil, "NoLockedTarget"
 		end
 		if not Abilities.isInRadius(origin, lockedPosition, ability.range, 0, CombatConfig.MAX_HIT_HEIGHT) then

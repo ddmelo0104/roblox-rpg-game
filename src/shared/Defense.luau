@@ -8,7 +8,8 @@
 ]]
 
 export type Action = "Dodge" | "Parry"
-export type Result = "Dodged" | "Parried" | "ParryMissed" | "Hit"
+-- "Immune": the player is where nobody takes damage (the city, US-037); clients are not told.
+export type Result = "Dodged" | "Parried" | "ParryMissed" | "Hit" | "Immune"
 export type RejectReason = "NoCharacter" | "OnCooldown" | "Vulnerable"
 export type HitKind = "Melee" | "Ranged"
 

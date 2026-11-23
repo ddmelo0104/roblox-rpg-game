@@ -14,6 +14,7 @@
 local EnemiesConfig = require(script.Parent.Config.Enemies)
 local Items = require(script.Parent.Items)
 local LootConfig = require(script.Parent.Config.Loot)
+local Zones = require(script.Parent.Zones)
 
 export type DeathBlast = {
 	radius: number,
@@ -52,14 +53,9 @@ function Enemies.kind(id: string): Kind?
 	return if kind then kind :: any else nil
 end
 
--- The GS the interface recommends for a zone of this tier (Zones and Risk tab).
-function Enemies.recommendedGearScore(tier: number): number
-	return 100 * tier + 50
-end
-
 -- How much stronger than its base numbers an enemy of this tier is.
 function Enemies.strength(tier: number): number
-	return Items.attributeMultiplier(Enemies.recommendedGearScore(tier))
+	return Items.attributeMultiplier(Zones.recommendedGearScore(tier))
 end
 
 -- Health and damage of an enemy of this kind, tier and elite flag.

@@ -90,19 +90,23 @@ return table.freeze({
 	RESPAWN_TIME = 45,
 	CORPSE_TIME = 3,
 
-	-- Test area (US-027): if the place has no spawn point, groups of enemies appear in a row to the
-	-- left of the spawn (`left` studs), far enough apart to fight one group at a time. Tier 1, in a
-	-- blue zone (Config/Zones).
+	-- Test groups (US-027): if the place has no spawn point, groups of enemies appear in a row to the
+	-- left of the spawn (`left` studs), far enough apart to fight one group at a time. They take the
+	-- tier and kind of the test zone they stand in (Config/Zones.TEST_LAYOUT): Blue T1 up to 250
+	-- studs, the city up to 400, Yellow T2 up to 650 and Red T3 up to 950.
 	TEST_AREA = table.freeze({
 		ahead = 30,
-		tier = 1,
-		zone = "Blue",
 		radius = 4,
 		groups = table.freeze({
 			table.freeze({ kind = "BanditThug", count = 2, elite = false, left = 60 }),
 			table.freeze({ kind = "BanditArcher", count = 1, elite = false, left = 110 }),
 			table.freeze({ kind = "BanditBomber", count = 1, elite = false, left = 160 }),
 			table.freeze({ kind = "BanditThug", count = 1, elite = true, left = 210 }),
+			table.freeze({ kind = "BanditThug", count = 2, elite = false, left = 480 }),
+			table.freeze({ kind = "BanditArcher", count = 1, elite = false, left = 570 }),
+			table.freeze({ kind = "BanditThug", count = 2, elite = false, left = 720 }),
+			table.freeze({ kind = "BanditBomber", count = 1, elite = false, left = 800 }),
+			table.freeze({ kind = "BanditThug", count = 1, elite = true, left = 880 }),
 		}),
 	}),
 })

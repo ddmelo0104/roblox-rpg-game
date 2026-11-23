@@ -6,7 +6,8 @@
 	Every hit on a player goes through `receiveHit`: it waits DEFENSE_GRACE, so the defender wins
 	close calls, resolves the hit as dodged, parried or hit, applies the damage and tells every
 	client. A parry that catches no hit leaves the player vulnerable for a moment: no dodge and no
-	parry. A successful parry stuns the attacker (Davi, 2026-11-23).
+	parry. A successful parry stuns the attacker (Davi, 2026-11-23). Nobody takes damage in a safe
+	zone, the city (US-037).
 	Numbers in Config/Combat.
 ]]
 
@@ -24,6 +25,7 @@ local InventoryService = require(script.Parent.InventoryService)
 local MovementValidationService = require(script.Parent.MovementValidationService)
 local StatsService = require(script.Parent.StatsService)
 local StatusService = require(script.Parent.StatusService)
+local ZoneService = require(script.Parent.ZoneService)
 
 type State = {
 	dodgeReadyAt: number,
@@ -157,6 +159,9 @@ function DefenseService.receiveHit(
 	task.wait(CombatConfig.DEFENSE_GRACE)
 	if not player.Parent then
 		return "Hit" -- the player left the game meanwhile
+	end
+	if ZoneService.isSafe(player) then
+		return "Immune"
 	end
 
 	local state = stateOf(player)
