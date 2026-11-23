@@ -26,8 +26,8 @@ Decidida pelo dev em 23/11, por delegação do Davi, seguindo as dependências e
 5. **EP-006** · Persistência do perfil (ADR-005, proposto) (em revisão: US-033 e US-034).
 6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio (em revisão: US-035 a US-037; faltam o mapa e a cidade).
 7. **EP-009** · Morte, derrubado e saque (em revisão: US-038 a US-040; falta o anti *combat logging*).
-8. **EP-010** · Dungeon aleatória solo (próximo).
-9. **EP-011** · HUD, UI e a quest de tutorial.
+8. **EP-010** · Dungeon aleatória solo (em revisão: US-041 a US-043; faltam armadilha, evento, modificadores e as salas do Studio).
+9. **EP-011** · HUD, UI e a quest de tutorial (próximo).
 10. **EP-012** · Conteúdo de grupo.
 
 O EP-002 (personagem, câmera e controles) já foi quase todo coberto pelas histórias do EP-001 (US-009 a US-011 e US-015). O que faltar vai junto com o EP-011.

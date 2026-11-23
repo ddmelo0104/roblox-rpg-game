@@ -19,7 +19,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 | [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
 | [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | em-andamento | must | M1 | 0/3 histórias · 0/15 pts |
-| [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | backlog | must | M1 | sem histórias |
+| [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 | [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | backlog | must | M1 | sem histórias |
 | [EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)](epicos/EP-012-conteudo-de-grupo.md) | backlog | must | M1 | sem histórias |
 
@@ -65,6 +65,9 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-038 · Derrubado em vez de morrer, com os tempos de cada zona](historias/US-038-derrubado-em-vez-de-morrer.md) | revisao | EP-009 | must | 5 |
 | [US-039 · Reanimar, finalizar e desistir](historias/US-039-reanimar-finalizar-e-desistir.md) | revisao | EP-009 | must | 5 |
 | [US-040 · Saque total na Vermelha e kit de recomeço](historias/US-040-saque-total-e-kit-de-recomeco.md) | revisao | EP-009 | must | 5 |
+| [US-041 · Dungeon gerada por semente, numa instância do servidor](historias/US-041-dungeon-gerada-por-semente.md) | revisao | EP-010 | must | 5 |
+| [US-042 · Entradas que aparecem e somem, e a saída da dungeon](historias/US-042-entradas-e-saida-da-dungeon.md) | revisao | EP-010 | must | 3 |
+| [US-043 · Mini-chefe, chefe e baús divididos](historias/US-043-chefes-e-baus-da-dungeon.md) | revisao | EP-010 | must | 5 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 
@@ -91,6 +94,7 @@ _Nada por aqui._
 | [ADR-004 · Um place só no M1, com as zonas como regiões de dados](../arquitetura/adr/ADR-004-um-place-so-no-m1.md) | proposto |
 | [ADR-005 · Perfil salvo no DataStore com trava de sessão própria](../arquitetura/adr/ADR-005-perfil-salvo-com-trava-de-sessao.md) | proposto |
 | [ADR-006 · Itens como registros com uid gerado só no servidor](../arquitetura/adr/ADR-006-itens-como-registros-com-uid-do-servidor.md) | proposto |
+| [ADR-007 · Instâncias de dungeon no mesmo servidor da zona](../arquitetura/adr/ADR-007-instancias-de-dungeon-no-mesmo-servidor.md) | proposto |
 | [ADR-009 · Acerto das habilidades no servidor, com margem de lag](../arquitetura/adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md) | proposto |
 | [ADR-010 · Validação de movimento no servidor](../arquitetura/adr/ADR-010-validacao-de-movimento-no-servidor.md) | proposto |
 
