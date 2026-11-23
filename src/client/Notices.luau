@@ -26,6 +26,9 @@ local REASON_TEXT: { [string]: string } = {
 	Interrupted = "interrompido por dano",
 	NoPvp = "só numa zona com PvP",
 	InCombat = "em combate",
+	GroupFull = "o grupo está cheio",
+	AlreadyInGroup = "já está em outro grupo",
+	InviteSent = "convite enviado",
 }
 
 local Notices = {}

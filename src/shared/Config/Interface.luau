@@ -24,6 +24,9 @@ return table.freeze({
 	-- Opens the world map (US-044).
 	MAP_KEY = Enum.KeyCode.M,
 
+	-- Key of the prompt to invite another player to the group (US-046).
+	INVITE_KEY = Enum.KeyCode.V,
+
 	-- Color of each rarity (Common … Legendary): item borders and the glow of loot bags (US-026).
 	RARITY_COLORS = table.freeze({
 		Color3.fromRGB(200, 200, 200),

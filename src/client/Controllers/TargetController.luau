@@ -52,9 +52,12 @@ end
 local function canFight(other: Player): boolean
 	local mine = Zones.rules(player:GetAttribute(Zones.KIND_ATTRIBUTE) or "")
 	local theirs = Zones.rules(other:GetAttribute(Zones.KIND_ATTRIBUTE) or "")
+	local myGroup = player:GetAttribute("GroupId")
+	local sameGroup = myGroup ~= nil and myGroup == other:GetAttribute("GroupId")
 	return other ~= player
 		and mine.pvp == true
 		and theirs.pvp == true
+		and not sameGroup
 		and not Zones.isProtected(other)
 		and not Knockdown.isDowned(other)
 end

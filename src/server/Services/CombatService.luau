@@ -32,6 +32,7 @@ local Network = require(script.Parent.Parent.Network)
 local CombatStateService = require(script.Parent.CombatStateService)
 local DamageService = require(script.Parent.DamageService)
 local DefenseService = require(script.Parent.DefenseService)
+local GroupService = require(script.Parent.GroupService)
 local EnergyService = require(script.Parent.EnergyService)
 local InventoryService = require(script.Parent.InventoryService)
 local StatsService = require(script.Parent.StatsService)
@@ -128,7 +129,12 @@ local function candidatesFor(player: Player): { Model }
 	local list = Targets.all()
 	for _, other in Players:GetPlayers() do
 		local character = other.Character
-		if character and ZoneService.canPvp(player, other) and not Knockdown.isDowned(other) then
+		if
+			character
+			and ZoneService.canPvp(player, other)
+			and not GroupService.sameGroup(player, other)
+			and not Knockdown.isDowned(other)
+		then
 			table.insert(list, character)
 		end
 	end
@@ -141,7 +147,10 @@ local function isValidTarget(player: Player, instance: Instance): boolean
 		return true
 	end
 	local victim = Players:GetPlayerFromCharacter(instance)
-	return victim ~= nil and ZoneService.canPvp(player, victim) and not Knockdown.isDowned(victim)
+	return victim ~= nil
+		and ZoneService.canPvp(player, victim)
+		and not GroupService.sameGroup(player, victim)
+		and not Knockdown.isDowned(victim)
 end
 
 -- The living targets inside the area (Front or Around) that the attacker can see.

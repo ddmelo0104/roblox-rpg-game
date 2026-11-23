@@ -57,6 +57,31 @@ return table.freeze({
 	BOSS_CHEST_ITEMS = 4,
 	CHEST_REACH = 12,
 
+	-- The group dungeon of the M1 test (US-048, Davi 2026-11-05: one, to be cloned later): fixed
+	-- rooms in the world, elites and bosses for a group, enemies that come back, and chests meant
+	-- for 4 players. It uses the zone of its entrance.
+	GROUP_LAYOUT = table.freeze({ "Start", "Elite", "Elite", "MiniBoss", "Elite", "Boss" }),
+	GROUP_ROOM_ENEMIES = table.freeze({
+		Elite = table.freeze({
+			table.freeze({ kind = "BanditThug", count = 2, elite = true }),
+			table.freeze({ kind = "BanditArcher", count = 1, elite = true }),
+			table.freeze({ kind = "BanditBomber", count = 1, elite = false }),
+		}),
+		MiniBoss = table.freeze({
+			table.freeze({ kind = "BanditCaptain", count = 1, elite = true }),
+			table.freeze({ kind = "BanditThug", count = 2, elite = true }),
+		}),
+		Boss = table.freeze({
+			table.freeze({ kind = "BanditChief", count = 1, elite = true }),
+			table.freeze({ kind = "BanditArcher", count = 2, elite = true }),
+		}),
+	}),
+	GROUP_RESPAWN_TIME = 240,
+	GROUP_MINIBOSS_CHEST_ITEMS = 4,
+	GROUP_BOSS_CHEST_ITEMS = 8,
+	GROUP_ORIGIN = Vector3.new(-6000, 40, 0),
+	GROUP_SPACING = 1500,
+
 	-- Leaving before the end (Davi): seconds of channeling, out of combat (US-042).
 	EXIT_CHANNEL_TIME = 30,
 

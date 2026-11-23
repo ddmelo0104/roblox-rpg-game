@@ -28,6 +28,7 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Zones = require(ReplicatedStorage.Shared.Zones)
 local Network = require(script.Parent.Parent.Network)
 local DefenseService = require(script.Parent.DefenseService)
+local GroupService = require(script.Parent.GroupService)
 local InventoryService = require(script.Parent.InventoryService)
 local LootBagService = require(script.Parent.LootBagService)
 local MovementValidationService = require(script.Parent.MovementValidationService)
@@ -182,7 +183,7 @@ local function knockDown(player: Player, attacker: Instance?)
 		addPrompt(FINISH_TEXT, InterfaceConfig.FINISH_KEY, KnockdownConfig.FINISH_TIME, function(finisher)
 			-- Finishing is an attack: only where the finisher can fight (the victim is down, so their
 			-- entry protection no longer matters).
-			if ZoneService.zoneOf(finisher).rules.pvp ~= true then
+			if ZoneService.zoneOf(finisher).rules.pvp ~= true or GroupService.sameGroup(finisher, player) then
 				notify(finisher, "NoPvp")
 				return
 			end

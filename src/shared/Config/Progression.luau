@@ -30,6 +30,10 @@ return table.freeze({
 	MINIBOSS_FAME_MULTIPLIER = 10,
 	BOSS_FAME_MULTIPLIER = 30,
 
+	-- In a group (US-046), each of the n members near a kill gets F × (1 + GROUP_FAME_BONUS × (n − 1))
+	-- / n of the group's share of the fame: a group earns a bit more than its members alone.
+	GROUP_FAME_BONUS = 0.15,
+
 	-- Share of a fame gain that goes to the item worn in each slot. A line's mastery gets the sum of
 	-- what its items got.
 	FAME_SLOT_SHARES = table.freeze({ Weapon = 1, Chest = 0.5, Head = 0.25, Feet = 0.25 }),

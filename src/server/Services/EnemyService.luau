@@ -35,7 +35,9 @@ local Enemies = require(ReplicatedStorage.Shared.Enemies)
 local EnemiesConfig = require(ReplicatedStorage.Shared.Config.Enemies)
 local Knockdown = require(ReplicatedStorage.Shared.Knockdown)
 local Loot = require(ReplicatedStorage.Shared.Loot)
+local GroupsConfig = require(ReplicatedStorage.Shared.Config.Groups)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
+local ProgressionConfig = require(ReplicatedStorage.Shared.Config.Progression)
 local Mastery = require(ReplicatedStorage.Shared.Mastery)
 local Zones = require(ReplicatedStorage.Shared.Zones)
 local ZonesConfig = require(ReplicatedStorage.Shared.Config.Zones)
@@ -43,6 +45,7 @@ local Targets = require(ReplicatedStorage.Shared.Targets)
 local EnemyBody = require(script.Parent.Parent.EnemyBody)
 local EnemyBrain = require(script.Parent.Parent.EnemyBrain)
 local DamageService = require(script.Parent.DamageService)
+local GroupService = require(script.Parent.GroupService)
 local InventoryService = require(script.Parent.InventoryService)
 local LootBagService = require(script.Parent.LootBagService)
 local MasteryService = require(script.Parent.MasteryService)
@@ -147,9 +150,23 @@ end
 
 local spawnOne: (point: SpawnPoint) -> ()
 
--- Rolls the item chance of a kill and leaves the item in a bag for the players who earned it.
+-- The players who earned a kill and the members of their groups near it (US-046).
+local function earners(contributions: DamageService.Contributions, position: Vector3): { Player }
+	local list: { Player } = {}
+	for _, player in Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE) do
+		for _, member in GroupService.membersNear(player, position, GroupsConfig.SHARE_RANGE) do
+			if not table.find(list, member) then
+				table.insert(list, member)
+			end
+		end
+	end
+	return list
+end
+
+-- Rolls the item chance of a kill and leaves the item in a bag for the players who earned it and
+-- their groups.
 local function dropLoot(point: SpawnPoint, ground: Vector3, contributions: DamageService.Contributions)
-	local owners = Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE)
+	local owners = earners(contributions, ground)
 	if #owners == 0 then
 		return
 	end
@@ -162,8 +179,10 @@ local function dropLoot(point: SpawnPoint, ground: Vector3, contributions: Damag
 	LootBagService.drop(ground + Vector3.new(0, 0.8, 0), { record }, owners)
 end
 
--- Gives the kill's fame to the players who earned it, each with their share of the damage.
-local function awardFame(point: SpawnPoint, contributions: DamageService.Contributions)
+-- Gives the kill's fame to the players who earned it, each with their share of the damage. A group
+-- (US-046) takes the share of all its members near the kill and splits it among them with the
+-- group bonus: F × (1 + GROUP_FAME_BONUS × (n − 1)) / n each.
+local function awardFame(point: SpawnPoint, contributions: DamageService.Contributions, position: Vector3)
 	local total = 0
 	for _, amount in contributions do
 		total += amount
@@ -173,9 +192,22 @@ local function awardFame(point: SpawnPoint, contributions: DamageService.Contrib
 	end
 	local fame = Mastery.killFame(point.tier, point.elite, point.fameMultiplier)
 		* Enemies.rankFameMultiplier(point.kind)
+	local done: { [Player]: boolean } = {}
 	for _, player in Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE) do
-		if player.Parent then
-			MasteryService.award(player, fame * contributions[player] / total)
+		if not done[player] then
+			local members = GroupService.membersNear(player, position, GroupsConfig.SHARE_RANGE)
+			local share = 0
+			for _, member in members do
+				share += contributions[member] or 0
+				done[member] = true
+			end
+			local n = #members
+			local each = fame * (share / total) * (1 + ProgressionConfig.GROUP_FAME_BONUS * (n - 1)) / n
+			for _, member in members do
+				if member.Parent then
+					MasteryService.award(member, each)
+				end
+			end
 		end
 	end
 end
@@ -197,13 +229,13 @@ local function finish(enemy: Enemy, contributions: DamageService.Contributions?)
 	end
 	if point then
 		if contributions then
-			awardFame(point, contributions)
+			awardFame(point, contributions, ground)
 			dropLoot(point, ground, contributions)
 			local kill: Kill = {
 				point = point.part,
 				kindId = point.kindId,
 				position = ground,
-				credited = Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE),
+				credited = earners(contributions, ground),
 			}
 			for _, listener in killListeners do
 				task.spawn(listener, kill)
@@ -405,6 +437,23 @@ local function removePoint(part: Instance)
 	end
 end
 
+-- How many enemies of this spawn point are alive (camps, US-047).
+function EnemyService.livingAt(part: BasePart): number
+	local count = 0
+	for _, enemy in enemies do
+		local point = pointOf[enemy]
+		if point and point.part == part then
+			count += 1
+		end
+	end
+	return count
+end
+
+-- Brings a spawn point's enemies now (a camp coming back, US-047).
+function EnemyService.respawn(part: BasePart)
+	addPoint(part)
+end
+
 -- Calls `listener` after every kill by players.
 function EnemyService.onKilled(listener: (kill: Kill) -> ())
 	table.insert(killListeners, listener)
@@ -432,11 +481,15 @@ function EnemyService:Start()
 
 	CollectionService:GetInstanceAddedSignal(Enemies.SPAWN_TAG):Connect(addPoint)
 	CollectionService:GetInstanceRemovedSignal(Enemies.SPAWN_TAG):Connect(removePoint)
-	local existing = CollectionService:GetTagged(Enemies.SPAWN_TAG)
-	for _, part in existing do
+	local placeHasPoints = false
+	for _, part in CollectionService:GetTagged(Enemies.SPAWN_TAG) do
 		addPoint(part)
+		-- Test content made by other services (camps) does not count as the place's own points.
+		if part:GetAttribute("TestContent") ~= true then
+			placeHasPoints = true
+		end
 	end
-	if #existing == 0 then
+	if not placeHasPoints then
 		createTestArea()
 	end
 	if DebugConfig.EXTRA_TEST_ENEMIES > 0 then

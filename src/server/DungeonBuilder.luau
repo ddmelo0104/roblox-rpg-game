@@ -17,6 +17,9 @@ local Enemies = require(ReplicatedStorage.Shared.Enemies)
 local Zones = require(ReplicatedStorage.Shared.Zones)
 
 export type Room = { kind: DungeonLayout.RoomKind, center: CFrame }
+-- What changes for the group dungeon (US-048): its own enemies per room, and enemies that come
+-- back after `respawnTime` (by default they never come back).
+export type Options = { roomEnemies: any?, respawnTime: number? }
 export type Built = {
 	folder: Folder,
 	region: BasePart,
@@ -79,8 +82,16 @@ local function crossWall(parent: Instance, center: CFrame, z: number, door: bool
 	end
 end
 
-local function addSpawnPoints(parent: Instance, kind: DungeonLayout.RoomKind, center: CFrame, zone: Zones.Zone)
-	local groups = (DungeonsConfig.ROOM_ENEMIES :: any)[kind]
+local function addSpawnPoints(
+	parent: Instance,
+	kind: DungeonLayout.RoomKind,
+	center: CFrame,
+	zone: Zones.Zone,
+	options: Options?
+)
+	local roomEnemies = if options and options.roomEnemies then options.roomEnemies else DungeonsConfig.ROOM_ENEMIES
+	local respawnTime = if options then options.respawnTime else nil
+	local groups = roomEnemies[kind]
 	if not groups then
 		return
 	end
@@ -93,7 +104,10 @@ local function addSpawnPoints(parent: Instance, kind: DungeonLayout.RoomKind, ce
 		point:SetAttribute("Tier", zone.tier)
 		point:SetAttribute("Zone", zone.kind)
 		point:SetAttribute("Radius", 6)
-		point:SetAttribute("Respawns", false)
+		point:SetAttribute("Respawns", respawnTime ~= nil)
+		if respawnTime then
+			point:SetAttribute("RespawnTime", respawnTime)
+		end
 		local enemyKind = Enemies.kind(group.kind)
 		if enemyKind and enemyKind.rank then
 			point:SetAttribute("DungeonRole", enemyKind.rank)
@@ -103,7 +117,13 @@ local function addSpawnPoints(parent: Instance, kind: DungeonLayout.RoomKind, ce
 end
 
 -- Builds the rooms of `layout` in a row from `origin` (toward its front), in the zone `zone`.
-function DungeonBuilder.build(layout: DungeonLayout.Layout, origin: CFrame, zone: Zones.Zone, name: string): Built
+function DungeonBuilder.build(
+	layout: DungeonLayout.Layout,
+	origin: CFrame,
+	zone: Zones.Zone,
+	name: string,
+	options: Options?
+): Built
 	local folder = Instance.new("Folder")
 	folder.Name = name
 	local size = DungeonsConfig.ROOM_SIZE
@@ -148,7 +168,7 @@ function DungeonBuilder.build(layout: DungeonLayout.Layout, origin: CFrame, zone
 				)
 			end
 		end
-		addSpawnPoints(room, kind, center, zone)
+		addSpawnPoints(room, kind, center, zone, options)
 		table.insert(rooms, { kind = kind, center = center })
 	end
 

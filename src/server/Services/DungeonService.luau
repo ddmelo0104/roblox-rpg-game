@@ -27,20 +27,16 @@ local CombatState = require(ReplicatedStorage.Shared.CombatState)
 local DungeonLayout = require(ReplicatedStorage.Shared.DungeonLayout)
 local DungeonsConfig = require(ReplicatedStorage.Shared.Config.Dungeons)
 local InterfaceConfig = require(ReplicatedStorage.Shared.Config.Interface)
-local Items = require(ReplicatedStorage.Shared.Items)
 local Knockdown = require(ReplicatedStorage.Shared.Knockdown)
-local Loot = require(ReplicatedStorage.Shared.Loot)
-local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Validate = require(ReplicatedStorage.Shared.Validate)
 local Zones = require(ReplicatedStorage.Shared.Zones)
 local ZonesConfig = require(ReplicatedStorage.Shared.Config.Zones)
 local DungeonBuilder = require(script.Parent.Parent.DungeonBuilder)
+local SplitChest = require(script.Parent.Parent.SplitChest)
+local Teleport = require(script.Parent.Parent.Teleport)
 local Network = require(script.Parent.Parent.Network)
 local EnemyService = require(script.Parent.EnemyService)
-local InventoryService = require(script.Parent.InventoryService)
-local LootBagService = require(script.Parent.LootBagService)
-local MovementValidationService = require(script.Parent.MovementValidationService)
 local ZoneService = require(script.Parent.ZoneService)
 
 type DungeonInstance = {
@@ -71,12 +67,9 @@ local EXIT_AT_ATTRIBUTE = "DungeonExitAt"
 
 -- Game text (Portuguese) and the look of portals and chests.
 local DUNGEON_NAME = "Dungeon"
-local CHEST_NAME = "Baú"
 local ENTER_TEXT = "Entrar na dungeon"
 local LEAVE_TEXT = "Sair da dungeon"
-local OPEN_TEXT = "Abrir"
 local PORTAL_COLOR = Color3.fromRGB(150, 90, 255)
-local CHEST_COLOR = Color3.fromRGB(150, 110, 40)
 local ENTRANCE_REACH = 10
 
 local DungeonService = {}
@@ -148,54 +141,25 @@ end
 
 -- Moves a player somewhere far (into or out of a dungeon).
 local function moveTo(player: Player, cframe: CFrame)
-	ZoneService.forget(player)
-	pcall(function()
-		player:RequestStreamAroundAsync(cframe.Position, 5)
-	end)
-	MovementValidationService.teleport(player, cframe)
+	Teleport.move(player, cframe)
 end
 
 -- A chest of `count` items: the first player inside to open it rolls them, split among everyone
 -- inside (US-043).
 local function spawnChest(instance: DungeonInstance, cframe: CFrame, count: number)
-	local chest = newPart("Chest", Vector3.new(4, 3, 3), cframe, CHEST_COLOR, instance.built.folder)
-	chest.CanCollide = true
-	local prompt = newPrompt(chest, OPEN_TEXT, CHEST_NAME, DungeonsConfig.CHEST_REACH)
-	local opened = false
-	prompt.Triggered:Connect(function(player)
-		if opened or instanceOf(player) ~= instance then
-			return
-		end
-		local root = rootOf(player)
-		if not root or (root.Position - chest.Position).Magnitude > DungeonsConfig.CHEST_REACH + 2 then
-			notify(player, CHEST_NAME, "TooFar")
-			return
-		end
-		opened = true
-		local players = insideOf(instance)
-		if #players == 0 then
-			players = { player }
-		end
-		-- Shuffle, so who gets the first item is random.
-		for i = #players, 2, -1 do
-			local j = random:NextInteger(1, i)
-			players[i], players[j] = players[j], players[i]
-		end
-		local zone = instance.zone
-		for i = 1, count do
-			local itemId, tier, rarity =
-				Loot.roll(zone.tier, zone.rules.luck, LootConfig.BOSS_CHEST_RARITY_WEIGHTS, random)
-			local record = InventoryService.createItem(itemId, tier, rarity)
-			local who = players[(i - 1) % #players + 1]
-			if InventoryService.give(who, record) then
-				notify(who, CHEST_NAME, Items.displayName(record))
-			else
-				LootBagService.drop(chest.Position + Vector3.new(0, 2, 0), { record }, { who })
-				notify(who, CHEST_NAME, "BagFull")
-			end
-		end
-		chest:Destroy()
-	end)
+	SplitChest.spawn({
+		parent = instance.built.folder,
+		cframe = cframe,
+		count = count,
+		zone = instance.zone,
+		reach = DungeonsConfig.CHEST_REACH,
+		canOpen = function(player)
+			return instanceOf(player) == instance
+		end,
+		sharers = function()
+			return insideOf(instance)
+		end,
+	})
 end
 
 local function openExitPortal(instance: DungeonInstance, cframe: CFrame)

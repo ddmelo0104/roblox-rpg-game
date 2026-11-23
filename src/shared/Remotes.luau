@@ -35,6 +35,9 @@ local LIST: { string } = {
 	"RequestDungeonExit", -- US-042: start (true) or cancel (false) channeling out of a dungeon
 	"ZoneMap", -- US-044: server notice to one player (the world's zones, for the map)
 	"TutorialUpdate", -- US-045: server notice to one player (the tutorial step and its progress)
+	"RequestGroupAnswer", -- US-046: accept (true) or decline (false) the group invite received
+	"RequestGroupLeave", -- US-046: leave the group
+	"GroupUpdate", -- US-046: server notice to one player (their group's members, and an invite)
 }
 
 local Remotes = {}
