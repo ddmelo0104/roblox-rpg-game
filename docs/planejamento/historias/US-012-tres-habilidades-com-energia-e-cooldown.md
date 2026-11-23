@@ -108,7 +108,7 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 
 A energia vai até 100 e volta 5 por segundo. A margem de lag é de 1,5 stud, e a diferença de altura aceita é de 5 studs.
 
-**Interpretações do dev, para o Davi confirmar:**
+**Interpretações do dev, confirmadas pelo Davi em 23/11:**
 - **Largura do corte:** cabem 3 inimigos lado a lado. A área acerta todos os que estão dentro dela, sem limite de 3, como as outras áreas (decisão de 04/11).
 - **Golpe no alvo:** exige alvo travado e usa o alcance da espada (1,5 m).
 - **Giro:** o cooldown zera quando o próprio giro derruba um inimigo, não com qualquer abate, e a energia gasta não volta. O raio é o alcance da espada (1,5 m).

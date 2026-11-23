@@ -31,7 +31,7 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 **Cenário 2: parry certo**
 - **Dado** um golpe corpo a corpo vindo
 - **Quando** o jogador faz o parry dentro da janela
-- **Então** o golpe é anulado e aparece um sinal forte
+- **Então** o golpe é anulado, aparece um sinal forte e o atacante fica atordoado por 0,5 s
 
 **Cenário 3: parry errado**
 - **Dado** um parry fora da janela
@@ -70,13 +70,15 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 - **HUD:** dois quadros novos, F (Esquiva) e M2 (Aparar), com o cooldown. Os textos "Esquivou", "APAROU!" e "Errou o tempo" e o dano sobem do personagem.
 - **Rede:** Remotes `RequestDodge`, `RequestParry`, `DefenseState` e `DefenseEvent`. Os avisos ao jogador agora ficam em `src/client/Notices.luau`, usado pelas habilidades e pela defesa.
 
-**Interpretações do dev, para o Davi confirmar:**
+**Interpretações do dev, confirmadas pelo Davi em 23/11:**
 - **"Fica vulnerável" depois de errar o parry:** 1 s sem esquiva e sem parry. O dano recebido não aumenta.
 - **Direção da esquiva:** para onde o personagem anda; parado, para trás.
 - **Custo:** esquiva e parry não gastam energia.
 - **O que o parry pega:** só golpe corpo a corpo. Projéteis e magias ainda são pergunta aberta da aba.
 
-**Decisão de game design pendente:** a recompensa do parry certo, que é pergunta aberta da aba. Hoje ele só anula o golpe. As opções da aba são atordoar o atacante, devolver energia ou abrir para um golpe forte.
+**Recompensa do parry (Davi, 23/11):** o parry certo atordoa o atacante por 0,5 s (`Config/Combat.PARRY_STUN_TIME`). "Atordoado" aparece em cima dele, e um boneco que ataca, atordoado, não começa um novo golpe. Errar o parry continua deixando o jogador 1 s sem defesa, levando os golpes (Davi, 23/11).
+
+**Decisão delegada (23/11):** toda arma pode aparar; o parry é uma ação de defesa de todos ([registro](../DECISOES-DELEGADAS.md)).
 
 **Limitações conhecidas:**
 - **Esquiva prevista no cliente:** num caso raro de lag, a validação de movimento pode puxar o personagem antes de o pedido de esquiva chegar ao servidor.
@@ -88,7 +90,7 @@ Aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0
 2. **Cenário 1 (esquiva):**
    - Chegue perto do boneco que ataca. Quando o tronco dele ficar vermelho, ande para o lado e aperte F. O personagem avança, e "Esquivou" aparece em cima dele, sem dano.
    - Aperte F de novo logo depois: o aviso "Esquiva: em recarga" aparece.
-3. **Cenário 2 (parry certo):** quando o tronco ficar vermelho, espere quase o fim (ele dura 0,8 s) e aperte o botão direito do mouse. "APAROU!" aparece, a tela pisca e não há dano.
+3. **Cenário 2 (parry certo):** quando o tronco ficar vermelho, espere quase o fim (ele dura 0,8 s) e aperte o botão direito do mouse. "APAROU!" aparece, a tela pisca, não há dano, e "Atordoado" aparece em cima do boneco.
 4. **Cenário 3 (parry errado):** aperte o botão direito longe do boneco, ou cedo demais. "Errou o tempo" aparece, e os quadros F e M2 ficam com a borda vermelha por 1 s. Nesse tempo, F e M2 avisam "vulnerável".
 5. **Sem defesa:** fique parado perto do boneco. O golpe tira 15 de vida a cada 2,5 s, e o número vermelho sobe.
 6. **Pedido repetido:** na barra de comandos do cliente, rode `game.ReplicatedStorage.Remotes.RequestParry:FireServer()` duas vezes seguidas. A segunda é recusada ("em recarga"), sem erro.

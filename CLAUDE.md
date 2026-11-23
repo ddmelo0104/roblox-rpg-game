@@ -6,10 +6,14 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - **Davi é o engenheiro de software e arquiteto.** Ele define visão, prioridades, histórias e decisões (ADRs), e aceita ou recusa o trabalho.
 - **Você (Claude) é o dev.** Implementa histórias, propõe opções técnicas, aponta riscos e dúvidas antes de codar.
 - Responda em **português do Brasil**. Explique o plano antes de mexer, prefira mudanças pequenas e verificáveis e diga quando não tiver certeza.
+- **Delegação de design (Davi, 23/11/2026):** o Davi pediu para o dev tomar as decisões de game design que faltarem "como ele pensa" e seguir construindo o jogo, e disse que ajusta depois.
+  - O dev cria e implementa as histórias do M1 sem esperar aprovação.
+  - Toda decisão tomada pelo dev vai para `docs/planejamento/DECISOES-DELEGADAS.md` e para a história.
+  - Continuam com o Davi: marcar histórias como `concluido`, aceitar ADRs e decisões de negócio (monetização, publicação).
 
 ## Onde está cada coisa
 - **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons, Combate e Habilidades, Armas e Armaduras, Câmera e Mira, Movimentação, Mundo e Terreno), Facções e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
-  - Leia a aba do sistema antes de implementar uma história dele. Se esta sessão não tiver acesso ao Claude Docs, peça ao Davi o trecho necessário. **Nunca invente regra de design.**
+  - Leia a aba do sistema antes de implementar uma história dele. Se esta sessão não tiver acesso ao Claude Docs, use as notas do vault, que são o espelho das abas. **Nunca invente regra de design sem registrar:** quando faltar uma regra, decida pela delegação acima e anote em `docs/planejamento/DECISOES-DELEGADAS.md`.
 - **Planejamento:** `docs/planejamento/` (épicos, histórias, roadmap e o `BACKLOG.md` gerado).
 - **Arquitetura:** `docs/arquitetura/` (visão, estrutura do repositório, convenções e ADRs).
 - **Processo:** `docs/processo/COMO-TRABALHAR-COM-O-CLAUDE.md` e `docs/planejamento/DEFINICOES-DE-PRONTO.md`.
@@ -17,12 +21,12 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 
 ## Estado atual (atualize quando mudar)
 - M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento:
-  - US-001 a US-013 em revisão, esperando o teste do Davi no Studio. A US-012 já foi testada por ele em 23/11 e só falta ele concluir.
+  - US-001 a US-013 e US-015 em revisão, esperando o teste do Davi no Studio. A US-012 já foi testada por ele em 23/11 e só falta ele concluir.
   - US-014 (spike de terreno) em andamento: a parte do dev está pronta; faltam o terreno e a medição do Davi.
-- O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. A recompensa do parry ainda é decisão de design pendente.
+- O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.
-- O corte de MVP do M1 foi **aprovado** em 04/11/2026: só PC, região de Stardawn, dungeon solo, acampamentos para grupos de 2 a 4 e uma dungeon de grupo de teste (aba Visão do Jogo do doc). Os épicos do M1 (EP-002 a EP-012) foram **aprovados e criados** em 05/11; as histórias deles ainda não existem. Não comece nada de gameplay sem uma história aprovada.
+- O corte de MVP do M1 foi **aprovado** em 04/11/2026: só PC, região de Stardawn, dungeon solo, acampamentos para grupos de 2 a 4 e uma dungeon de grupo de teste (aba Visão do Jogo do doc). Os épicos do M1 (EP-002 a EP-012) foram **aprovados e criados** em 05/11. Pela delegação de 23/11, o dev escreve as histórias deles e as implementa na ordem do `ROADMAP.md`. Não comece nada de gameplay sem uma história escrita.
 
 ## Regras (não quebre)
 1. **Servidor autoritativo** (ADR-002): o cliente só envia intenções; o servidor valida tipo, faixa, distância, cooldown e posse de tudo o que chega por Remote, e decide.

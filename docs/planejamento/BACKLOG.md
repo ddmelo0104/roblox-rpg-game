@@ -10,7 +10,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 
 | Épico | Status | Prioridade | Marco | Progresso |
 | --- | --- | --- | --- | --- |
-| [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/14 histórias · 0/37 pts |
+| [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/15 histórias · 0/39 pts |
 | [EP-002 · Personagem, câmera e controles (PC)](epicos/EP-002-personagem-camera-e-controles.md) | backlog | must | M1 | sem histórias |
 | [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | backlog | must | M1 | sem histórias |
 | [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | backlog | must | M1 | sem histórias |
@@ -39,6 +39,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-012 · Três habilidades com energia e cooldown contra o boneco](historias/US-012-tres-habilidades-com-energia-e-cooldown.md) | revisao | EP-001 | must | 5 |
 | [US-013 · Esquiva e parry](historias/US-013-esquiva-e-parry.md) | revisao | EP-001 | must | 5 |
 | [US-014 · Spike de desempenho do terreno](historias/US-014-spike-de-desempenho-do-terreno.md) | em-andamento | EP-001 | must | 3 |
+| [US-015 · Estado de combate e pulo limitado em combate](historias/US-015-estado-de-combate-e-pulo-limitado.md) | revisao | EP-001 | must | 2 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 

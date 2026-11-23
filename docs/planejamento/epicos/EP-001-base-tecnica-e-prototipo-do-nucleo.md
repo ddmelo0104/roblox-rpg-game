@@ -61,6 +61,7 @@ Criadas em 05/11, na ordem em que fazem sentido:
 | [US-012 · Três habilidades com energia e cooldown contra o boneco](../historias/US-012-tres-habilidades-com-energia-e-cooldown.md) | US-009 e ADR-009 |
 | [US-013 · Esquiva e parry](../historias/US-013-esquiva-e-parry.md) | US-012 |
 | [US-014 · Spike de desempenho do terreno](../historias/US-014-spike-de-desempenho-do-terreno.md) | — |
+| [US-015 · Estado de combate e pulo limitado em combate](../historias/US-015-estado-de-combate-e-pulo-limitado.md) | US-013 (criada em 23/11 com as respostas do Davi) |
 
 ## Riscos
 > [!WARNING]
