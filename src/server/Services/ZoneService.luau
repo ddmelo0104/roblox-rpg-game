@@ -14,6 +14,10 @@
 	  ends it.
 	CombatService asks `canPvp` before a player hits another (US-036), and DefenseService asks
 	`isSafe` before a hit lands on a player (nobody takes damage in the city).
+
+	Parts with the "ReturnPoint" tag mark where players come back (EP-009): a player who gives up
+	comes back at the return point of their zone, and one who lost everything, at the nearest city.
+	The test layout has one in each zone.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -38,6 +42,8 @@ local ZONE_NOTICE_NAME = "Zona"
 local ZoneService = {}
 
 local regions: { BasePart } = {}
+-- CollectionService tag of the return points.
+local RETURN_TAG = "ReturnPoint"
 local tracked: { [Player]: Tracked } = {}
 
 -- Two zones are the same zone if they come from the same region (or are both the default).
@@ -83,6 +89,18 @@ local function createTestLayout()
 		part:SetAttribute("ZoneName", spec.name)
 		part.Parent = folder
 		CollectionService:AddTag(part, Zones.TAG)
+
+		local back = Instance.new("Part")
+		back.Name = `{spec.name} (retorno)`
+		back.Size = Vector3.new(4, 1, 4)
+		back.CFrame = base * CFrame.new(-(spec.from + width / 2), 0, 0)
+		back.Anchored = true
+		back.CanCollide = false
+		back.CanQuery = false
+		back.CanTouch = false
+		back.Transparency = 1
+		back.Parent = folder
+		CollectionService:AddTag(back, RETURN_TAG)
 	end
 end
 
@@ -138,6 +156,23 @@ local function check(player: Player)
 	end
 	state.lastCFrame = root.CFrame
 	enter(player, state, zone)
+end
+
+-- Where a player comes back (EP-009): the return point nearest to `near` among those in zones that
+-- `accepts` (a function of the zone), or nil if there is none.
+function ZoneService.returnPoint(near: Vector3, accepts: (zone: Zone) -> boolean): CFrame?
+	local best: BasePart? = nil
+	local bestDistance = math.huge
+	for _, point in CollectionService:GetTagged(RETURN_TAG) do
+		if point:IsA("BasePart") and accepts(Zones.at(point.Position, regions)) then
+			local distance = (point.Position - near).Magnitude
+			if distance < bestDistance then
+				best = point
+				bestDistance = distance
+			end
+		end
+	end
+	return if best then best.CFrame + Vector3.new(0, 4, 0) else nil
 end
 
 -- The zone of a point (a spawn point, for example).

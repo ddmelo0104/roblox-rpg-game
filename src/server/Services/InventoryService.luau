@@ -113,6 +113,56 @@ function InventoryService.onChanged(listener: (player: Player) -> ())
 	table.insert(listeners, listener)
 end
 
+-- Takes every worn and carried item out of the player's inventory, in one step with no yields, and
+-- returns them (the full loot of US-040). The player is left with nothing.
+function InventoryService.takeAll(player: Player): { ItemRecord }
+	local inventory = inventories[player]
+	if not inventory then
+		return {}
+	end
+	local taken: { ItemRecord } = {}
+	for _, slot in ItemsConfig.SLOTS do
+		local record = inventory.equipped[slot]
+		if record then
+			table.insert(taken, record)
+			inventory.equipped[slot] = nil
+		end
+	end
+	for _, record in inventory.bag do
+		table.insert(taken, record)
+	end
+	inventory.bag = {}
+	changed(player)
+	return taken
+end
+
+-- Equips a new starter item in every empty slot (the restart kit after a full loot, US-040).
+function InventoryService.giveRestartKit(player: Player)
+	local inventory = inventories[player]
+	if not inventory then
+		return
+	end
+	for _, itemId in ItemsConfig.STARTER_KIT do
+		local definition = Items.definition(itemId)
+		if definition and not inventory.equipped[definition.slot] then
+			inventory.equipped[definition.slot] = InventoryService.createItem(itemId, ItemsConfig.MIN_TIER, 1)
+		end
+	end
+	changed(player)
+end
+
+-- Takes `points` of durability from every worn item (getting up from a knockdown, US-038).
+function InventoryService.wearDown(player: Player, points: number)
+	local inventory = inventories[player]
+	if not inventory then
+		return
+	end
+	for _, record in inventory.equipped do
+		record.durability = math.max(0, record.durability - points)
+	end
+	changed(player)
+end
+
 -- Adds a check to every equip: `rule` returns the text to show the player when they cannot wear the
 -- item (the mastery a tier needs, US-031), or nil. Rules must not yield.
 function InventoryService.addEquipRule(rule: (player: Player, record: ItemRecord) -> string?)

@@ -11,8 +11,12 @@ return table.freeze({
 	-- Opens the mastery screen (US-032). M stays free for the map.
 	MASTERY_KEY = Enum.KeyCode.N,
 
-	-- Key of the prompts of chests and loot bags. Not E (the default), which is an ability key.
+	-- Key of the prompts of chests, loot bags and reviving a downed player. Not E (the default),
+	-- which is an ability key.
 	INTERACT_KEY = Enum.KeyCode.G,
+
+	-- Key of the prompt to finish a downed player (US-039), apart from reviving.
+	FINISH_KEY = Enum.KeyCode.H,
 
 	-- Color of each rarity (Common … Legendary): item borders and the glow of loot bags (US-026).
 	RARITY_COLORS = table.freeze({

@@ -21,6 +21,7 @@ export type RejectReason =
 	| "NoEnergy"
 	| "NoWeapon"
 	| "Stunned"
+	| "Downed"
 
 -- The fields are explained in Config/Longsword. Distances in studs, times in seconds.
 export type Ability = {

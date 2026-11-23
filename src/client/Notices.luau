@@ -22,6 +22,9 @@ local REASON_TEXT: { [string]: string } = {
 	NotYours = "ainda é de quem lutou",
 	Stunned = "atordoado",
 	InCombatBorder = "em combate, não dá para trocar de zona",
+	Downed = "derrubado",
+	Interrupted = "interrompido por dano",
+	NoPvp = "só numa zona com PvP",
 }
 
 local Notices = {}

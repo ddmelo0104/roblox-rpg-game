@@ -31,6 +31,7 @@ local Workspace = game:GetService("Workspace")
 local DebugConfig = require(ReplicatedStorage.Shared.Config.Debug)
 local Enemies = require(ReplicatedStorage.Shared.Enemies)
 local EnemiesConfig = require(ReplicatedStorage.Shared.Config.Enemies)
+local Knockdown = require(ReplicatedStorage.Shared.Knockdown)
 local Loot = require(ReplicatedStorage.Shared.Loot)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
 local Mastery = require(ReplicatedStorage.Shared.Mastery)
@@ -316,7 +317,8 @@ local function livingPlayers(): { EnemyBrain.Living }
 		local character = player.Character
 		local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
 		local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-		if humanoid and humanoid.Health > 0 and root and root:IsA("BasePart") then
+		-- A downed player is left alone (Zones and Risk tab: monsters stop attacking).
+		if humanoid and humanoid.Health > 0 and root and root:IsA("BasePart") and not Knockdown.isDowned(player) then
 			table.insert(list, { player = player, root = root })
 		end
 	end

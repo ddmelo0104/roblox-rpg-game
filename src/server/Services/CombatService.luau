@@ -22,6 +22,7 @@ local ArmorConfig = require(ReplicatedStorage.Shared.Config.Armor)
 local CameraConfig = require(ReplicatedStorage.Shared.Config.Camera)
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
 local Items = require(ReplicatedStorage.Shared.Items)
+local Knockdown = require(ReplicatedStorage.Shared.Knockdown)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Status = require(ReplicatedStorage.Shared.Status)
 local Targets = require(ReplicatedStorage.Shared.Targets)
@@ -127,7 +128,7 @@ local function candidatesFor(player: Player): { Model }
 	local list = Targets.all()
 	for _, other in Players:GetPlayers() do
 		local character = other.Character
-		if character and ZoneService.canPvp(player, other) then
+		if character and ZoneService.canPvp(player, other) and not Knockdown.isDowned(other) then
 			table.insert(list, character)
 		end
 	end
@@ -140,7 +141,7 @@ local function isValidTarget(player: Player, instance: Instance): boolean
 		return true
 	end
 	local victim = Players:GetPlayerFromCharacter(instance)
-	return victim ~= nil and ZoneService.canPvp(player, victim)
+	return victim ~= nil and ZoneService.canPvp(player, victim) and not Knockdown.isDowned(victim)
 end
 
 -- The living targets inside the area (Front or Around) that the attacker can see.
@@ -256,6 +257,10 @@ local function useAbility(player: Player, id: string, direction: Vector3, reques
 		respond(player, id, "NoCharacter")
 		return
 	end
+	if Knockdown.isDowned(player) then
+		respond(player, id, "Downed")
+		return
+	end
 	if Status.isStunned(player.Character :: Model) then
 		respond(player, id, "Stunned")
 		return
@@ -343,7 +348,7 @@ local function basicAttack(player: Player, requestedTarget: Instance?)
 	if not humanoid or not root or humanoid.Health <= 0 or not kit then
 		return
 	end
-	if Status.isStunned(player.Character :: Model) then
+	if Knockdown.isDowned(player) or Status.isStunned(player.Character :: Model) then
 		return
 	end
 	local now = Workspace:GetServerTimeNow()

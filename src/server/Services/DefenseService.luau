@@ -7,7 +7,8 @@
 	close calls, resolves the hit as dodged, parried or hit, applies the damage and tells every
 	client. A parry that catches no hit leaves the player vulnerable for a moment: no dodge and no
 	parry. A successful parry stuns the attacker (Davi, 2026-11-23). Nobody takes damage in a safe
-	zone, the city (US-037).
+	zone, the city (US-037), or while down (EP-009). A hit that would kill goes to the lethal-hit
+	handler instead (KnockdownService: the player is knocked down, US-038).
 	Numbers in Config/Combat.
 ]]
 
@@ -17,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 
 local CombatConfig = require(ReplicatedStorage.Shared.Config.Combat)
 local Defense = require(ReplicatedStorage.Shared.Defense)
+local Knockdown = require(ReplicatedStorage.Shared.Knockdown)
 local Items = require(ReplicatedStorage.Shared.Items)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Network = require(script.Parent.Parent.Network)
@@ -44,6 +46,10 @@ type State = {
 local DefenseService = {}
 
 local states: { [Player]: State } = {}
+-- When each player last lost health to a hit (os.clock), so a revive or a finish can be interrupted.
+local lastDamagedAt: { [Player]: number } = {}
+-- Called instead of the damage when a hit would kill a player (set by KnockdownService).
+local lethalHandler: ((player: Player, attacker: Instance?) -> ())? = nil
 
 local stateEvent = Remotes.event("DefenseState")
 local resultEvent = Remotes.event("DefenseEvent")
@@ -160,7 +166,7 @@ function DefenseService.receiveHit(
 	if not player.Parent then
 		return "Hit" -- the player left the game meanwhile
 	end
-	if ZoneService.isSafe(player) then
+	if ZoneService.isSafe(player) or Knockdown.isDowned(player) then
 		return "Immune"
 	end
 
@@ -181,7 +187,12 @@ function DefenseService.receiveHit(
 		damage *= 1 - StatsService.resistanceOf(player)
 		local humanoid = humanoidOf(player)
 		if humanoid then
-			humanoid:TakeDamage(damage)
+			lastDamagedAt[player] = os.clock()
+			if humanoid.Health - damage <= 0 and lethalHandler then
+				lethalHandler(player, attacker) -- knocked down instead of killed
+			else
+				humanoid:TakeDamage(damage)
+			end
 		end
 		CombatStateService.mark(player)
 	end
@@ -195,6 +206,17 @@ local function onPlayerAdded(player: Player)
 		states[player] = newState()
 		sendState(player, nil, nil)
 	end)
+end
+
+-- Seconds since the player last lost health to a hit (infinite if never).
+function DefenseService.secondsSinceDamaged(player: Player): number
+	local at = lastDamagedAt[player]
+	return if at then os.clock() - at else math.huge
+end
+
+-- Sets who handles a hit that would kill a player. It must not yield.
+function DefenseService.setLethalHandler(handler: (player: Player, attacker: Instance?) -> ())
+	lethalHandler = handler
 end
 
 function DefenseService:Start()
@@ -216,6 +238,7 @@ function DefenseService:Start()
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil
+		lastDamagedAt[player] = nil
 	end)
 end
 

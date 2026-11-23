@@ -16,6 +16,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local CameraConfig = require(Shared:WaitForChild("Config"):WaitForChild("Camera") :: ModuleScript)
+local Knockdown = require(Shared:WaitForChild("Knockdown") :: ModuleScript)
 local Targets = require(Shared:WaitForChild("Targets") :: ModuleScript)
 local Zones = require(Shared:WaitForChild("Zones") :: ModuleScript)
 local CameraController = require(script.Parent.CameraController)
@@ -51,7 +52,11 @@ end
 local function canFight(other: Player): boolean
 	local mine = Zones.rules(player:GetAttribute(Zones.KIND_ATTRIBUTE) or "")
 	local theirs = Zones.rules(other:GetAttribute(Zones.KIND_ATTRIBUTE) or "")
-	return other ~= player and mine.pvp == true and theirs.pvp == true and not Zones.isProtected(other)
+	return other ~= player
+		and mine.pvp == true
+		and theirs.pvp == true
+		and not Zones.isProtected(other)
+		and not Knockdown.isDowned(other)
 end
 
 -- The models that can be locked: the ones with the target tag and, if the Config allows it, the

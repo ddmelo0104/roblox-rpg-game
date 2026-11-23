@@ -3,8 +3,10 @@
 	Config/Zones.luau
 	The rules of each kind of zone (Zones and Risk tab), as data: the name and color players see, the
 	loot's luck (US-026), the fame multiplier (US-029), whether players can fight each other (PvP,
-	US-036), whether it is safe (the city: nobody takes damage there) and whether entering warns of
-	full loot. A zone region in the world says its kind in the Zone attribute (US-035).
+	US-036), whether it is safe (the city: nobody takes damage there), whether entering warns of
+	full loot, and what a knockdown means there (US-038 to US-040): seconds down, whether the player
+	gets up by themselves, whether another player can finish them and whether that is a full loot.
+	A zone region in the world says its kind in the Zone attribute (US-035).
 	In the M1 the Yellow zone has no PvP and the Red one has PvP for everyone (flags come in M2).
 ]]
 
@@ -19,6 +21,10 @@ local KINDS: { [string]: any } = {
 		safe = false,
 		risk = false,
 		summary = "Sem PvP. Derrotado, você levanta.",
+		knockdownTime = 10,
+		getsUp = true,
+		finishable = false,
+		fullLoot = false,
 	}),
 	City = table.freeze({
 		name = "Cidade",
@@ -29,6 +35,10 @@ local KINDS: { [string]: any } = {
 		safe = true,
 		risk = false,
 		summary = "Segura: ninguém toma dano aqui.",
+		knockdownTime = 10,
+		getsUp = true,
+		finishable = false,
+		fullLoot = false,
 	}),
 	Yellow = table.freeze({
 		name = "Zona Amarela",
@@ -39,6 +49,10 @@ local KINDS: { [string]: any } = {
 		safe = false,
 		risk = false,
 		summary = "Sem PvP no M1. Derrotado, você levanta.",
+		knockdownTime = 10,
+		getsUp = true,
+		finishable = false,
+		fullLoot = false,
 	}),
 	Red = table.freeze({
 		name = "Zona Vermelha",
@@ -49,6 +63,10 @@ local KINDS: { [string]: any } = {
 		safe = false,
 		risk = true,
 		summary = "PvP livre e saque total.",
+		knockdownTime = 45,
+		getsUp = true,
+		finishable = true,
+		fullLoot = true,
 	}),
 	Black = table.freeze({
 		name = "Zona Preta",
@@ -59,6 +77,10 @@ local KINDS: { [string]: any } = {
 		safe = false,
 		risk = true,
 		summary = "Todos contra todos e saque total.",
+		knockdownTime = 30,
+		getsUp = false,
+		finishable = true,
+		fullLoot = true,
 	}),
 }
 
