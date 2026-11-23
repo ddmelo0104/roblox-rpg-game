@@ -75,17 +75,22 @@ Detalhes da opção A, já implementados no EP-006 (US-033 e US-034):
 - **O que passa a ser obrigatório:**
   - Tudo o que vai para o perfil é uma seção do `ProfileService`.
   - Nenhum serviço apaga os dados de um jogador no `PlayerRemoving`: quem solta é o `ProfileService`, depois de copiar para o último salvamento.
-  - Para testar no Studio, o place precisa estar publicado, com "Enable Studio Access to API Services" ligado nas Game Settings.
+  - Para testar no Studio, use uma cópia de teste publicada do jogo, com "Enable Studio Access to API Services" ligado.
 
 ## Referências
-> [!WARNING]
-> Nesta sessão, a rede do ambiente bloqueou o `create.roblox.com`, então a documentação oficial **não foi aberta**. Os comportamentos abaixo são os que o código assume; confira-os ao aceitar o ADR:
-> - **`UpdateAsync`:** a função de transformação pode rodar mais de uma vez, não pode ceder (*yield*), e retornar `nil` cancela a gravação.
-> - **`BindToClose`:** o servidor espera no máximo 30 s.
-> - **Limites:** a mesma chave aceita uma gravação a cada poucos segundos, e um valor tem até 4 MB.
-> - **Studio:** os data stores só funcionam num place publicado, com o acesso às APIs ligado.
-
-- Data stores: https://create.roblox.com/docs/cloud-services/data-stores
-- `GlobalDataStore:UpdateAsync`: https://create.roblox.com/docs/reference/engine/classes/GlobalDataStore#UpdateAsync
-- `DataModel:BindToClose`: https://create.roblox.com/docs/reference/engine/classes/DataModel#BindToClose
-- ProfileStore (README lido em 23/11): https://github.com/MadStudioRoblox/ProfileStore
+Conferido na documentação oficial em 23/11, depois que o ambiente liberou o `create.roblox.com`:
+- **`UpdateAsync`** ([GlobalDataStore](https://create.roblox.com/docs/reference/engine/classes/GlobalDataStore#UpdateAsync)):
+  - "If the callback returns `nil` instead, the current server will stop attempting to update the key."
+  - "The callback function cannot yield."
+  - A página não diz se a função pode rodar mais de uma vez; o código funciona nos dois casos, porque só vale a última execução.
+- **Limites** ([Error codes and limits](https://create.roblox.com/docs/cloud-services/data-stores/error-codes-and-limits)):
+  - Um valor tem até 4.194.304 caracteres.
+  - Leituras e escritas (`UpdateAsync` conta nas duas) têm orçamento de `60 + numPlayers × 40` por minuto em cada servidor. Salvar cada perfil uma vez por minuto fica bem abaixo disso.
+  - Cada chave aceita até 4 MB de escrita por minuto.
+- **`BindToClose`** ([DataModel](https://create.roblox.com/docs/reference/engine/classes/DataModel#BindToClose); o site deu erro 502, então o texto foi lido no [repositório oficial da documentação](https://github.com/Roblox/creator-docs/blob/main/content/en-us/reference/engine/classes/DataModel.yaml)):
+  - "The experience server waits 30 seconds for all bound functions to stop running before it shuts down."
+  - No Studio, as funções podem não terminar ("offline testing sessions"). Por isso o teste no Studio espera um salvamento automático antes de parar.
+- **Studio** ([Data stores](https://create.roblox.com/docs/cloud-services/data-stores)):
+  - É preciso ligar "Enable Studio Access to API Services" em File ⟩ Experience Settings ⟩ Security, num jogo publicado.
+  - A documentação recomenda não ligar isso no jogo de verdade, e sim numa cópia de teste, para não sobrescrever dados de produção.
+- **ProfileStore** (README lido em 23/11): https://github.com/MadStudioRoblox/ProfileStore

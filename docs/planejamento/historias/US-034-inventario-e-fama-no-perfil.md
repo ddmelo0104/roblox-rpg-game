@@ -68,7 +68,7 @@ Critério do EP-006: sair e entrar mantém o inventário e a fama (o banco vem c
 
 **Para o Davi testar no Studio** (com o place publicado e o acesso às APIs ligado, como na US-033):
 1. Equipe um item do baú de teste, guarde outro na mochila e derrote bandidos até a maestria 3 ou mais.
-2. Pare e dê Play de novo: os itens estão nos mesmos lugares (passe o mouse para ver), e a tela N mostra a mesma maestria.
+2. Espere um minuto (salvamento automático), pare e dê Play de novo: os itens estão nos mesmos lugares (passe o mouse para ver), e a tela N mostra a mesma maestria.
 3. Num perfil novo (outra conta, ou mude `STORE_NAME` no `Config/Profile`), o jogador recebe o kit inicial.
 
 Passando, mude `status` para `concluido` e preencha `concluido_em`.

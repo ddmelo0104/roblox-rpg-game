@@ -73,11 +73,11 @@ Escopo do EP-006 e regra 6 do `CLAUDE.md`. A forma de salvar é a do [ADR-005](.
 - **Seção com falha:** se uma seção falha ao carregar, o jogador é expulso com o aviso, em vez de jogar sem salvar.
 - **Números:** em `Config/Profile`.
 
-**Limite desta sessão:** a documentação oficial do DataStore não pôde ser aberta, porque a rede do ambiente bloqueou o `create.roblox.com`. Os comportamentos que o código assume estão listados no ADR-005, para conferir.
+**Documentação conferida:** os comportamentos do DataStore que o código assume foram conferidos na documentação oficial e estão citados no ADR-005.
 
 **Para o Davi testar no Studio:**
-1. **Preparar:** publique o place (File → Publish to Roblox) e ligue Game Settings → Security → "Enable Studio Access to API Services".
-2. **Salvar e voltar:** dê Play, pegue itens no baú de teste e derrote uns bandidos. Pare o Play e dê Play de novo: a mochila, o equipamento e a maestria (N) continuam.
+1. **Preparar:** publique uma cópia de teste do jogo (a documentação do Roblox recomenda não ligar isso no jogo de verdade). Ligue File ⟩ Experience Settings ⟩ Security ⟩ "Enable Studio Access to API Services".
+2. **Salvar e voltar:** dê Play, pegue itens no baú de teste e derrote uns bandidos. Espere um minuto, até o salvamento automático: no Studio, o salvamento de quando o servidor fecha pode não terminar. Pare o Play e dê Play de novo: a mochila, o equipamento e a maestria (N) continuam.
 3. **Sem APIs:** desligue o acesso às APIs e dê Play. O Output avisa "[Profile] DataStore unavailable…", e o jogo funciona sem salvar.
 4. **Troca de servidor (opcional, no Roblox):** entre no jogo publicado em dois servidores seguidos com a mesma conta. O segundo só carrega depois que o primeiro solta a trava, e os itens não se duplicam.
 
