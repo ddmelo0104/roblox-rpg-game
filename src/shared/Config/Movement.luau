@@ -17,4 +17,19 @@ return table.freeze({
 
 	-- Hold to sprint. Provisional: the PC keys are an open question in the tab.
 	SPRINT_KEY = Enum.KeyCode.LeftShift,
+
+	-- US-011, ADR-010 (proposed): the server checks how far each character moves.
+	-- Seconds between checks.
+	VALIDATION_INTERVAL = 0.5,
+
+	-- How much faster than the allowed speed is still accepted: 0.25 means 25% (MARGEM_VELOCIDADE in
+	-- the design doc).
+	SPEED_MARGIN = 0.25,
+
+	-- Studs always accepted on top of that in each check (small physics pushes, slopes).
+	DISTANCE_TOLERANCE = 4,
+
+	-- Seconds of movement a player can save up while standing still or lagging and then deliver at
+	-- once, without being pulled back.
+	MAX_LAG_BURST = 1.5,
 })

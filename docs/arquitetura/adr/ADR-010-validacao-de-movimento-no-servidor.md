@@ -68,7 +68,9 @@ Prós e contras:
   - Com lag muito alto, pode haver puxões raros.
 - **O que passa a ser obrigatório:**
   - Todo teleporte feito pelo servidor passa pela função da validação, para não virar falso positivo.
-  - Toda mudança de velocidade decidida pelo servidor (corrida, lentidão, investida) entra em `MovementService.allowedSpeed`.
+  - Toda mudança de velocidade decidida pelo servidor (corrida, lentidão) entra em `MovementService.allowedSpeed`.
+  - Todo avanço curto aprovado pelo servidor (esquiva, investida) entra em `MovementValidationService.allowExtraDistance`.
+- **Como ficou na US-011:** a margem virou um orçamento de movimento. Ele cresce com a velocidade permitida mais a margem, e guarda até 1,5 s de movimento para quem entrega vários passos de uma vez por causa do lag (números em `Config/Movement`).
 
 ## Referências
 - Aba [Movimentação](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#df937961-4ee9): correção com margem para quem está com lag.
