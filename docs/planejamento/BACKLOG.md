@@ -16,7 +16,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | em-andamento | must | M1 | 0/5 histórias · 0/19 pts |
 | [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | em-andamento | must | M1 | 0/4 histórias · 0/12 pts |
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | em-andamento | must | M1 | 0/2 histórias · 0/8 pts |
-| [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | backlog | must | M1 | sem histórias |
+| [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 | [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
 | [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | backlog | must | M1 | sem histórias |
 | [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | backlog | must | M1 | sem histórias |
@@ -59,6 +59,9 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-032 · Pop-up de fama e tela de maestria (PC)](historias/US-032-pop-up-de-fama-e-tela-de-maestria.md) | revisao | EP-005 | must | 3 |
 | [US-033 · Perfil salvo com trava de sessão](historias/US-033-perfil-salvo-com-trava-de-sessao.md) | revisao | EP-006 | must | 5 |
 | [US-034 · Inventário e fama no perfil, sem duplicar itens](historias/US-034-inventario-e-fama-no-perfil.md) | revisao | EP-006 | must | 3 |
+| [US-035 · Zonas como regiões do mundo, com a zona atual no HUD](historias/US-035-zonas-como-regioes.md) | revisao | EP-007 | must | 5 |
+| [US-036 · PvP na zona Vermelha](historias/US-036-pvp-na-zona-vermelha.md) | revisao | EP-007 | must | 5 |
+| [US-037 · Fronteira travada em combate, proteção de entrada e aviso de risco](historias/US-037-fronteira-em-combate-e-protecao.md) | revisao | EP-007 | must | 3 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 
@@ -82,6 +85,7 @@ _Nada por aqui._
 | [ADR-001 · Desenvolvimento externo com Rojo e Git](../arquitetura/adr/ADR-001-desenvolvimento-externo-com-rojo-e-git.md) | aceito |
 | [ADR-002 · Servidor autoritativo](../arquitetura/adr/ADR-002-servidor-autoritativo.md) | aceito |
 | [ADR-003 · Luau em modo strict](../arquitetura/adr/ADR-003-luau-em-modo-strict.md) | aceito |
+| [ADR-004 · Um place só no M1, com as zonas como regiões de dados](../arquitetura/adr/ADR-004-um-place-so-no-m1.md) | proposto |
 | [ADR-005 · Perfil salvo no DataStore com trava de sessão própria](../arquitetura/adr/ADR-005-perfil-salvo-com-trava-de-sessao.md) | proposto |
 | [ADR-006 · Itens como registros com uid gerado só no servidor](../arquitetura/adr/ADR-006-itens-como-registros-com-uid-do-servidor.md) | proposto |
 | [ADR-009 · Acerto das habilidades no servidor, com margem de lag](../arquitetura/adr/ADR-009-acerto-das-habilidades-no-servidor-com-margem-de-lag.md) | proposto |

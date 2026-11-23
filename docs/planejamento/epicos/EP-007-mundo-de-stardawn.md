@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-007
 titulo: Mundo de Stardawn com cidade e 3 zonas
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-007 · Mundo de Stardawn com cidade e 3 zonas
@@ -40,7 +40,7 @@ Pilares 1, 3 e 4. Abas [Mundo e Terreno](https://claude.ai/artifact/J9zY7LF95U87
 Num playtest, um jogador novo entende o risco das zonas sem explicação (critério de sucesso do M1).
 
 ## Dependências
-- Depende de: EP-001 (spike de terreno), EP-002 e ADR-004 (topologia do mundo, a escrever)
+- Depende de: EP-001 (spike de terreno), EP-002 e [ADR-004](../../arquitetura/adr/ADR-004-um-place-so-no-m1.md) (topologia do mundo, proposto em 23/11)
 - Bloqueia: EP-009, EP-010 e EP-012
 
 ## Riscos
@@ -51,6 +51,19 @@ Num playtest, um jogador novo entende o risco das zonas sem explicação (crité
 Tempo de travessia, relevo e dia e noite estão na aba [Mundo e Terreno](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f460e959-73a7); a zona Azul (compartilhada ou instância) e o tier dela, na aba [Zonas e Risco](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#117aa7d2-031b).
 
 ## Histórias
+Criadas pelo dev em 23/11, por delegação do Davi, seguindo o [ADR-004](../../arquitetura/adr/ADR-004-um-place-so-no-m1.md) (proposto). O terreno e os modelos são do Davi, no Studio.
+
+| História | Depende de |
+| --- | --- |
+| [US-035 · Zonas como regiões do mundo, com a zona atual no HUD](../historias/US-035-zonas-como-regioes.md) | ADR-004 |
+| [US-036 · PvP na zona Vermelha](../historias/US-036-pvp-na-zona-vermelha.md) | US-035, US-013 |
+| [US-037 · Fronteira travada em combate, proteção de entrada e aviso de risco](../historias/US-037-fronteira-em-combate-e-protecao.md) | US-035, US-015 |
+
+**Ainda a escrever:**
+- o mapa do mundo (cor, tier e GS recomendado de cada zona);
+- a cidade (banco, vendedor e reparo, que pedem a moeda);
+- o terreno de Stardawn e o orçamento de desempenho, com o Davi.
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico
