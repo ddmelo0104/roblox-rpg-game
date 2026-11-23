@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-011
 titulo: HUD, UI e onboarding
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-011 · HUD, UI e onboarding
@@ -48,6 +48,20 @@ No playtest, ninguém precisa perguntar o que fazer depois de nascer.
 O conteúdo da quest de tutorial está na aba [Zonas e Risco](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#117aa7d2-031b).
 
 ## Histórias
+Parte do escopo já veio em histórias de outros épicos:
+- **HUD de energia, cooldowns e GS:** US-012 e US-021.
+- **Telas de inventário (US-019) e de maestria (US-032).**
+- **Aviso de zona de risco e borda vermelha:** US-037.
+
+Criadas pelo dev em 23/11, por delegação do Davi:
+
+| História | Depende de |
+| --- | --- |
+| [US-044 · Mapa do mundo com as zonas](../historias/US-044-mapa-do-mundo.md) | US-035 |
+| [US-045 · Quest de tutorial na zona Azul](../historias/US-045-quest-de-tutorial.md) | US-033, US-035 |
+
+**Ainda a escrever:** o polimento visual da UI, com o Davi.
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico
