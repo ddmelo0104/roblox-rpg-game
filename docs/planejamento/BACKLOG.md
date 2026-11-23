@@ -12,7 +12,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | --- | --- | --- | --- | --- |
 | [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/15 histórias · 0/39 pts |
 | [EP-002 · Personagem, câmera e controles (PC)](epicos/EP-002-personagem-camera-e-controles.md) | backlog | must | M1 | sem histórias |
-| [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | backlog | must | M1 | sem histórias |
+| [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | em-andamento | must | M1 | 0/4 histórias · 0/16 pts |
 | [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | em-andamento | must | M1 | 0/5 histórias · 0/19 pts |
 | [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | backlog | must | M1 | sem histórias |
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | backlog | must | M1 | sem histórias |
@@ -45,6 +45,10 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-018 · Equipar e desequipar, com GS e atributos do personagem](historias/US-018-equipar-gs-e-atributos.md) | revisao | EP-004 | must | 5 |
 | [US-019 · Tela de inventário e equipamento (PC)](historias/US-019-tela-de-inventario.md) | revisao | EP-004 | must | 5 |
 | [US-020 · Sorteio de loot e baú de teste](historias/US-020-sorteio-de-loot-e-bau-de-teste.md) | revisao | EP-004 | must | 3 |
+| [US-021 · O kit de habilidades vem da arma equipada](historias/US-021-kit-vem-da-arma.md) | revisao | EP-003 | must | 3 |
+| [US-022 · Kits do arco, da besta e do cajado de fogo](historias/US-022-kits-do-arco-besta-e-cajado.md) | revisao | EP-003 | must | 5 |
+| [US-023 · Ataque básico com mira assistida](historias/US-023-ataque-basico-com-mira-assistida.md) | revisao | EP-003 | must | 3 |
+| [US-024 · Habilidade do peitoral e esquiva pelas botas](historias/US-024-peitoral-e-botas-no-kit.md) | revisao | EP-003 | must | 5 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 

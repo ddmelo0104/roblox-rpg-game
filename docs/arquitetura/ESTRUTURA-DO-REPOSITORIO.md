@@ -32,10 +32,11 @@ roblox-rpg-game/
         ├── Energy.luau       # onde o servidor publica a energia de cada jogador
         ├── Defense.luau      # tipos e conta pura da esquiva e do parry
         ├── Items.luau        # tipos de item e contas de GS e atributos
+        ├── Weapons.luau      # o kit de cada arma (ataque básico e 3 habilidades)
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:

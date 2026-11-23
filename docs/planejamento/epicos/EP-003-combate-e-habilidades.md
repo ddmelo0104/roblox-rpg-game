@@ -2,11 +2,11 @@
 tipo: epico
 id: EP-003
 titulo: Combate e habilidades por equipamento
-status: backlog
+status: em-andamento
 prioridade: must
 marco: M1
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-003 · Combate e habilidades por equipamento
@@ -58,6 +58,15 @@ Num playtest, os jogadores usam esquiva e parry de propósito, e não só o ataq
 As perguntas de parry, energia, ataque básico e andar usando habilidade estão na aba [Combate e Habilidades](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#f0d54cbd-810d); as habilidades de cada arma, na aba [Armas e Armaduras](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ#53e3dc55-5a40).
 
 ## Histórias
+Criadas pelo dev em 23/11, por delegação do Davi. A esquiva e o parry vieram do EP-001 (US-013).
+
+| História | Depende de |
+| --- | --- |
+| [US-021 · O kit de habilidades vem da arma equipada](../historias/US-021-kit-vem-da-arma.md) | US-018 |
+| [US-022 · Kits do arco, da besta e do cajado de fogo](../historias/US-022-kits-do-arco-besta-e-cajado.md) | US-021 |
+| [US-023 · Ataque básico com mira assistida](../historias/US-023-ataque-basico-com-mira-assistida.md) | US-021 |
+| [US-024 · Habilidade do peitoral e esquiva pelas botas](../historias/US-024-peitoral-e-botas-no-kit.md) | US-018, US-013 |
+
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico
