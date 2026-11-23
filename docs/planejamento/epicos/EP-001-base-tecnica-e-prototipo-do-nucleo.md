@@ -6,7 +6,7 @@ status: em-andamento
 prioridade: must
 marco: M0
 criado: 2026-10-29
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 ---
 
 # EP-001 · Base técnica e protótipo do núcleo
@@ -81,3 +81,4 @@ O progresso está no [BACKLOG.md](../BACKLOG.md).
 - 2026-11-04: projeto passado para o Claude Code, no repositório público `ddmelo0104/roblox-rpg-game`. US-001, US-002, US-003, US-004 e US-006 implementadas pelo dev e em revisão.
 - 2026-11-05: escopo renovado para "Base técnica e protótipo do núcleo", aprovado pelo Davi. Histórias US-007 a US-014 criadas.
 - 2026-11-05: o Davi escolheu a espada longa e as 3 habilidades do protótipo. ADR-009 e ADR-010 propostos; US-012 implementada e em revisão.
+- 2026-11-23: o Davi testou a US-012 (golpes, cooldowns e reset funcionam) e pediu para seguir com tudo o que fosse possível. US-011 e US-013 implementadas e em revisão; a parte do dev da US-014 está pronta, e faltam o terreno e a medição.

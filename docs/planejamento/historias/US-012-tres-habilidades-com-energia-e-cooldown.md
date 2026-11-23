@@ -8,7 +8,7 @@ epico: EP-001
 pontos: 5
 sprint:
 criado: 2026-11-05
-atualizado: 2026-11-05
+atualizado: 2026-11-23
 concluido_em:
 ---
 
@@ -144,5 +144,7 @@ A energia vai até 100 e volta 5 por segundo. A margem de lag é de 1,5 stud, e 
    - Para ver o servidor recusar, ponha uma parede entre você e o boneco travado e aperte E em menos de 1,5 s, antes de a trava soltar. O aviso "Golpe no alvo: sem linha de visão" aparece.
 7. **Pedido inválido:** na barra de comandos do cliente, rode `game.ReplicatedStorage.Remotes.RequestAbility:FireServer("BolaDeFogo", Vector3.new(0, 0, -1))`. O servidor avisa `[Network] RequestAbility rejected from …: unknown option`, sem erro.
 8. **Com 2 jogadores** (Test → Clients and Servers → 2 players): o jogador 2 vê o efeito e os números de dano quando o jogador 1 usa as habilidades.
+
+**Teste do Davi (2026-11-23):** os golpes, os cooldowns e o reset do giro funcionam no Studio. Falta o Davi marcar a história como concluída.
 
 Passando, mude `status` para `concluido` e preencha `concluido_em`.
