@@ -45,7 +45,11 @@ function Items.definition(itemId: string): any
 	return ItemsConfig.ITEMS[itemId]
 end
 
--- GS of one item. Specialization and mastery come with EP-005; until then they are 0.
+-- The specialization level of a worn item and the mastery level of its line (EP-005), given by
+-- Shared.Mastery from a player's fame.
+export type LevelsOf = (record: ItemRecord) -> (number, number)
+
+-- GS of one item, with its specialization level and its line's mastery level (0 if not given).
 function Items.itemGearScore(record: ItemRecord, specialization: number?, mastery: number?): number
 	if record.durability <= 0 then
 		return 0
@@ -57,14 +61,18 @@ function Items.itemGearScore(record: ItemRecord, specialization: number?, master
 end
 
 -- GS of the character: the average of the slots, with the weapon counting WEAPON_GS_WEIGHT times.
--- An empty slot counts 0.
-function Items.characterGearScore(equipped: Equipped): number
+-- An empty slot counts 0. `levelsOf` adds the specialization and mastery of each item.
+function Items.characterGearScore(equipped: Equipped, levelsOf: LevelsOf?): number
 	local weight = ProgressionConfig.WEAPON_GS_WEIGHT
 	local total = 0
 	for _, slot in ItemsConfig.SLOTS do
 		local record = equipped[slot]
 		if record then
-			total += Items.itemGearScore(record) * (if slot == "Weapon" then weight else 1)
+			local specialization, mastery = 0, 0
+			if levelsOf then
+				specialization, mastery = levelsOf(record)
+			end
+			total += Items.itemGearScore(record, specialization, mastery) * (if slot == "Weapon" then weight else 1)
 		end
 	end
 	return total / (weight + #ItemsConfig.SLOTS - 1)
@@ -76,9 +84,10 @@ function Items.attributeMultiplier(gearScore: number): number
 end
 
 -- Everything the equipment gives the character: GS, damage and health multipliers, resistance and
--- cooldown multiplier, adding the bonuses of each armor piece by its type.
-function Items.characterStats(equipped: Equipped): Stats
-	local gearScore = Items.characterGearScore(equipped)
+-- cooldown multiplier, adding the bonuses of each armor piece by its type. `levelsOf` adds the
+-- specialization and mastery to the GS.
+function Items.characterStats(equipped: Equipped, levelsOf: LevelsOf?): Stats
+	local gearScore = Items.characterGearScore(equipped, levelsOf)
 	local multiplier = Items.attributeMultiplier(gearScore)
 	local damage, health, resistance, cooldownReduction = 0, 0, 0, 0
 	for _, record in equipped do

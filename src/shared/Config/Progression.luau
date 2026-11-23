@@ -3,7 +3,7 @@
 	Config/Progression.luau
 	Gear score numbers of the Progression tab (US-016). The names follow the tab's tuning table,
 	translated (GS_POR_TIER becomes GS_PER_TIER, ESCALA_ATRIBUTO becomes ATTRIBUTE_SCALE…).
-	Fame and mastery come with EP-005.
+	Fame, specialization and mastery (EP-005) follow the tab's fame tables.
 ]]
 
 return table.freeze({
@@ -20,4 +20,22 @@ return table.freeze({
 
 	-- Attribute multiplier = 1 + ATTRIBUTE_SCALE × (GS − 100) / 100. It scales damage and health.
 	ATTRIBUTE_SCALE = 0.08,
+
+	-- Fame of a kill (US-029): KILL_FAME_BASE × KILL_FAME_GROWTH^(zone tier − 1) for a common enemy,
+	-- times ELITE_FAME_MULTIPLIER for an elite and times the zone's multiplier (Config/Zones).
+	KILL_FAME_BASE = 10,
+	KILL_FAME_GROWTH = 1.5,
+	ELITE_FAME_MULTIPLIER = 3,
+
+	-- Share of a fame gain that goes to the item worn in each slot. A line's mastery gets the sum of
+	-- what its items got.
+	FAME_SLOT_SHARES = table.freeze({ Weapon = 1, Chest = 0.5, Head = 0.25, Feet = 0.25 }),
+
+	-- Levels of specialization and mastery (US-029): the total fame of a level is
+	-- FAME_CURVE × level³, from 0 to MAX_LEVEL.
+	FAME_CURVE = 2.5,
+	MAX_LEVEL = 100,
+
+	-- Line mastery needed to wear each tier, T1 … T8 (US-031).
+	TIER_MASTERY = table.freeze({ 0, 5, 15, 30, 45, 60, 80, 100 }),
 })

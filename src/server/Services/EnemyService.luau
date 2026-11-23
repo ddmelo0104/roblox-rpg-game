@@ -5,7 +5,8 @@
 	spawn point (US-027); its attributes say what appears there:
 	- Enemy (string): the kind, a key of Config/Enemies.KINDS
 	- Count (number, default 1) and Elite (boolean, default false)
-	- Tier and Luck (numbers, default 1): the zone's tier, for the strength and the loot, and luck
+	- Tier (number, default 1): the zone's tier, for the strength, the loot and the fame
+	- Zone (string, default "Blue"): the zone's color, for the loot's luck and the fame (Config/Zones)
 	- RespawnTime (number, default Config/Enemies.RESPAWN_TIME) and Radius (number, default 5)
 	If the place has no spawn point, a test area appears next to the spawn (Config/Enemies.TEST_AREA).
 
@@ -13,8 +14,9 @@
 	while, and publishes once a second how many are awake and how much server time the AI took, for
 	the performance overlay (US-025). When a player's hit knocks an enemy down (DamageService), the
 	kill goes to the players who dealt at least Config/Loot.KILL_CREDIT_MIN_SHARE of the damage: the
-	item chance is rolled and the item is left in a loot bag for them (US-026). The enemy comes back
-	at its spawn point after RespawnTime.
+	item chance is rolled and the item is left in a loot bag for them (US-026), and each of them gets
+	the kill's fame times their share of the damage (US-029). The enemy comes back at its spawn point
+	after RespawnTime.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -29,12 +31,15 @@ local Enemies = require(ReplicatedStorage.Shared.Enemies)
 local EnemiesConfig = require(ReplicatedStorage.Shared.Config.Enemies)
 local Loot = require(ReplicatedStorage.Shared.Loot)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
+local Mastery = require(ReplicatedStorage.Shared.Mastery)
+local ZonesConfig = require(ReplicatedStorage.Shared.Config.Zones)
 local Targets = require(ReplicatedStorage.Shared.Targets)
 local EnemyBody = require(script.Parent.Parent.EnemyBody)
 local EnemyBrain = require(script.Parent.Parent.EnemyBrain)
 local DamageService = require(script.Parent.DamageService)
 local InventoryService = require(script.Parent.InventoryService)
 local LootBagService = require(script.Parent.LootBagService)
+local MasteryService = require(script.Parent.MasteryService)
 
 type Enemy = EnemyBrain.Enemy
 
@@ -45,6 +50,7 @@ type SpawnPoint = {
 	elite: boolean,
 	tier: number,
 	luck: number,
+	fameMultiplier: number,
 	respawnTime: number,
 	radius: number,
 }
@@ -89,6 +95,12 @@ local function readPoint(part: Instance): SpawnPoint?
 		warn(`[EnemyService] spawn point {part:GetFullName()} has no valid Enemy attribute: "{kindId}"`)
 		return nil
 	end
+	local zoneName = attribute(part, "Zone", ZonesConfig.DEFAULT_ZONE)
+	local zone = ZonesConfig.COLORS[zoneName]
+	if not zone then
+		warn(`[EnemyService] spawn point {part:GetFullName()} has an unknown Zone: "{zoneName}"`)
+		zone = ZonesConfig.COLORS[ZonesConfig.DEFAULT_ZONE]
+	end
 	-- A spawn point only marks a place: it must not block players, sight or the ground check.
 	part.Anchored = true
 	part.Transparency = 1
@@ -101,7 +113,8 @@ local function readPoint(part: Instance): SpawnPoint?
 		kind = kind,
 		elite = attribute(part, "Elite", false),
 		tier = attribute(part, "Tier", 1),
-		luck = attribute(part, "Luck", 1),
+		luck = zone.luck,
+		fameMultiplier = zone.fame,
 		respawnTime = attribute(part, "RespawnTime", EnemiesConfig.RESPAWN_TIME),
 		radius = attribute(part, "Radius", 5),
 	}
@@ -134,6 +147,23 @@ local function dropLoot(point: SpawnPoint, ground: Vector3, contributions: Damag
 	LootBagService.drop(ground + Vector3.new(0, 0.8, 0), { record }, owners)
 end
 
+-- Gives the kill's fame to the players who earned it, each with their share of the damage.
+local function awardFame(point: SpawnPoint, contributions: DamageService.Contributions)
+	local total = 0
+	for _, amount in contributions do
+		total += amount
+	end
+	if total <= 0 then
+		return
+	end
+	local fame = Mastery.killFame(point.tier, point.elite, point.fameMultiplier)
+	for _, player in Enemies.credited(contributions, LootConfig.KILL_CREDIT_MIN_SHARE) do
+		if player.Parent then
+			MasteryService.award(player, fame * contributions[player] / total)
+		end
+	end
+end
+
 -- The end of an enemy: `contributions` comes with a kill by players, and nil for any other death.
 local function finish(enemy: Enemy, contributions: DamageService.Contributions?)
 	if enemy.state == "Dead" then
@@ -151,6 +181,7 @@ local function finish(enemy: Enemy, contributions: DamageService.Contributions?)
 	end
 	if point then
 		if contributions then
+			awardFame(point, contributions)
 			dropLoot(point, ground, contributions)
 		end
 		task.delay(point.respawnTime, spawnOne, point)
@@ -226,14 +257,14 @@ local function addPoint(part: Instance)
 	end
 end
 
-local function newPointPart(parent: Instance, cframe: CFrame, kindId: string, tier: number, luck: number): Part
+local function newPointPart(parent: Instance, cframe: CFrame, kindId: string, tier: number, zone: string): Part
 	local part = Instance.new("Part")
 	part.Name = "EnemySpawn"
 	part.Size = Vector3.new(1, 1, 1)
 	part.CFrame = cframe
 	part:SetAttribute("Enemy", kindId)
 	part:SetAttribute("Tier", tier)
-	part:SetAttribute("Luck", luck)
+	part:SetAttribute("Zone", zone)
 	part.Parent = parent
 	return part
 end
@@ -252,7 +283,7 @@ local function createTestArea()
 	areaFolder.Parent = Workspace
 	for _, group in area.groups do
 		local cframe = spawnFrame() * CFrame.new(-group.left, 0, -area.ahead)
-		local part = newPointPart(areaFolder, cframe, group.kind, area.tier, area.luck)
+		local part = newPointPart(areaFolder, cframe, group.kind, area.tier, area.zone)
 		part:SetAttribute("Count", group.count)
 		part:SetAttribute("Elite", group.elite)
 		part:SetAttribute("Radius", area.radius)
@@ -269,7 +300,7 @@ local function createStressTest(count: number)
 	local base = spawnFrame() * CFrame.new(-columns * STRESS_SPACING / 2, 0, -STRESS_DISTANCE)
 	for i = 0, count - 1 do
 		local offset = CFrame.new((i % columns) * STRESS_SPACING, 0, -math.floor(i / columns) * STRESS_SPACING)
-		local part = newPointPart(stressFolder, base * offset, "BanditThug", 1, 1)
+		local part = newPointPart(stressFolder, base * offset, "BanditThug", 1, ZonesConfig.DEFAULT_ZONE)
 		part:SetAttribute("Radius", 0)
 		CollectionService:AddTag(part, Enemies.SPAWN_TAG)
 	end

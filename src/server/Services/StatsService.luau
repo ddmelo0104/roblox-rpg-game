@@ -2,9 +2,10 @@
 --[[
 	StatsService.luau
 	The attributes each character gets from its equipment (US-018): GS, damage, health, resistance
-	and cooldown, from Shared.Items.characterStats. They are applied to the character's MaxHealth
-	(keeping the health fraction) whenever the equipment or the character changes, published as the
-	GearScore attribute for the HUD, and read by CombatService and DefenseService.
+	and cooldown, from Shared.Items.characterStats, with the specialization and mastery levels
+	(US-030). They are applied to the character's MaxHealth (keeping the health fraction) whenever
+	the equipment, a level or the character changes, published as the GearScore attribute for the
+	HUD, and read by CombatService and DefenseService.
 ]]
 
 local Players = game:GetService("Players")
@@ -15,6 +16,7 @@ local Items = require(ReplicatedStorage.Shared.Items)
 local ItemsConfig = require(ReplicatedStorage.Shared.Config.Items)
 local Workspace = game:GetService("Workspace")
 local InventoryService = require(script.Parent.InventoryService)
+local MasteryService = require(script.Parent.MasteryService)
 
 local StatsService = {}
 
@@ -55,7 +57,7 @@ end
 
 -- Recomputes the attributes and applies the max health, keeping the same fraction of health.
 local function refresh(player: Player)
-	local current = Items.characterStats(InventoryService.equipped(player))
+	local current = Items.characterStats(InventoryService.equipped(player), MasteryService.levelsOf(player))
 	stats[player] = current
 	player:SetAttribute(Items.GEAR_SCORE_ATTRIBUTE, math.floor(current.gearScore + 0.5))
 
@@ -77,6 +79,7 @@ end
 
 function StatsService:Start()
 	InventoryService.onChanged(refresh)
+	MasteryService.onChanged(refresh)
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	for _, player in Players:GetPlayers() do
 		onPlayerAdded(player)

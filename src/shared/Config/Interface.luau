@@ -8,6 +8,9 @@
 return table.freeze({
 	INVENTORY_KEY = Enum.KeyCode.I,
 
+	-- Opens the mastery screen (US-032). M stays free for the map.
+	MASTERY_KEY = Enum.KeyCode.N,
+
 	-- Key of the prompts of chests and loot bags. Not E (the default), which is an ability key.
 	INTERACT_KEY = Enum.KeyCode.G,
 

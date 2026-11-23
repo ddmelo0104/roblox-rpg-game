@@ -22,6 +22,19 @@ return table.freeze({
 	-- Rarities from 1 (Common) to 5 (Legendary), as the player reads them.
 	RARITY_NAMES = table.freeze({ "Comum", "Incomum", "Raro", "Épico", "Lendário" }),
 
+	-- The lines (where fame and mastery go), in the order the mastery screen shows them, and their
+	-- names shown to players.
+	LINES = table.freeze({ "Swords", "Bows", "Crossbows", "FireStaffs", "Cloth", "Leather", "Plate" }),
+	LINE_NAMES = table.freeze({
+		Swords = "Espadas",
+		Bows = "Arcos",
+		Crossbows = "Bestas",
+		FireStaffs = "Cajados de fogo",
+		Cloth = "Tecido",
+		Leather = "Couro",
+		Plate = "Placa",
+	}),
+
 	-- The catalog. `line` is where fame and mastery go (EP-005); `armorType` only exists on armor.
 	ITEMS = table.freeze({
 		Longsword = table.freeze({ name = "Espada longa", slot = "Weapon", line = "Swords" }),

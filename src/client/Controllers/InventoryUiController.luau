@@ -13,6 +13,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Items = require(Shared:WaitForChild("Items") :: ModuleScript)
+local Mastery = require(Shared:WaitForChild("Mastery") :: ModuleScript)
 local InterfaceConfig = require(Shared:WaitForChild("Config"):WaitForChild("Interface") :: ModuleScript)
 local ItemsConfig = require(Shared:WaitForChild("Config"):WaitForChild("Items") :: ModuleScript)
 local CameraController = require(script.Parent.CameraController)
@@ -22,6 +23,9 @@ local InventoryController = require(script.Parent.InventoryController)
 local TITLE = "Inventário"
 local HINT = "Clique num item da mochila para equipar, ou num slot para tirar."
 local EMPTY_SLOT_COLOR = Color3.fromRGB(70, 70, 80)
+local TEXT_COLOR = Color3.new(1, 1, 1)
+-- An item whose tier needs more mastery than the player has (US-031).
+local CANNOT_WEAR_COLOR = Color3.fromRGB(255, 110, 110)
 local PANEL_COLOR = Color3.fromRGB(20, 20, 26)
 local SLOT_COLOR = Color3.fromRGB(35, 35, 44)
 local BONUS_NAMES = {
@@ -52,7 +56,7 @@ local function newButton(parent: Instance, size: UDim2): TextButton
 	button.BackgroundColor3 = SLOT_COLOR
 	button.BorderSizePixel = 0
 	button.AutoButtonColor = true
-	button.TextColor3 = Color3.new(1, 1, 1)
+	button.TextColor3 = TEXT_COLOR
 	button.TextScaled = true
 	button.TextWrapped = true
 	button.Text = ""
@@ -84,9 +88,13 @@ local function newText(parent: Instance, size: UDim2, position: UDim2, textSize:
 	return label
 end
 
--- What the player reads about an item under the mouse.
+-- What the player reads about an item under the mouse: with its specialization, its line's mastery
+-- (US-030) and, if the tier needs more mastery, what it needs (US-031).
 local function describe(record: any): string
-	local lines = { Items.displayName(record), `GS {math.floor(Items.itemGearScore(record) + 0.5)}` }
+	local progress = InventoryController.progress()
+	local specialization, mastery = Mastery.levelsOf(progress)(record)
+	local gearScore = Items.itemGearScore(record, specialization, mastery)
+	local lines = { Items.displayName(record), `GS {math.floor(gearScore + 0.5)}` }
 	local definition = Items.definition(record.itemId)
 	local bonuses = if definition and definition.armorType then ItemsConfig.ARMOR_BONUSES[definition.armorType] else nil
 	if bonuses then
@@ -101,6 +109,14 @@ local function describe(record: any): string
 		table.sort(parts)
 		table.insert(lines, `Por peça: {table.concat(parts, " · ")}`)
 	end
+	if definition then
+		local lineName = Mastery.lineName(definition.line)
+		table.insert(lines, `Especialização {specialization} · {lineName} {mastery}`)
+		local canWear, required = Mastery.canWear(progress, record)
+		if not canWear then
+			table.insert(lines, `Requer {lineName} {required} para usar`)
+		end
+	end
 	table.insert(lines, `Durabilidade {math.floor(record.durability)}%`)
 	return table.concat(lines, "\n")
 end
@@ -111,8 +127,11 @@ local function showRecord(button: TextButton, record: any?, emptyText: string)
 		local definition = Items.definition(record.itemId)
 		button.Text = `{if definition then definition.name else record.itemId}\nT{record.tier}`
 		stroke.Color = InterfaceConfig.RARITY_COLORS[record.rarity] or EMPTY_SLOT_COLOR
+		local canWear = Mastery.canWear(InventoryController.progress(), record)
+		button.TextColor3 = if canWear then TEXT_COLOR else CANNOT_WEAR_COLOR
 	else
 		button.Text = emptyText
+		button.TextColor3 = TEXT_COLOR
 		stroke.Color = EMPTY_SLOT_COLOR
 	end
 end
@@ -128,7 +147,7 @@ local function createScreen(): Screen
 	local width = COLUMNS * CELL + (COLUMNS + 1) * GAP
 	local equipTop = 34
 	local bagTop = equipTop + CELL + 24
-	local height = bagTop + rows * (CELL + GAP) + 70
+	local height = bagTop + rows * (CELL + GAP) + 104
 
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
@@ -167,7 +186,7 @@ local function createScreen(): Screen
 		table.insert(bagButtons, button)
 	end
 
-	local details = newText(panel, UDim2.fromOffset(width - 2 * GAP, 62), UDim2.new(0, GAP, 1, -66), 13)
+	local details = newText(panel, UDim2.fromOffset(width - 2 * GAP, 96), UDim2.new(0, GAP, 1, -100), 13)
 	details.Text = HINT
 
 	gui.Parent = player:WaitForChild("PlayerGui")

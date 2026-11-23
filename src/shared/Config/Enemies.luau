@@ -91,12 +91,12 @@ return table.freeze({
 	CORPSE_TIME = 3,
 
 	-- Test area (US-027): if the place has no spawn point, groups of enemies appear in a row to the
-	-- left of the spawn (`left` studs), far enough apart to fight one group at a time. Zone tier 1
-	-- and luck 1 (blue zone).
+	-- left of the spawn (`left` studs), far enough apart to fight one group at a time. Tier 1, in a
+	-- blue zone (Config/Zones).
 	TEST_AREA = table.freeze({
 		ahead = 30,
 		tier = 1,
-		luck = 1,
+		zone = "Blue",
 		radius = 4,
 		groups = table.freeze({
 			table.freeze({ kind = "BanditThug", count = 2, elite = false, left = 60 }),

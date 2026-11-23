@@ -30,6 +30,7 @@ local LIST: { string } = {
 	"RequestEquip", -- US-018: equip the bag item with this uid
 	"RequestUnequip", -- US-018: move what is worn in this slot back to the bag
 	"Notice", -- US-020: server notice to one player, shown on the HUD (action name and reason or text)
+	"ProgressUpdate", -- US-029: server notice to one player (fame totals and the latest gain)
 }
 
 local Remotes = {}

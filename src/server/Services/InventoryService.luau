@@ -33,6 +33,7 @@ local InventoryService = {}
 
 local inventories: { [Player]: Inventory } = {}
 local listeners: { (player: Player) -> () } = {}
+local equipRules: { (player: Player, record: ItemRecord) -> string? } = {}
 
 local updateEvent = Remotes.event("InventoryUpdate")
 local noticeEvent = Remotes.event("Notice")
@@ -110,6 +111,12 @@ function InventoryService.onChanged(listener: (player: Player) -> ())
 	table.insert(listeners, listener)
 end
 
+-- Adds a check to every equip: `rule` returns the text to show the player when they cannot wear the
+-- item (the mastery a tier needs, US-031), or nil. Rules must not yield.
+function InventoryService.addEquipRule(rule: (player: Player, record: ItemRecord) -> string?)
+	table.insert(equipRules, rule)
+end
+
 -- Moves the bag item `uid` to its slot; what was in the slot takes its place in the bag.
 local function equip(player: Player, uid: string)
 	local inventory = inventories[player]
@@ -122,6 +129,13 @@ local function equip(player: Player, uid: string)
 	local definition = Items.definition(record.itemId)
 	if not definition then
 		return
+	end
+	for _, rule in equipRules do
+		local refusal = rule(player, record)
+		if refusal then
+			noticeEvent:FireClient(player, "Inventário", refusal)
+			return
+		end
 	end
 	-- One move, no yields: the item leaves the bag and the old one takes its place.
 	local previous = inventory.equipped[definition.slot]
