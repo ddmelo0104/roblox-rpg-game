@@ -7,16 +7,16 @@
 	(Shared.Mastery). The levels raise the GS (US-030: StatsService listens to `onChanged`) and decide
 	which tiers a player can wear (US-031: an equip rule of InventoryService). The client gets a copy
 	of the totals and of each gain (ProgressUpdate), for the fame pop-up and the mastery screen.
-	Nothing is saved yet: the profile of EP-006 will keep it.
+	The fame totals are a section of the saved profile (ProfileService, US-033).
 ]]
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Items = require(ReplicatedStorage.Shared.Items)
 local Mastery = require(ReplicatedStorage.Shared.Mastery)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local InventoryService = require(script.Parent.InventoryService)
+local ProfileService = require(script.Parent.ProfileService)
 
 -- A level reached with a gain, for the pop-up: an item kind's specialization or a line's mastery.
 export type LevelUp = { kind: "Item" | "Line", id: string, level: number }
@@ -99,22 +99,44 @@ local function masteryRule(player: Player, record: Items.ItemRecord): string?
 	return `requer {Mastery.lineName(line)} {required}`
 end
 
-local function onPlayerAdded(player: Player)
-	progressOf[player] = Mastery.newProgress()
-	send(player, nil)
-end
-
-function MasteryService:Start()
-	InventoryService.addEquipRule(masteryRule)
-	Players.PlayerAdded:Connect(onPlayerAdded)
-	for _, player in Players:GetPlayers() do
-		if not progressOf[player] then
-			onPlayerAdded(player)
+-- Only positive numbers under text keys come back from a saved table.
+local function checkedTotals(saved: any): { [string]: number }
+	local totals: { [string]: number } = {}
+	if type(saved) == "table" then
+		for key, value in saved do
+			if type(key) == "string" and type(value) == "number" and value > 0 and value < math.huge then
+				totals[key] = value
+			end
 		end
 	end
-	Players.PlayerRemoving:Connect(function(player)
-		progressOf[player] = nil
-	end)
+	return totals
+end
+
+-- The profile section: the fame totals load, save and are released with the profile.
+local function loadSection(player: Player, saved: any)
+	local progress = Mastery.newProgress()
+	if type(saved) == "table" then
+		progress.items = checkedTotals(saved.items)
+		progress.lines = checkedTotals(saved.lines)
+	end
+	progressOf[player] = progress
+	send(player, nil)
+	for _, listener in listeners do
+		task.spawn(listener, player) -- the saved levels count for the GS at once
+	end
+end
+
+local function saveSection(player: Player): any
+	return progressOf[player]
+end
+
+local function releaseSection(player: Player)
+	progressOf[player] = nil
+end
+
+function MasteryService:Init()
+	ProfileService.addSection("mastery", loadSection, saveSection, releaseSection)
+	InventoryService.addEquipRule(masteryRule)
 end
 
 return MasteryService

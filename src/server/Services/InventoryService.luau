@@ -6,11 +6,12 @@
 	other inside a single function call, without yielding, so an item never exists in two places
 	(rule 6 of CLAUDE.md). After every change, the client gets a copy (InventoryUpdate) and the
 	listeners run (StatsService). The client asks to equip by uid and to unequip by slot.
-	Everything lives in memory until the profile is saved (EP-006).
+	The inventory is a section of the saved profile (ProfileService, US-033): it loads from there,
+	or starts with the starter kit for a new player, and a loaded profile is checked so no saved
+	uid appears twice.
 ]]
 
 local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Items = require(ReplicatedStorage.Shared.Items)
@@ -18,6 +19,7 @@ local ItemsConfig = require(ReplicatedStorage.Shared.Config.Items)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Validate = require(ReplicatedStorage.Shared.Validate)
 local Network = require(script.Parent.Parent.Network)
+local ProfileService = require(script.Parent.ProfileService)
 
 type ItemRecord = Items.ItemRecord
 
@@ -164,8 +166,8 @@ local function unequip(player: Player, slot: string)
 	changed(player)
 end
 
--- Every new player gets the starter kit, equipped (T1 Common), and an empty bag.
-local function onPlayerAdded(player: Player)
+-- A new player gets the starter kit, equipped (T1 Common), and an empty bag.
+local function starterInventory(): Inventory
 	local inventory: Inventory = { bag = {}, equipped = {} }
 	for _, itemId in ItemsConfig.STARTER_KIT do
 		local definition = Items.definition(itemId)
@@ -173,8 +175,77 @@ local function onPlayerAdded(player: Player)
 			inventory.equipped[definition.slot] = InventoryService.createItem(itemId, ItemsConfig.MIN_TIER, 1)
 		end
 	end
+	return inventory
+end
+
+-- A saved record, checked: an item that still exists in the catalog, with a uid not seen yet.
+-- Anything else is dropped with a warning (it should never happen).
+local function checkedRecord(saved: any, seen: { [string]: boolean }, player: Player): ItemRecord?
+	if type(saved) ~= "table" or type(saved.uid) ~= "string" or type(saved.itemId) ~= "string" then
+		warn(`[Inventory] {player.Name}: dropped a malformed saved item`)
+		return nil
+	end
+	if seen[saved.uid] then
+		warn(`[Inventory] {player.Name}: dropped a second copy of item {saved.uid}`)
+		return nil
+	end
+	if not Items.definition(saved.itemId) then
+		warn(`[Inventory] {player.Name}: dropped {saved.uid}, unknown item {saved.itemId}`)
+		return nil
+	end
+	seen[saved.uid] = true
+	return {
+		uid = saved.uid,
+		itemId = saved.itemId,
+		tier = math.clamp(tonumber(saved.tier) or ItemsConfig.MIN_TIER, ItemsConfig.MIN_TIER, ItemsConfig.MAX_TIER),
+		rarity = math.clamp(tonumber(saved.rarity) or 1, 1, #ItemsConfig.RARITY_NAMES),
+		durability = math.clamp(tonumber(saved.durability) or 100, 0, 100),
+	}
+end
+
+-- The profile section's load: the saved inventory, checked, or the starter kit.
+local function loadSection(player: Player, saved: any)
+	local inventory: Inventory
+	if type(saved) == "table" and type(saved.bag) == "table" and type(saved.equipped) == "table" then
+		inventory = { bag = {}, equipped = {} }
+		local seen: { [string]: boolean } = {}
+		for _, slot in ItemsConfig.SLOTS do
+			local record = checkedRecord(saved.equipped[slot], seen, player)
+			if record and Items.definition(record.itemId).slot == slot then
+				inventory.equipped[slot] = record
+			elseif record then
+				table.insert(inventory.bag, record) -- in the wrong slot: back to the bag
+			end
+		end
+		for _, savedRecord in saved.bag do
+			local record = checkedRecord(savedRecord, seen, player)
+			if record then
+				table.insert(inventory.bag, record)
+			end
+		end
+	else
+		inventory = starterInventory()
+	end
 	inventories[player] = inventory
 	changed(player)
+end
+
+-- The profile section's save: the bag and what is worn.
+local function saveSection(player: Player): any
+	local inventory = inventories[player]
+	if not inventory then
+		return nil
+	end
+	return { bag = inventory.bag, equipped = inventory.equipped }
+end
+
+-- The profile section's release: the player left and their last save has its copy.
+local function releaseSection(player: Player)
+	inventories[player] = nil
+end
+
+function InventoryService:Init()
+	ProfileService.addSection("inventory", loadSection, saveSection, releaseSection)
 end
 
 function InventoryService:Start()
@@ -188,14 +259,6 @@ function InventoryService:Start()
 	-- InventoryUpdate and Notice are server notices only.
 	updateEvent.OnServerEvent:Connect(function() end)
 	noticeEvent.OnServerEvent:Connect(function() end)
-
-	Players.PlayerAdded:Connect(onPlayerAdded)
-	for _, player in Players:GetPlayers() do
-		onPlayerAdded(player)
-	end
-	Players.PlayerRemoving:Connect(function(player)
-		inventories[player] = nil
-	end)
 end
 
 return InventoryService
