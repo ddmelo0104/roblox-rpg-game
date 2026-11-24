@@ -27,6 +27,9 @@ Zones.RETURN_TAG = "ReturnPoint"
 Zones.KIND_ATTRIBUTE = "ZoneKind"
 Zones.TIER_ATTRIBUTE = "ZoneTier"
 Zones.NAME_ATTRIBUTE = "ZoneName"
+-- true while the player is inside a dungeon (its region has the attribute Dungeon), for the look
+-- of the screen (US-053).
+Zones.DUNGEON_ATTRIBUTE = "ZoneIsDungeon"
 Zones.PROTECTED_UNTIL = "ProtectedUntil"
 
 -- The rules of a zone kind, or of the default kind if it does not exist.

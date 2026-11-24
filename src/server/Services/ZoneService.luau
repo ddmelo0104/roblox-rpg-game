@@ -154,6 +154,8 @@ local function publish(player: Player, zone: Zone)
 	player:SetAttribute(Zones.KIND_ATTRIBUTE, zone.kind)
 	player:SetAttribute(Zones.TIER_ATTRIBUTE, zone.tier)
 	player:SetAttribute(Zones.NAME_ATTRIBUTE, zone.name)
+	local region = zone.region
+	player:SetAttribute(Zones.DUNGEON_ATTRIBUTE, region ~= nil and region:GetAttribute("Dungeon") == true)
 end
 
 local function enter(player: Player, state: Tracked, zone: Zone)
