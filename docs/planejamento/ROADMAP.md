@@ -24,17 +24,17 @@ Decidida pelo dev em 23/11, por delegação do Davi, seguindo as dependências e
 3. **EP-008** · Inimigos, IA e facções, com drops pelo sorteio da US-020 (em revisão: US-025 a US-028).
 4. **EP-005** · Fama, maestria e especialização (em revisão: US-029 a US-032; as habilidades alternativas vêm depois do EP-006).
 5. **EP-006** · Persistência do perfil (ADR-005, proposto) (em revisão: US-033 e US-034).
-6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio (em revisão: US-035 a US-037; faltam o mapa e a cidade).
+6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio (em revisão: US-035 a US-037, e US-052 a US-054 com a cidade, a luz e o cenário provisórios; faltam as funções da cidade).
 7. **EP-009** · Morte, derrubado e saque (em revisão: US-038 a US-040 e US-049, a volta para a cidade; falta o anti *combat logging*).
 8. **EP-010** · Dungeon aleatória solo (em revisão: US-041 a US-043; faltam armadilha, evento, modificadores e as salas do Studio).
 9. **EP-011** · HUD, UI e a quest de tutorial (em revisão: US-044, US-045 e US-050, o inventário detalhado).
 10. **EP-012** · Conteúdo de grupo (em revisão: US-046 a US-048).
 
-Os pedidos do Davi de 23/11 viraram a US-049 (morrer numa dungeon da Vermelha leva para a cidade), a US-050 (inventário detalhado) e a US-051 (janela de saque), feitas logo depois do EP-012.
+O pedido do Davi de 24/11 ("ambientação, cidade, estruturas") virou as US-052 a US-054 do EP-007. Os pedidos do Davi de 23/11 viraram a US-049 (morrer numa dungeon da Vermelha leva para a cidade), a US-050 (inventário detalhado) e a US-051 (janela de saque), feitas logo depois do EP-012.
 
 Com o EP-012, todos os épicos do M1 têm código em revisão. O que ainda falta escrever está em cada épico, em "Ainda a escrever":
 - o anti *combat logging*;
-- a cidade (moeda, banco, vendedor e conserto);
+- as funções da cidade (moeda, banco, vendedor e conserto), nos prédios da US-052;
 - as habilidades alternativas da maestria;
 - as salas de armadilha e de evento e os modificadores da dungeon;
 - as salas e o terreno do Studio.

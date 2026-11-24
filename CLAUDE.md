@@ -43,7 +43,12 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
     - US-049 (EP-009): morrer numa dungeon da Vermelha leva para a cidade.
     - US-050 (EP-011): inventário em 3 colunas, com detalhes, ▲/▼ e 🔒.
     - US-051 (EP-004): janela de saque para baús e bolsas, com `LootContainerService`.
-  - Todos os épicos do M1 têm código em revisão. Próximo: o que cada épico lista em "Ainda a escrever", começando pela cidade (moeda, banco, vendedor e conserto) e pelo anti *combat logging*.
+  - Pedido do Davi de 24/11 ("ambientação, cidade, estruturas"), em revisão no EP-007:
+    - US-052: cidade de Stardawn provisória feita por código (`CityService`, `Config/City`);
+    - US-053: amanhecer fixo e cor de cada zona (`LightingService`, `AmbienceController`, `Config/Ambience`);
+    - US-054: cenário do layout de teste (`SceneryService`, `Config/Scenery`).
+    - Só aparecem quando o place não tem os do Studio (tags `CityModel` e `Scenery`), e o Davi pode congelá-los no place.
+  - Todos os épicos do M1 têm código em revisão. Próximo: o que cada épico lista em "Ainda a escrever", começando pelas funções da cidade (moeda, banco, vendedor e conserto) e pelo anti *combat logging*.
 - O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
 - ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.

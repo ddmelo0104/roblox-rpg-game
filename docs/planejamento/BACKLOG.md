@@ -16,7 +16,7 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | em-andamento | must | M1 | 0/6 histórias · 0/22 pts |
 | [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | em-andamento | must | M1 | 0/4 histórias · 0/12 pts |
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | em-andamento | must | M1 | 0/2 histórias · 0/8 pts |
-| [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
+| [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | em-andamento | must | M1 | 0/6 histórias · 0/25 pts |
 | [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
 | [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | em-andamento | must | M1 | 0/4 histórias · 0/16 pts |
 | [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
@@ -76,8 +76,11 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-049 · Morrer numa dungeon da Zona Vermelha leva para a cidade](historias/US-049-morrer-na-dungeon-vermelha-volta-para-a-cidade.md) | revisao | EP-009 | must | 1 |
 | [US-050 · Inventário detalhado e fácil de entender](historias/US-050-inventario-detalhado.md) | revisao | EP-011 | must | 3 |
 | [US-051 · Pegar os itens de baús e bolsas numa janela de saque](historias/US-051-janela-de-saque.md) | revisao | EP-004 | must | 3 |
+| [US-052 · Cidade de Stardawn provisória feita por código](historias/US-052-cidade-de-stardawn.md) | revisao | EP-007 | must | 5 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
+| [US-053 · Luz e clima de Stardawn, com a cor de cada zona](historias/US-053-luz-e-clima-de-stardawn.md) | revisao | EP-007 | should | 2 |
+| [US-054 · Cenário de Stardawn no layout de teste](historias/US-054-cenario-de-stardawn.md) | revisao | EP-007 | should | 5 |
 
 ## Prontas para começar
 

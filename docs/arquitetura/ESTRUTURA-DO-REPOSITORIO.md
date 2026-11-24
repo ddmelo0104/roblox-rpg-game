@@ -22,13 +22,17 @@ roblox-rpg-game/
     │   ├── DungeonBuilder.luau # monta as salas de uma instância de dungeon (US-041)
     │   ├── SplitChest.luau   # baú cujos itens são divididos entre jogadores (dungeons e acampamentos)
     │   ├── Teleport.luau     # teleporte para longe dentro do place (dungeons)
-    │   └── Services/         # um Service por sistema: Camp, Chest, Combat, CombatState, Damage, Defense, Dungeon, Enemy, Energy, Group, GroupDungeon, Inventory, Knockdown, LootBag, LootContainer, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Tutorial, Zone…
+    │   ├── Build.luau        # peças básicas do mundo provisório: blocos, telhados, a estrela, textos e luzes (US-052)
+    │   ├── Props.luau        # objetos reaproveitados: árvores, rochas, cristais, postes, estandartes, tendas (US-052, US-054)
+    │   ├── CityBuilder.luau  # monta a cidade provisória de Stardawn (US-052)
+    │   ├── SceneryBuilder.luau # monta o cenário do layout de teste (US-054)
+    │   └── Services/         # um Service por sistema: Camp, Chest, City, Combat, CombatState, Damage, Defense, Dungeon, Enemy, Energy, Group, GroupDungeon, Inventory, Knockdown, Lighting, LootBag, LootContainer, Mastery, Movement, MovementValidation, Ping, Profile, Scenery, Stats, Status, TrainingDummy, Tutorial, Zone…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
     │   ├── ItemDetails.luau  # o texto de detalhes de um item, dos atributos e do kit (US-050)
     │   ├── ItemCell.luau     # o quadrado de um item no inventário e na janela de saque (US-050)
-    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, janela de saque, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, grupo, desempenho…
+    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, janela de saque, ambiente das zonas, decoração animada, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, grupo, desempenho…
     └── shared/               # → ReplicatedStorage.Shared
         ├── Project.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers
@@ -44,11 +48,12 @@ roblox-rpg-game/
         ├── Mastery.luau      # regras puras de fama, especialização, maestria e tiers liberados
         ├── Zones.luau        # em que zona está um ponto, e onde o servidor publica a zona do jogador
         ├── Knockdown.luau    # onde o servidor publica que o jogador está derrubado
+        ├── World.luau        # tags do mundo provisório (CityModel, Scenery) e da decoração que gira (Spin)
         ├── DungeonLayout.luau # gerador puro da dungeon: as salas a partir da semente
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown, Dungeons, Tutorial, Groups, Camps…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown, Dungeons, Tutorial, Groups, Camps, City, Scenery, Ambience…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:

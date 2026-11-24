@@ -58,13 +58,18 @@ Criadas pelo dev em 23/11, por delegação do Davi, seguindo o [ADR-004](../../a
 | [US-035 · Zonas como regiões do mundo, com a zona atual no HUD](../historias/US-035-zonas-como-regioes.md) | ADR-004 |
 | [US-036 · PvP na zona Vermelha](../historias/US-036-pvp-na-zona-vermelha.md) | US-035, US-013 |
 | [US-037 · Fronteira travada em combate, proteção de entrada e aviso de risco](../historias/US-037-fronteira-em-combate-e-protecao.md) | US-035, US-015 |
+| [US-052 · Cidade de Stardawn provisória feita por código](../historias/US-052-cidade-de-stardawn.md) (pedido do Davi, 24/11) | US-035 |
+| [US-053 · Luz e clima de Stardawn, com a cor de cada zona](../historias/US-053-luz-e-clima-de-stardawn.md) (pedido do Davi, 24/11) | US-035 |
+| [US-054 · Cenário de Stardawn no layout de teste](../historias/US-054-cenario-de-stardawn.md) (pedido do Davi, 24/11) | US-035, US-052 |
+
+O mapa do mundo saiu na [US-044](../historias/US-044-mapa-do-mundo.md), no EP-011. A cidade, a luz e o cenário das US-052 a US-054 são provisórios: o código só os monta quando o place não tem os do Studio, e o Davi pode congelá-los no place e editar à mão.
 
 **Ainda a escrever:**
-- o mapa do mundo (cor, tier e GS recomendado de cada zona);
-- a cidade (banco, vendedor e reparo, que pedem a moeda);
+- as funções da cidade (moeda, banco, vendedor e conserto), nos prédios que já existem;
 - o terreno de Stardawn e o orçamento de desempenho, com o Davi.
 
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico
 - 2026-11-05: épico criado com o M1, aprovado pelo Davi.
+- 2026-11-24: cidade, luz e cenário provisórios (US-052 a US-054), a pedido do Davi.
