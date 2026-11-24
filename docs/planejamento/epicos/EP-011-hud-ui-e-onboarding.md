@@ -59,6 +59,7 @@ Criadas pelo dev em 23/11, por delegação do Davi:
 | --- | --- |
 | [US-044 · Mapa do mundo com as zonas](../historias/US-044-mapa-do-mundo.md) | US-035 |
 | [US-045 · Quest de tutorial na zona Azul](../historias/US-045-quest-de-tutorial.md) | US-033, US-035 |
+| [US-050 · Inventário detalhado e fácil de entender](../historias/US-050-inventario-detalhado.md) (pedido do Davi, 23/11) | US-019, US-030, US-031 |
 
 **Ainda a escrever:** o polimento visual da UI, com o Davi.
 

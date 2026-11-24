@@ -22,11 +22,13 @@ roblox-rpg-game/
     │   ├── DungeonBuilder.luau # monta as salas de uma instância de dungeon (US-041)
     │   ├── SplitChest.luau   # baú cujos itens são divididos entre jogadores (dungeons e acampamentos)
     │   ├── Teleport.luau     # teleporte para longe dentro do place (dungeons)
-    │   └── Services/         # um Service por sistema: Camp, Chest, Combat, CombatState, Damage, Defense, Dungeon, Enemy, Energy, Group, GroupDungeon, Inventory, Knockdown, LootBag, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Tutorial, Zone…
+    │   └── Services/         # um Service por sistema: Camp, Chest, Combat, CombatState, Damage, Defense, Dungeon, Enemy, Energy, Group, GroupDungeon, Inventory, Knockdown, LootBag, LootContainer, Mastery, Movement, MovementValidation, Ping, Profile, Stats, Status, TrainingDummy, Tutorial, Zone…
     ├── client/               # → StarterPlayer.StarterPlayerScripts.Client
     │   ├── Main.client.luau  # inicia os Controllers (Loader)
     │   ├── Notices.luau      # o último aviso para o jogador, mostrado pelo HUD
-    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, grupo, desempenho…
+    │   ├── ItemDetails.luau  # o texto de detalhes de um item, dos atributos e do kit (US-050)
+    │   ├── ItemCell.luau     # o quadrado de um item no inventário e na janela de saque (US-050)
+    │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, janela de saque, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, grupo, desempenho…
     └── shared/               # → ReplicatedStorage.Shared
         ├── Project.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers

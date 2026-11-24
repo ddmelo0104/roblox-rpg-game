@@ -13,14 +13,14 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [EP-001 · Base técnica e protótipo do núcleo](epicos/EP-001-base-tecnica-e-prototipo-do-nucleo.md) | em-andamento | must | M0 | 0/15 histórias · 0/39 pts |
 | [EP-002 · Personagem, câmera e controles (PC)](epicos/EP-002-personagem-camera-e-controles.md) | backlog | must | M1 | sem histórias |
 | [EP-003 · Combate e habilidades por equipamento](epicos/EP-003-combate-e-habilidades.md) | em-andamento | must | M1 | 0/4 histórias · 0/16 pts |
-| [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | em-andamento | must | M1 | 0/5 histórias · 0/19 pts |
+| [EP-004 · Itens, inventário, equipamento e GS](epicos/EP-004-itens-inventario-equipamento-e-gs.md) | em-andamento | must | M1 | 0/6 histórias · 0/22 pts |
 | [EP-005 · Progressão por fama, maestria e especialização](epicos/EP-005-progressao-fama-maestria-e-especializacao.md) | em-andamento | must | M1 | 0/4 histórias · 0/12 pts |
 | [EP-006 · Persistência do perfil com session locking](epicos/EP-006-persistencia-do-perfil.md) | em-andamento | must | M1 | 0/2 histórias · 0/8 pts |
 | [EP-007 · Mundo de Stardawn com cidade e 3 zonas](epicos/EP-007-mundo-de-stardawn.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 | [EP-008 · Inimigos, IA e facções](epicos/EP-008-inimigos-ia-e-faccoes.md) | em-andamento | must | M1 | 0/4 histórias · 0/15 pts |
-| [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | em-andamento | must | M1 | 0/3 histórias · 0/15 pts |
+| [EP-009 · Morte, derrubado e saque](epicos/EP-009-morte-derrubado-e-saque.md) | em-andamento | must | M1 | 0/4 histórias · 0/16 pts |
 | [EP-010 · Dungeon aleatória solo](epicos/EP-010-dungeon-aleatoria-solo.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
-| [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | em-andamento | must | M1 | 0/2 histórias · 0/5 pts |
+| [EP-011 · HUD, UI e onboarding](epicos/EP-011-hud-ui-e-onboarding.md) | em-andamento | must | M1 | 0/3 histórias · 0/8 pts |
 | [EP-012 · Conteúdo de grupo (dungeon de teste e acampamentos)](epicos/EP-012-conteudo-de-grupo.md) | em-andamento | must | M1 | 0/3 histórias · 0/13 pts |
 
 ## Em andamento e em revisão
@@ -73,6 +73,9 @@ Regras de cada passagem em [Definições de Pronto](DEFINICOES-DE-PRONTO.md).
 | [US-046 · Grupo mínimo com convite, fama e bolsas divididas](historias/US-046-grupo-minimo.md) | revisao | EP-012 | must | 5 |
 | [US-047 · Acampamentos para grupos de 2 a 4](historias/US-047-acampamentos-para-grupos.md) | revisao | EP-012 | must | 3 |
 | [US-048 · Dungeon de grupo de teste](historias/US-048-dungeon-de-grupo-de-teste.md) | revisao | EP-012 | must | 5 |
+| [US-049 · Morrer numa dungeon da Zona Vermelha leva para a cidade](historias/US-049-morrer-na-dungeon-vermelha-volta-para-a-cidade.md) | revisao | EP-009 | must | 1 |
+| [US-050 · Inventário detalhado e fácil de entender](historias/US-050-inventario-detalhado.md) | revisao | EP-011 | must | 3 |
+| [US-051 · Pegar os itens de baús e bolsas numa janela de saque](historias/US-051-janela-de-saque.md) | revisao | EP-004 | must | 3 |
 | [US-004 · Lint e formatação automáticos](historias/US-004-lint-e-formatacao-automaticos.md) | revisao | EP-001 | should | 2 |
 | [US-006 · Preparar o repositório para o Claude Code](historias/US-006-preparar-o-repositorio-para-o-claude-code.md) | revisao | EP-001 | should | 1 |
 

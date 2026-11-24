@@ -19,16 +19,18 @@ flowchart LR
 ## Ordem de construção do M1
 Decidida pelo dev em 23/11, por delegação do Davi, seguindo as dependências entre os épicos. As histórias de cada épico são escritas quando a vez dele chega.
 
-1. **EP-004** · Itens, inventário, equipamento e GS (em revisão: US-016 a US-020).
+1. **EP-004** · Itens, inventário, equipamento e GS (em revisão: US-016 a US-020 e US-051, a janela de saque).
 2. **EP-003** · Combate e habilidades por equipamento: kit de cada arma, ataque básico, peitoral e botas (em revisão: US-021 a US-024).
 3. **EP-008** · Inimigos, IA e facções, com drops pelo sorteio da US-020 (em revisão: US-025 a US-028).
 4. **EP-005** · Fama, maestria e especialização (em revisão: US-029 a US-032; as habilidades alternativas vêm depois do EP-006).
 5. **EP-006** · Persistência do perfil (ADR-005, proposto) (em revisão: US-033 e US-034).
 6. **EP-007** · Mundo de Stardawn: o código das zonas. O terreno é feito pelo Davi no Studio (em revisão: US-035 a US-037; faltam o mapa e a cidade).
-7. **EP-009** · Morte, derrubado e saque (em revisão: US-038 a US-040; falta o anti *combat logging*).
+7. **EP-009** · Morte, derrubado e saque (em revisão: US-038 a US-040 e US-049, a volta para a cidade; falta o anti *combat logging*).
 8. **EP-010** · Dungeon aleatória solo (em revisão: US-041 a US-043; faltam armadilha, evento, modificadores e as salas do Studio).
-9. **EP-011** · HUD, UI e a quest de tutorial (em revisão: US-044 e US-045).
+9. **EP-011** · HUD, UI e a quest de tutorial (em revisão: US-044, US-045 e US-050, o inventário detalhado).
 10. **EP-012** · Conteúdo de grupo (em revisão: US-046 a US-048).
+
+Os pedidos do Davi de 23/11 viraram a US-049 (morrer numa dungeon da Vermelha leva para a cidade), a US-050 (inventário detalhado) e a US-051 (janela de saque), feitas logo depois do EP-012.
 
 Com o EP-012, todos os épicos do M1 têm código em revisão. O que ainda falta escrever está em cada épico, em "Ainda a escrever":
 - o anti *combat logging*;

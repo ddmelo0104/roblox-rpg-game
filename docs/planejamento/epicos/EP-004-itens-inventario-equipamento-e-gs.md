@@ -62,6 +62,7 @@ Criadas pelo dev em 23/11, por delegação do Davi:
 | [US-018 · Equipar e desequipar, com GS e atributos do personagem](../historias/US-018-equipar-gs-e-atributos.md) | US-017 |
 | [US-019 · Tela de inventário e equipamento (PC)](../historias/US-019-tela-de-inventario.md) | US-018 |
 | [US-020 · Sorteio de loot e baú de teste](../historias/US-020-sorteio-de-loot-e-bau-de-teste.md) | US-017 |
+| [US-051 · Pegar os itens de baús e bolsas numa janela de saque](../historias/US-051-janela-de-saque.md) (pedido do Davi, 23/11) | US-020, US-026, US-043, US-050 |
 
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 

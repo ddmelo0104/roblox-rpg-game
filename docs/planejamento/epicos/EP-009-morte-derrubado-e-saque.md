@@ -57,6 +57,7 @@ Criadas pelo dev em 23/11, por delegação do Davi.
 | [US-038 · Derrubado em vez de morrer, com os tempos de cada zona](../historias/US-038-derrubado-em-vez-de-morrer.md) | US-035, US-013 |
 | [US-039 · Reanimar, finalizar e desistir](../historias/US-039-reanimar-finalizar-e-desistir.md) | US-038, US-036 |
 | [US-040 · Saque total na Vermelha e kit de recomeço](../historias/US-040-saque-total-e-kit-de-recomeco.md) | US-039, US-026, US-034 |
+| [US-049 · Morrer numa dungeon da Zona Vermelha leva para a cidade](../historias/US-049-morrer-na-dungeon-vermelha-volta-para-a-cidade.md) (pedido do Davi, 23/11) | US-039, US-041 |
 
 **Ainda a escrever:** o anti *combat logging* (quem sai derrubado ou em combate numa zona de risco deixa o personagem 30 s no mundo, e o perfil só é salvo e liberado depois). Ele junta este épico e o EP-006.
 
