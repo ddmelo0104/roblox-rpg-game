@@ -3,7 +3,8 @@
 	KnockdownController.luau
 	The knockdown screen (US-038, US-039): while the player is down, a dark screen shows how many
 	seconds until they get up (or die, where nobody gets up alone), and a button to give up. Where
-	giving up counts as being finished, the screen says so: they lose everything they carry. The
+	giving up counts as being finished, the screen says so: they lose everything they carry. In a
+	dungeon of the Red zone it says that giving up sends them to the city (US-049). The
 	prompts on the player's own character (revive and finish, for other players) stay hidden for
 	them. Roblox's reset button is turned off, so nobody uses it to escape a knockdown.
 ]]
@@ -23,6 +24,7 @@ local TITLE = "Derrubado"
 local GET_UP_TEXT = "Você levanta em %d s. Outro jogador pode te reanimar."
 local DIE_TEXT = "Você morre em %d s, a menos que alguém te reanime."
 local LOSES_TEXT = "Desistir agora conta como ser finalizado: você perde o que carrega."
+local TO_CITY_TEXT = "Desistir numa dungeon da Zona Vermelha te leva de volta para a cidade."
 local GIVE_UP_TEXT = "Desistir"
 local TITLE_COLOR = Color3.fromRGB(230, 80, 80)
 
@@ -136,7 +138,10 @@ function KnockdownController:Start()
 		local left = math.max(0, math.ceil(untilTime - Workspace:GetServerTimeNow()))
 		local dies = player:GetAttribute(Knockdown.DIES_AT_END) == true
 		screen.text.Text = string.format(if dies then DIE_TEXT else GET_UP_TEXT, left)
-		screen.warning.Text = if player:GetAttribute(Knockdown.GIVE_UP_LOSES) == true then LOSES_TEXT else ""
+		screen.warning.Text = if player:GetAttribute(Knockdown.GIVE_UP_LOSES) == true
+			then LOSES_TEXT
+			elseif player:GetAttribute(Knockdown.GIVE_UP_TO_CITY) == true then TO_CITY_TEXT
+			else ""
 	end)
 end
 

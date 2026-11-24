@@ -29,6 +29,7 @@ local REASON_TEXT: { [string]: string } = {
 	GroupFull = "o grupo está cheio",
 	AlreadyInGroup = "já está em outro grupo",
 	InviteSent = "convite enviado",
+	NothingForYou = "nada aqui é seu",
 }
 
 local Notices = {}

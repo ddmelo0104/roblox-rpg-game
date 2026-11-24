@@ -1,11 +1,11 @@
 --!strict
 --[[
 	ChestService.luau
-	Loot chests (US-020). Every part tagged "LootChest" gets a ProximityPrompt; opening it rolls an
-	item with Shared.Loot (the chest's Tier and Luck attributes) and puts it in the player's bag. The
-	server checks the distance and a short wait between openings. If the place has no chest, a test
-	chest appears next to the spawn, like the training dummies. Dungeon chests (EP-010) will reuse
-	this.
+	Loot chests for testing (US-020). Every part tagged "LootChest" gets a ProximityPrompt; opening it
+	rolls an item with Shared.Loot (the chest's Tier and Luck attributes) into the player's own share
+	of the chest, and the loot window shows it to be taken (LootContainerService, US-051). A new item
+	is rolled when the share is empty, after a short wait. If the place has no chest, a test chest
+	appears next to the spawn, like the training dummies.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -19,6 +19,7 @@ local Loot = require(ReplicatedStorage.Shared.Loot)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local InventoryService = require(script.Parent.InventoryService)
+local LootContainerService = require(script.Parent.LootContainerService)
 
 local TAG = "LootChest"
 
@@ -33,23 +34,21 @@ local ChestService = {}
 local random = Random.new()
 local lastOpened: { [Player]: number } = {}
 
+-- The test chest gives each player a share of one item at a time: opening it rolls a new item when
+-- the player's share is empty, and the loot window shows it (US-051).
+local shares: { [Player]: { Items.ItemRecord } } = {}
+
 local function notify(player: Player, reason: string)
 	Remotes.event("Notice"):FireClient(player, CHEST_NAME, reason)
 end
 
-local function open(player: Player, chest: BasePart)
-	local character = player.Character
-	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-	if not root or not root:IsA("BasePart") or (root.Position - chest.Position).Magnitude > LootConfig.CHEST_REACH then
-		notify(player, "TooFar")
-		return
-	end
+-- Rolls a new item into the player's share; false while the short wait between items runs.
+local function rollFor(player: Player, chest: BasePart): boolean
 	local now = os.clock()
 	if now - (lastOpened[player] or 0) < LootConfig.TEST_CHEST_COOLDOWN then
-		return
+		return false
 	end
 	lastOpened[player] = now
-
 	local tier = chest:GetAttribute("Tier")
 	local luck = chest:GetAttribute("Luck")
 	local itemId, rolledTier, rarity = Loot.roll(
@@ -58,18 +57,29 @@ local function open(player: Player, chest: BasePart)
 		LootConfig.ENEMY_RARITY_WEIGHTS,
 		random
 	)
-	local record = InventoryService.createItem(itemId, rolledTier, rarity)
-	if InventoryService.give(player, record) then
-		notify(player, Items.displayName(record))
-	else
-		notify(player, "BagFull")
-	end
+	shares[player] = { InventoryService.createItem(itemId, rolledTier, rarity) }
+	return true
 end
 
 local function setUpChest(chest: Instance)
 	if not chest:IsA("BasePart") or chest:FindFirstChildOfClass("ProximityPrompt") then
 		return
 	end
+	local container = LootContainerService.create({
+		title = CHEST_NAME,
+		part = chest,
+		reach = LootConfig.CHEST_REACH,
+		itemsFor = function(player)
+			return shares[player]
+		end,
+		canOpen = function()
+			return true, nil
+		end,
+		isEmpty = function()
+			return false -- the test chest never runs out
+		end,
+		onEmptied = nil,
+	})
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = OPEN_TEXT
 	prompt.ObjectText = TEST_CHEST_TEXT
@@ -78,7 +88,12 @@ local function setUpChest(chest: Instance)
 	prompt.KeyboardKeyCode = InterfaceConfig.INTERACT_KEY
 	prompt.Parent = chest
 	prompt.Triggered:Connect(function(player)
-		open(player, chest)
+		local share = shares[player]
+		if (not share or #share == 0) and not rollFor(player, chest) then
+			notify(player, "OnCooldown")
+			return
+		end
+		LootContainerService.open(player, container)
 	end)
 end
 
@@ -110,6 +125,7 @@ function ChestService:Start()
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		lastOpened[player] = nil
+		shares[player] = nil
 	end)
 end
 

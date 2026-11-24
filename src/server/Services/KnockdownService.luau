@@ -10,8 +10,9 @@
 	- Revive and finish (US-039): another player holds a prompt on the downed character, REVIVE_TIME
 	  to revive (they get up now) or FINISH_TIME to finish, only in zones where players can finish.
 	  Damage taken while holding interrupts it.
-	- Give up (US-039): the downed player comes back now at the return point of their zone. If a
-	  player knocked them down in a full-loot zone, giving up counts as being finished.
+	- Give up (US-039): the downed player comes back now at the return point of their zone, or at the
+	  city when they were in a dungeon of a risk zone (US-049). If a player knocked them down in a
+	  full-loot zone, giving up counts as being finished.
 	- Full loot (US-040): every worn and carried item leaves the inventory in one step; each one is
 	  destroyed with ITEM_DESTROY_CHANCE, the rest go to a loot bag with priority for whoever
 	  finished them. The player dies, comes back at the nearest city and gets the restart kit.
@@ -76,6 +77,7 @@ local function clear(player: Player, down: Down)
 	player:SetAttribute(Knockdown.DOWNED_UNTIL, nil)
 	player:SetAttribute(Knockdown.GIVE_UP_LOSES, nil)
 	player:SetAttribute(Knockdown.DIES_AT_END, nil)
+	player:SetAttribute(Knockdown.GIVE_UP_TO_CITY, nil)
 end
 
 local function getUp(player: Player)
@@ -104,6 +106,20 @@ local function die(player: Player, cframe: CFrame?)
 	end
 end
 
+-- Whether a zone is a dungeon of a risk zone (the Red): giving up there sends the player to the city
+-- (US-049; Davi, 2026-11-23).
+local function inRiskDungeon(zone: Zones.Zone): boolean
+	local region = zone.region
+	return zone.rules.risk == true and region ~= nil and region:GetAttribute("Dungeon") == true
+end
+
+-- The return point of the nearest city (nil: wherever Roblox puts the player, the spawn).
+local function nearestCity(position: Vector3): CFrame?
+	return ZoneService.returnPoint(position, function(zone)
+		return zone.rules.safe == true
+	end)
+end
+
 -- Full loot (US-040): everything leaves the inventory at once, a part is destroyed, the rest goes to
 -- a bag for `killer` first; the player dies, comes back at the nearest city with the restart kit.
 local function fullLoot(player: Player, killer: Player?)
@@ -122,11 +138,7 @@ local function fullLoot(player: Player, killer: Player?)
 	end
 	LootBagService.drop(position, kept, if killer then { killer } else {})
 	InventoryService.giveRestartKit(player)
-
-	local city = ZoneService.returnPoint(position, function(zone)
-		return zone.rules.safe == true
-	end)
-	die(player, city)
+	die(player, nearestCity(position))
 end
 
 -- A hit would kill the player: they are knocked down instead (US-038).
@@ -146,6 +158,7 @@ local function knockDown(player: Player, attacker: Instance?)
 	player:SetAttribute(Knockdown.DOWNED_UNTIL, endsAt)
 	player:SetAttribute(Knockdown.GIVE_UP_LOSES, by ~= nil and zone.rules.fullLoot == true)
 	player:SetAttribute(Knockdown.DIES_AT_END, zone.rules.getsUp ~= true)
+	player:SetAttribute(Knockdown.GIVE_UP_TO_CITY, inRiskDungeon(zone))
 
 	local function addPrompt(actionText: string, key: Enum.KeyCode, holdTime: number, onDone: (helper: Player) -> ())
 		local prompt = Instance.new("ProximityPrompt")
@@ -217,6 +230,10 @@ local function giveUp(player: Player)
 	InventoryService.wearDown(player, KnockdownConfig.DURABILITY_LOSS)
 	local _, root = partsOf(player)
 	local here = if root then root.Position else Vector3.zero
+	if inRiskDungeon(down.zone) then
+		die(player, nearestCity(here)) -- not back to the dungeon's start (US-049)
+		return
+	end
 	local region = down.zone.region
 	die(
 		player,

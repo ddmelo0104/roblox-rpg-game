@@ -17,6 +17,9 @@ Knockdown.GIVE_UP_LOSES = "GiveUpLoses"
 
 -- Player attribute: true where the player would not get up alone (the Black zone).
 Knockdown.DIES_AT_END = "DiesAtEnd"
+-- true while the player is down in a dungeon of a risk zone: giving up sends them to the city
+-- (US-049).
+Knockdown.GIVE_UP_TO_CITY = "GiveUpToCity"
 
 -- Whether the player is down right now.
 function Knockdown.isDowned(player: Player): boolean

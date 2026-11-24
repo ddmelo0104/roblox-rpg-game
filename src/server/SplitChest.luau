@@ -1,23 +1,26 @@
 --!strict
 --[[
 	SplitChest.luau
-	A chest whose items are split among a group of players (US-043, US-047, US-048): the dungeon
-	chests and the camp chests. The first player allowed to open it rolls its items (Shared.Loot,
-	with the zone's tier and luck and the boss chest chances) and they are dealt in turns, from a
-	random player, among those sharing it; what does not fit in a bag goes to a loot bag for that
-	player. A chest opens only once.
+	A chest whose items are split among a group of players (US-043, US-047, US-048): the dungeon and
+	camp chests. The first time a player allowed to open it does, its items are rolled (Shared.Loot,
+	with the zone's tier and luck and the boss chest chances) and dealt in turns, from a random
+	player, among those sharing it: each one gets their own share. Then each player opens the chest
+	and takes the items of their share in a loot window (LootContainerService, US-051). The chest
+	goes away when every share is empty; a player who leaves the server loses their share.
 ]]
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local InterfaceConfig = require(ReplicatedStorage.Shared.Config.Interface)
 local Items = require(ReplicatedStorage.Shared.Items)
 local Loot = require(ReplicatedStorage.Shared.Loot)
 local LootConfig = require(ReplicatedStorage.Shared.Config.Loot)
-local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Zones = require(ReplicatedStorage.Shared.Zones)
 local InventoryService = require(script.Parent.Services.InventoryService)
-local LootBagService = require(script.Parent.Services.LootBagService)
+local LootContainerService = require(script.Parent.Services.LootContainerService)
+
+type ItemRecord = Items.ItemRecord
 
 export type Options = {
 	parent: Instance,
@@ -25,9 +28,9 @@ export type Options = {
 	count: number,
 	zone: Zones.Zone,
 	reach: number,
-	-- Whether this player may open it.
+	-- Whether this player may be the first to open it (and so deal the items).
 	canOpen: (player: Player) -> boolean,
-	-- Who shares the items when `opener` opens it (the opener is added if missing).
+	-- Who shares the items when `opener` opens it first (the opener is added if missing).
 	sharers: (opener: Player) -> { Player },
 }
 
@@ -40,11 +43,7 @@ local SplitChest = {}
 
 local random = Random.new()
 
-local function notify(player: Player, reason: string)
-	Remotes.event("Notice"):FireClient(player, CHEST_NAME, reason)
-end
-
--- Creates a chest; returns its part (it is destroyed once opened).
+-- Creates a chest; returns its part (it is destroyed once every share is empty).
 function SplitChest.spawn(options: Options): BasePart
 	local chest = Instance.new("Part")
 	chest.Name = "Chest"
@@ -54,30 +53,14 @@ function SplitChest.spawn(options: Options): BasePart
 	chest.Color = CHEST_COLOR
 	chest.Parent = options.parent
 
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = OPEN_TEXT
-	prompt.ObjectText = CHEST_NAME
-	prompt.KeyboardKeyCode = InterfaceConfig.INTERACT_KEY
-	prompt.HoldDuration = 0.5
-	prompt.MaxActivationDistance = options.reach
-	prompt.RequiresLineOfSight = false
-	prompt.Parent = chest
+	local shares: { [Player]: { ItemRecord } } = {}
+	local dealt = false
 
-	local opened = false
-	prompt.Triggered:Connect(function(player)
-		if opened or not options.canOpen(player) then
-			return
-		end
-		local character = player.Character
-		local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-		if not root or not root:IsA("BasePart") or (root.Position - chest.Position).Magnitude > options.reach + 2 then
-			notify(player, "TooFar")
-			return
-		end
-		opened = true
-		local players = options.sharers(player)
-		if not table.find(players, player) then
-			table.insert(players, player)
+	local function deal(opener: Player)
+		dealt = true
+		local players = options.sharers(opener)
+		if not table.find(players, opener) then
+			table.insert(players, opener)
 		end
 		for i = #players, 2, -1 do
 			local j = random:NextInteger(1, i)
@@ -87,16 +70,72 @@ function SplitChest.spawn(options: Options): BasePart
 		for i = 1, options.count do
 			local itemId, tier, rarity =
 				Loot.roll(zone.tier, zone.rules.luck, LootConfig.BOSS_CHEST_RARITY_WEIGHTS, random)
-			local record = InventoryService.createItem(itemId, tier, rarity)
 			local who = players[(i - 1) % #players + 1]
-			if InventoryService.give(who, record) then
-				notify(who, Items.displayName(record))
-			else
-				LootBagService.drop(chest.Position + Vector3.new(0, 2, 0), { record }, { who })
-				notify(who, "BagFull")
+			shares[who] = shares[who] or {}
+			table.insert(shares[who], InventoryService.createItem(itemId, tier, rarity))
+		end
+	end
+
+	local container = LootContainerService.create({
+		title = CHEST_NAME,
+		part = chest,
+		reach = options.reach,
+		itemsFor = function(player)
+			return shares[player]
+		end,
+		canOpen = function(player)
+			local share = shares[player]
+			if not share or #share == 0 then
+				return false, "NothingForYou"
+			end
+			return true, nil
+		end,
+		isEmpty = function()
+			if not dealt then
+				return false
+			end
+			for _, share in shares do
+				if #share > 0 then
+					return false
+				end
+			end
+			return true
+		end,
+		onEmptied = function()
+			chest:Destroy()
+		end,
+	})
+
+	-- A player who leaves the server loses their share; the chest goes away if nothing is left.
+	local leaving = Players.PlayerRemoving:Connect(function(player)
+		if shares[player] then
+			shares[player] = nil
+			if container.isEmpty() then
+				chest:Destroy()
 			end
 		end
-		chest:Destroy()
+	end)
+	chest.Destroying:Connect(function()
+		leaving:Disconnect()
+	end)
+
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.ActionText = OPEN_TEXT
+	prompt.ObjectText = CHEST_NAME
+	prompt.KeyboardKeyCode = InterfaceConfig.INTERACT_KEY
+	prompt.HoldDuration = 0.5
+	prompt.MaxActivationDistance = options.reach
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = chest
+	prompt.Triggered:Connect(function(player)
+		if not dealt and options.canOpen(player) then
+			deal(player)
+			if container.isEmpty() then
+				chest:Destroy() -- nothing was rolled (a chest of 0 items)
+				return
+			end
+		end
+		LootContainerService.open(player, container)
 	end)
 	return chest
 end

@@ -38,6 +38,10 @@ local LIST: { string } = {
 	"RequestGroupAnswer", -- US-046: accept (true) or decline (false) the group invite received
 	"RequestGroupLeave", -- US-046: leave the group
 	"GroupUpdate", -- US-046: server notice to one player (their group's members, and an invite)
+	"ContainerView", -- US-051: server notice to one player (what a chest or bag holds for them, or that it closed)
+	"RequestTakeItem", -- US-051: take the item with this uid from this container
+	"RequestTakeAll", -- US-051: take everything that fits from this container
+	"RequestCloseContainer", -- US-051: the loot window of this container was closed
 }
 
 local Remotes = {}
