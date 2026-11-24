@@ -33,6 +33,10 @@ roblox-rpg-game/
     │   ├── ItemDetails.luau  # o texto de detalhes de um item, dos atributos e do kit (US-050)
     │   ├── ItemCell.luau     # o quadrado de um item no inventário e na janela de saque (US-050)
     │   └── Controllers/      # câmera, trava de alvo, movimento, habilidades, defesa, efeitos, HUD, inventário, janela de saque, ambiente das zonas, decoração animada, fama, maestria, zona, derrubado, dungeon, mapa, tutorial, grupo, desempenho…
+    ├── tools/                # → ServerStorage.WorldTools: ferramentas que rodam no Studio, fora do jogo
+    │   ├── Run.luau          # o comando da barra de comandos; carrega cópias novas a cada execução (US-055)
+    │   ├── WorldShape.luau   # funções puras do mundo: zona, caminho, altura e material de um ponto
+    │   └── StardawnGenerator.luau # gera o terreno, as zonas, os pontos de jogo e a natureza de Stardawn
     └── shared/               # → ReplicatedStorage.Shared
         ├── Project.luau
         ├── Loader.luau       # Init e Start dos Services e Controllers
@@ -53,7 +57,7 @@ roblox-rpg-game/
         ├── Loot.luau         # sorteio de raridade, tier e item
         ├── Status.luau       # atordoamento e outros estados de personagens e NPCs
         ├── CombatState.luau  # se o jogador está em combate
-        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown, Dungeons, Tutorial, Groups, Camps, City, Scenery, Ambience…)
+        └── Config/           # números e teclas de tuning (Network, Movement, Camera, Training, Combat, Longsword, Debug, Items, Progression, Loot, Interface, Armor, Bow, Crossbow, FireStaff, Enemies, Zones, Profile, Knockdown, Dungeons, Tutorial, Groups, Camps, City, Scenery, Ambience, World…)
 ```
 
 As pastas `Services/`, `Controllers/` e `Config/` nasceram com as US-005 e US-007 a US-020. As outras nascem com as histórias que precisarem delas:

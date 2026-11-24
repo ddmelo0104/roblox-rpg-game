@@ -17,7 +17,7 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - **Planejamento:** `docs/planejamento/` (épicos, histórias, roadmap e o `BACKLOG.md` gerado).
 - **Arquitetura:** `docs/arquitetura/` (visão, estrutura do repositório, convenções e ADRs).
 - **Processo:** `docs/processo/COMO-TRABALHAR-COM-O-CLAUDE.md` e `docs/planejamento/DEFINICOES-DE-PRONTO.md`.
-- **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared`.
+- **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared` · `src/tools` → `ServerStorage.WorldTools` (ferramentas que rodam no Studio, fora do jogo).
 
 ## Estado atual (atualize quando mudar)
 - M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento:
@@ -48,6 +48,9 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
     - US-053: amanhecer fixo e cor de cada zona (`LightingService`, `AmbienceController`, `Config/Ambience`);
     - US-054: cenário do layout de teste (`SceneryService`, `Config/Scenery`).
     - Só aparecem quando o place não tem os do Studio (tags `CityModel` e `Scenery`), e o Davi pode congelá-los no place.
+  - Retorno do Davi de 24/11 (zonas pequenas, mapa plano), em revisão no EP-007:
+    - US-055: gerador do mundo de Stardawn (`src/tools`, `Config/World`), rodado uma vez no Studio. Tem relevo, zonas de ~2,5 min a pé, a cidade no centro e as zonas espalhadas para os lados. Ele manda prints, e eu ajusto os números.
+    - US-056: regiões redondas (`Radius`), zonas de várias partes (`ZoneId`), fim do mapa e a cidade com quatro portões.
   - Todos os épicos do M1 têm código em revisão. Próximo: o que cada épico lista em "Ainda a escrever", começando pelas funções da cidade (moeda, banco, vendedor e conserto) e pelo anti *combat logging*.
 - O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
 - O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
@@ -87,6 +90,7 @@ rojo serve                          # sincronização ao vivo com o Studio
 As ferramentas estão fixadas em `rokit.toml` (`rokit install`). O Selene baixa a API do Roblox na primeira execução; se o ambiente bloquear `setup.rbxcdn.com`, diga isso em vez de pular o lint, e conte com o CI.
 
 ## Testes
+- **Mundo (uma vez por place):** no modo de edição, na barra de comandos, rode `require(game.ServerStorage.WorldTools.Run)()` e salve o place (US-055).
 - No Studio, Play: o Output deve mostrar `[Main] server ok` e `[Main] client ok`.
 - Tudo que envolve dois jogadores: Test → Clients and Servers → 2 players.
 - Se o servidor MCP do Roblox Studio estiver conectado, use-o para ler o Output e inspecionar instâncias, mas edite código só nos arquivos do repositório.

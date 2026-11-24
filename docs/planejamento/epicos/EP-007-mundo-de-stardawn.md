@@ -61,15 +61,21 @@ Criadas pelo dev em 23/11, por delegação do Davi, seguindo o [ADR-004](../../a
 | [US-052 · Cidade de Stardawn provisória feita por código](../historias/US-052-cidade-de-stardawn.md) (pedido do Davi, 24/11) | US-035 |
 | [US-053 · Luz e clima de Stardawn, com a cor de cada zona](../historias/US-053-luz-e-clima-de-stardawn.md) (pedido do Davi, 24/11) | US-035 |
 | [US-054 · Cenário de Stardawn no layout de teste](../historias/US-054-cenario-de-stardawn.md) (pedido do Davi, 24/11) | US-035, US-052 |
+| [US-055 · Gerador do mundo de Stardawn no Studio, com relevo e zonas grandes](../historias/US-055-gerador-do-mundo-de-stardawn.md) (pedido do Davi, 24/11) | US-056, US-052 |
+| [US-056 · Zonas de forma livre e cidade com quatro portões](../historias/US-056-zonas-de-forma-livre.md) | US-035, US-052 |
 
 O mapa do mundo saiu na [US-044](../historias/US-044-mapa-do-mundo.md), no EP-011. A cidade, a luz e o cenário das US-052 a US-054 são provisórios: o código só os monta quando o place não tem os do Studio, e o Davi pode congelá-los no place e editar à mão.
 
+Com a US-055, o terreno de Stardawn passa a sair de um gerador do repositório que o Davi roda uma vez no Studio. O place guarda o resultado, e ele pode esculpir por cima.
+
 **Ainda a escrever:**
 - as funções da cidade (moeda, banco, vendedor e conserto), nos prédios que já existem;
-- o terreno de Stardawn e o orçamento de desempenho, com o Davi.
+- o orçamento de desempenho do mundo gerado, medido pelo Davi (painel F3);
+- água (rio ou lago) e os pontos de interesse feitos à mão, depois das primeiras impressões.
 
 O progresso está no [BACKLOG.md](../BACKLOG.md).
 
 ## Histórico
 - 2026-11-05: épico criado com o M1, aprovado pelo Davi.
 - 2026-11-24: cidade, luz e cenário provisórios (US-052 a US-054), a pedido do Davi.
+- 2026-11-24: gerador do mundo com relevo e zonas de ~2,5 min cada, espalhadas para os lados (US-055 e US-056), a pedido do Davi.
