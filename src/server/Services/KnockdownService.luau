@@ -234,11 +234,11 @@ local function giveUp(player: Player)
 		die(player, nearestCity(here)) -- not back to the dungeon's start (US-049)
 		return
 	end
-	local region = down.zone.region
+	local downZone = down.zone
 	die(
 		player,
 		ZoneService.returnPoint(here, function(zone)
-			return zone.region == region
+			return Zones.same(zone, downZone)
 		end)
 	)
 end

@@ -12,6 +12,11 @@
         "$path": "src/server"
       }
     },
+    "ServerStorage": {
+      "WorldTools": {
+        "$path": "src/tools"
+      }
+    },
     "StarterPlayer": {
       "$properties": {
         "EnableMouseLockOption": false

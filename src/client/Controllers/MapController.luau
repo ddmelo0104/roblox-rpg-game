@@ -3,8 +3,9 @@
 	MapController.luau
 	The world map (US-044, Zones and Risk tab: the map shows the color, the tier and the recommended
 	GS of each zone). Config/Interface.MAP_KEY opens and closes it. The zones come from the server
-	(ZoneMap), drawn from above as boxes in their colors, with the player as a white dot. North (up
-	on the map) is the spawn's front, -Z. The final UI belongs to EP-011's polish.
+	(ZoneMap), drawn from above in their colors: boxes, or circles for round regions (US-056), the
+	biggest first so the city stays on top, with each zone's name written once. The player is a
+	white dot. North (up on the map) is -Z. The final UI belongs to EP-011's polish.
 ]]
 
 local Players = game:GetService("Players")
@@ -69,7 +70,13 @@ local function draw(area: Frame)
 		b.minZ, b.maxZ = math.min(b.minZ, zone.minZ), math.max(b.maxZ, zone.maxZ)
 	end
 	bounds = b
-	for _, zone in zones do
+	-- The biggest regions first, so the smaller ones (the city inside its zone) stay on top.
+	local ordered = table.clone(zones)
+	table.sort(ordered, function(first, second)
+		return (first.maxX - first.minX) * (first.maxZ - first.minZ)
+			> (second.maxX - second.minX) * (second.maxZ - second.minZ)
+	end)
+	for order, zone in ordered do
 		local rules = Zones.rules(zone.kind)
 		local topLeft = toMap(zone.minX, zone.minZ)
 		local bottomRight = toMap(zone.maxX, zone.maxZ)
@@ -80,16 +87,27 @@ local function draw(area: Frame)
 		box.BackgroundColor3 = rules.color
 		box.BackgroundTransparency = 0.45
 		box.BorderSizePixel = 0
+		box.ZIndex = order
 		box.Parent = area
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = rules.color
-		stroke.Thickness = 1
-		stroke.Parent = box
-		local text = if rules.safe
-			then `{zone.name}\n{rules.name}`
-			else `{zone.name}\n{rules.name} T{zone.tier}\nGS {Zones.recommendedGearScore(zone.tier)}`
-		local label = newText(box, text, 12)
-		label.Size = UDim2.fromScale(1, 1)
+		if zone.round then
+			-- A round region (US-056): a zone made of circles looks like one.
+			local round = Instance.new("UICorner")
+			round.CornerRadius = UDim.new(0.5, 0)
+			round.Parent = box
+		else
+			local stroke = Instance.new("UIStroke")
+			stroke.Color = rules.color
+			stroke.Thickness = 1
+			stroke.Parent = box
+		end
+		if zone.label ~= false then
+			local text = if rules.safe
+				then `{zone.name}\n{rules.name}`
+				else `{zone.name}\n{rules.name} T{zone.tier}\nGS {Zones.recommendedGearScore(zone.tier)}`
+			local label = newText(box, text, 12)
+			label.Size = UDim2.fromScale(1, 1)
+			label.ZIndex = #ordered + 1
+		end
 	end
 end
 
@@ -122,7 +140,7 @@ function MapController:Start()
 	dot.AnchorPoint = Vector2.new(0.5, 0.5)
 	dot.Size = UDim2.fromOffset(DOT_SIZE, DOT_SIZE)
 	dot.BackgroundColor3 = Color3.new(1, 1, 1)
-	dot.ZIndex = 5
+	dot.ZIndex = 1000
 	dot.Parent = area
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(1, 0)

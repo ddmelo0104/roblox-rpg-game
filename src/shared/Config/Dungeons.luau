@@ -26,7 +26,7 @@ return table.freeze({
 
 	-- Where instances are built (ADR-007: in the zone's own server, far from the world), and the
 	-- space between two instances.
-	INSTANCE_ORIGIN = Vector3.new(6000, 40, 0),
+	INSTANCE_ORIGIN = Vector3.new(16000, 40, 0),
 	INSTANCE_SPACING = 1500,
 
 	-- Enemies of each room: groups of { kind, count, elite } (kinds in Config/Enemies).
@@ -79,7 +79,7 @@ return table.freeze({
 	GROUP_RESPAWN_TIME = 240,
 	GROUP_MINIBOSS_CHEST_ITEMS = 4,
 	GROUP_BOSS_CHEST_ITEMS = 8,
-	GROUP_ORIGIN = Vector3.new(-6000, 40, 0),
+	GROUP_ORIGIN = Vector3.new(-16000, 40, 0),
 	GROUP_SPACING = 1500,
 
 	-- Leaving before the end (Davi): seconds of channeling, out of combat (US-042).

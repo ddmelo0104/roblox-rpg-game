@@ -30,6 +30,7 @@ local REASON_TEXT: { [string]: string } = {
 	AlreadyInGroup = "já está em outro grupo",
 	InviteSent = "convite enviado",
 	NothingForYou = "nada aqui é seu",
+	OutOfBounds = "o mundo acaba aqui",
 }
 
 local Notices = {}

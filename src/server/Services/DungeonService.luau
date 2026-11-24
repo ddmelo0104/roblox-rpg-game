@@ -276,7 +276,9 @@ local function refreshEntrances()
 	local byZone: { [any]: { Entrance } } = {}
 	for _, entrance in entrances do
 		if entrance.part.Parent then
-			local key = ZoneService.zoneAt(entrance.part.Position).region or "default"
+			-- One group per zone: the parts of a zone share its ZoneId (US-056).
+			local zone = ZoneService.zoneAt(entrance.part.Position)
+			local key: any = zone.id or zone.region or "default"
 			byZone[key] = byZone[key] or {}
 			table.insert(byZone[key], entrance)
 		end

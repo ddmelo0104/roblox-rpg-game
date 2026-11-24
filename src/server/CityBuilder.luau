@@ -3,10 +3,11 @@
 	CityBuilder.luau
 	Builds the provisional city of Stardawn (US-052) from Config/City, on a frame at the city's center
 	on the ground, with its X along the road (+X toward the Blue zone). It builds:
-	- a paved ground inside the walls, the main street through the two gates, the Star Square and the
-	  market square;
-	- walls with merlons, four corner towers, and two gates. Each gate has towers, banners, torches
-	  and the eight-pointed star; "STARDAWN" is written outside and the zone beyond the gate inside;
+	- a paved ground inside the walls, a street from each gate to the middle of the city (east and
+	  west make the main street), the Star Square and the market square;
+	- walls with merlons, four corner towers, and the gates of Config/City.GATES (US-056: four, so
+	  the city opens to every side of the map). Each gate has towers, banners, torches and the
+	  eight-pointed star; "STARDAWN" is written outside and the zone beyond the gate inside;
 	- the Star monument: the city's crest in pink crystal and gold, which turns on the clients
 	  (tag Spin);
 	- the bank (gold roof), the tavern, the smithy (forge with fire and smoke), the observatory, the
@@ -27,9 +28,9 @@ local Props = require(script.Parent.Props)
 type Building = CityConfig.Building
 
 export type Options = {
-	-- Game text inside each gate: the zone beyond it ("Campos de Stardawn · Zona Azul · T1").
-	eastText: string?,
-	westText: string?,
+	-- Game text inside each gate, by side (East, West, North, South): the zone beyond it
+	-- ("Campos de Stardawn · Zona Azul · T1").
+	gateTexts: { [string]: string }?,
 }
 
 local C = CityConfig
@@ -100,19 +101,10 @@ local function buildGround(model: Model, city: CFrame)
 	floor(folder, inner, city, GROUND_TOP, { material = Enum.Material.Ground, color = P.earth, name = "Ground" })
 
 	local street = { material = Enum.Material.Cobblestone, color = P.cobble, name = "Street" }
-	-- The main street runs through both gates and a little beyond.
-	floor(folder, Vector3.new(C.WALL_HALF_X * 2 + 12, 0, C.STREET_WIDTH), city, STREET_TOP, street)
 	local plaza = city * CFrame.new(C.PLAZA.x, 0, C.PLAZA.z)
-	-- From the square to the bank, and from the main street to the market.
+	-- From the square to the bank.
 	floor(folder, Vector3.new(8, 0, 16), plaza * CFrame.new(0, 0, -C.PLAZA.radius - 6), STREET_TOP, street)
 	local market = city * CFrame.new(C.MARKET.x, 0, C.MARKET.z)
-	floor(
-		folder,
-		Vector3.new(16, 0, C.MARKET.depth / 2),
-		city * CFrame.new(C.MARKET.x, 0, C.MARKET.z - C.MARKET.depth / 2),
-		STREET_TOP,
-		street
-	)
 	floor(folder, Vector3.new(C.MARKET.width, 0, C.MARKET.depth), market, MARKET_TOP, street)
 	disk(
 		folder,
@@ -128,6 +120,38 @@ local function buildGround(model: Model, city: CFrame)
 		SQUARE_TOP,
 		{ material = Enum.Material.Marble, color = P.marble, name = "Square" }
 	)
+end
+
+-- Where a gate stands: a frame on its wall, with X along the wall and -Z looking out of the city.
+local function gateFrame(city: CFrame, spec: CityConfig.Gate): CFrame
+	local hx, hz = C.WALL_HALF_X, C.WALL_HALF_Z
+	if spec.side == "East" then
+		return city * CFrame.new(hx, 0, spec.offset) * CFrame.Angles(0, math.rad(-90), 0)
+	elseif spec.side == "West" then
+		return city * CFrame.new(-hx, 0, spec.offset) * CFrame.Angles(0, math.rad(90), 0)
+	elseif spec.side == "South" then
+		return city * CFrame.new(spec.offset, 0, hz) * CFrame.Angles(0, math.pi, 0)
+	end
+	return city * CFrame.new(spec.offset, 0, -hz)
+end
+
+-- A street from each gate (and a little beyond it) to the middle of the city: the east and west
+-- ones make the main street, and the north and south ones end at it.
+local function buildStreets(model: Model, city: CFrame)
+	local folder = Build.folder(model, "Streets")
+	local street = { material = Enum.Material.Cobblestone, color = P.cobble, name = "Street" }
+	for _, spec in C.GATES do
+		local alongX = spec.side == "East" or spec.side == "West"
+		local inward = if alongX then C.WALL_HALF_X else C.WALL_HALF_Z - C.STREET_WIDTH / 2
+		local length = inward + 6
+		floor(
+			folder,
+			Vector3.new(C.STREET_WIDTH, 0, length),
+			gateFrame(city, spec) * CFrame.new(0, 0, length / 2 - 6),
+			STREET_TOP,
+			street
+		)
+	end
 end
 
 -- A tower with merlons around its top and arrow slits on its faces.
@@ -173,69 +197,91 @@ local function wall(parent: Instance, city: CFrame, x: number, z: number, length
 	end
 end
 
--- A gate on the east (side 1) or west (side -1) wall: two towers, the lintel over the opening with
--- the city's name outside and `innerText` inside, the crest on top, banners and torches.
-local function gate(parent: Instance, city: CFrame, side: number, innerText: string?)
-	local x = side * C.WALL_HALF_X
-	local towerZ = C.GATE_WIDTH / 2 + C.TOWER_SIZE / 2
-	for _, z in { -towerZ, towerZ } do
-		tower(parent, city * CFrame.new(x, 0, z), C.GATE_TOWER_HEIGHT)
+-- A gate on `frame`: two towers, the lintel over the opening with the city's name outside and
+-- `innerText` inside, the crest on top, banners on both sides and torches outside.
+local function gate(parent: Instance, frame: CFrame, innerText: string?)
+	local towerX = C.GATE_WIDTH / 2 + C.TOWER_SIZE / 2
+	for _, x in { -towerX, towerX } do
+		tower(parent, frame * CFrame.new(x, 0, 0), C.GATE_TOWER_HEIGHT)
 	end
 
 	local lintelHeight = C.GATE_TOWER_HEIGHT - C.GATE_HEIGHT - 2
 	local lintel = Build.block(
 		parent,
-		Vector3.new(C.WALL_THICKNESS + 2, lintelHeight, C.GATE_WIDTH),
-		city * CFrame.new(x, C.GATE_HEIGHT + lintelHeight / 2, 0),
+		Vector3.new(C.GATE_WIDTH, lintelHeight, C.WALL_THICKNESS + 2),
+		frame * CFrame.new(0, C.GATE_HEIGHT + lintelHeight / 2, 0),
 		MARBLE
 	)
-	local outer = if side > 0 then Enum.NormalId.Right else Enum.NormalId.Left
-	local inner = if side > 0 then Enum.NormalId.Left else Enum.NormalId.Right
-	Build.text(lintel, outer, CITY_NAME, { pixelsPerStud = 30 })
+	Build.text(lintel, Enum.NormalId.Front, CITY_NAME, { pixelsPerStud = 30 })
 	if innerText then
-		Build.text(lintel, inner, innerText, { pixelsPerStud = 40 })
+		Build.text(lintel, Enum.NormalId.Back, innerText, { pixelsPerStud = 40 })
 	end
 
 	-- The crest stands on the lintel, between the towers, facing out and in.
-	local crestCenter = city * CFrame.new(x, C.GATE_TOWER_HEIGHT + 3, 0) * CFrame.Angles(0, math.rad(90), 0)
-	Build.light(crest(parent, crestCenter, 5), P.crystal, 20, 1)
+	Build.light(crest(parent, frame * CFrame.new(0, C.GATE_TOWER_HEIGHT + 3, 0), 5), P.crystal, 20, 1)
 
 	-- Banners on the towers, outside and inside, and torches by the opening, outside.
-	for _, z in { -towerZ, towerZ } do
-		for _, facing in { side, -side } do
-			local top = city
-				* CFrame.new(x + facing * (C.TOWER_SIZE / 2 + 0.3), C.GATE_TOWER_HEIGHT - 4, z)
-				* CFrame.Angles(0, math.rad(-90 * facing), 0)
-			Props.banner(parent, top, 5, 11)
-		end
-		local zSide = if z > 0 then 1 else -1
-		Props.torch(parent, city * CFrame.new(x + side * (C.TOWER_SIZE / 2 + 0.8), 11, zSide * (C.GATE_WIDTH / 2 + 2)))
+	local face = C.TOWER_SIZE / 2 + 0.3
+	for _, x in { -towerX, towerX } do
+		Props.banner(parent, frame * CFrame.new(x, C.GATE_TOWER_HEIGHT - 4, -face), 5, 11)
+		Props.banner(parent, frame * CFrame.new(x, C.GATE_TOWER_HEIGHT - 4, face) * CFrame.Angles(0, math.pi, 0), 5, 11)
+		local side = if x > 0 then 1 else -1
+		Props.torch(parent, frame * CFrame.new(side * (C.GATE_WIDTH / 2 + 2), 11, -(C.TOWER_SIZE / 2 + 0.8)))
 	end
 end
+
+-- The four sides of the walls: along which axis they run, and on which side of the center.
+local WALL_SIDES = {
+	{ name = "North", alongX = true, x = 0, z = -1 },
+	{ name = "South", alongX = true, x = 0, z = 1 },
+	{ name = "East", alongX = false, x = 1, z = 0 },
+	{ name = "West", alongX = false, x = -1, z = 0 },
+}
 
 local function buildWalls(model: Model, city: CFrame, options: Options)
 	local folder = Build.folder(model, "Walls")
 	local hx, hz = C.WALL_HALF_X, C.WALL_HALF_Z
-	local half = C.TOWER_SIZE / 2
 	for _, sx in { -1, 1 } do
 		for _, sz in { -1, 1 } do
 			tower(folder, city * CFrame.new(sx * hx, 0, sz * hz), C.CORNER_TOWER_HEIGHT)
 		end
 	end
-	-- North and south walls, between the corner towers.
-	for _, sz in { -1, 1 } do
-		wall(folder, city, 0, sz * hz, hx * 2 - C.TOWER_SIZE, true)
-	end
-	-- East and west walls, between a corner tower and a gate tower.
-	local gateEdge = C.GATE_WIDTH / 2 + C.TOWER_SIZE
-	local length = hz - half - gateEdge
-	for _, sx in { -1, 1 } do
-		for _, sz in { -1, 1 } do
-			wall(folder, city, sx * hx, sz * (gateEdge + length / 2), length, false)
+	-- Each side runs between its corner towers, minus what its gates take (opening and towers).
+	for _, side in WALL_SIDES do
+		local half = if side.alongX then hx else hz
+		local cuts: { { number } } = {}
+		for _, spec in C.GATES do
+			if spec.side == side.name then
+				local reach = C.GATE_WIDTH / 2 + C.TOWER_SIZE
+				table.insert(cuts, { spec.offset - reach, spec.offset + reach })
+			end
+		end
+		table.sort(cuts, function(a, b)
+			return a[1] < b[1]
+		end)
+		local function stretch(from: number, to: number)
+			local center, length = (from + to) / 2, to - from
+			if side.alongX then
+				wall(folder, city, center, side.z * hz, length, true)
+			else
+				wall(folder, city, side.x * hx, center, length, false)
+			end
+		end
+		local from = -half + C.TOWER_SIZE / 2
+		for _, cut in cuts do
+			if cut[1] > from then
+				stretch(from, cut[1])
+			end
+			from = math.max(from, cut[2])
+		end
+		if half - C.TOWER_SIZE / 2 > from then
+			stretch(from, half - C.TOWER_SIZE / 2)
 		end
 	end
-	gate(folder, city, 1, options.eastText)
-	gate(folder, city, -1, options.westText)
+	local texts = options.gateTexts or {}
+	for _, spec in C.GATES do
+		gate(folder, gateFrame(city, spec), texts[spec.side])
+	end
 end
 
 -- The Star monument in the middle of the square: a pedestal and the crest, which turns.
@@ -575,15 +621,26 @@ end
 local function buildStreetProps(model: Model, city: CFrame, random: Random)
 	local folder = Build.folder(model, "Props")
 	local lampEdge = C.STREET_WIDTH / 2 + 3
+	-- No lamp where a north or south street meets the main street.
+	local function crossing(x: number, sideName: string): boolean
+		for _, spec in C.GATES do
+			if spec.side == sideName and math.abs(spec.offset - x) < C.STREET_WIDTH / 2 + 3 then
+				return true
+			end
+		end
+		return false
+	end
 	local x = -C.WALL_HALF_X + 8
 	while x <= C.WALL_HALF_X - 8 do
-		if math.abs(x) >= 10 then
-			-- The arm of a lamp leans over the street.
+		-- The arm of a lamp leans over the street.
+		if not crossing(x, "North") then
 			Props.lamp(
 				folder,
 				city * CFrame.new(x, GROUND_TOP, -lampEdge) * CFrame.Angles(0, math.pi, 0),
 				C.LAMP_HEIGHT
 			)
+		end
+		if not crossing(x, "South") then
 			Props.lamp(folder, city * CFrame.new(x, GROUND_TOP, lampEdge), C.LAMP_HEIGHT)
 		end
 		x += C.LAMP_SPACING
@@ -620,6 +677,7 @@ function CityBuilder.build(city: CFrame, options: Options?): Model
 	local random = Random.new(1)
 	local model = Build.model(nil, "Stardawn")
 	buildGround(model, city)
+	buildStreets(model, city)
 	buildWalls(model, city, options or {})
 	buildMonument(model, city)
 	buildBuildings(model, city, random)

@@ -126,7 +126,10 @@ cat <<'EOF'
 Next steps:
   1. Open Roblox Studio and create a place from the Baseplate template.
   2. Plugins tab > Rojo > Connect (default address: localhost:34872).
-  3. Press Play. The Output shows "[Main] server ok" and "[Main] client ok".
+  3. Once per place, build the world of Stardawn (US-055): in Edit mode, open View > Command Bar,
+     run  require(game.ServerStorage.WorldTools.Run)()  and save the place when it finishes.
+     (Use a copy of the place, File > Save As, if you want to keep the flat test place.)
+  4. Press Play. The Output shows "[Main] server ok" and "[Main] client ok".
   The test steps of each story are in docs/planejamento/historias.
 EOF
 

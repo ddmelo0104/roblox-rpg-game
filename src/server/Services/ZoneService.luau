@@ -51,9 +51,9 @@ local mapDirty = false
 local RETURN_TAG = Zones.RETURN_TAG
 local tracked: { [Player]: Tracked } = {}
 
--- Two zones are the same zone if they come from the same region (or are both the default).
+-- Two zones are the same zone if they come from the same region or share a ZoneId (US-056).
 local function sameZone(a: Zone, b: Zone): boolean
-	return a.region == b.region
+	return Zones.same(a, b)
 end
 
 local function addRegion(instance: Instance)
@@ -77,22 +77,31 @@ local function removeRegion(instance: Instance)
 	end
 end
 
--- The world's zones for the map: the bounds of each region on the ground (dungeons left out).
+-- The world's zones for the map: the bounds of each region on the ground (dungeons left out), and
+-- whether it is round. Only the biggest region of each zone carries its name (`label`).
 local function mapOfZones(): { any }
 	local list = {}
+	local biggest: { [string]: any } = {}
 	for _, region in regions do
 		if region:GetAttribute("Dungeon") ~= true then
 			local zone = Zones.fromRegion(region)
-			local half = region.Size / 2
-			local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
-			for _, sx in { -1, 1 } do
-				for _, sz in { -1, 1 } do
-					local corner = region.CFrame * Vector3.new(sx * half.X, 0, sz * half.Z)
-					minX, maxX = math.min(minX, corner.X), math.max(maxX, corner.X)
-					minZ, maxZ = math.min(minZ, corner.Z), math.max(maxZ, corner.Z)
+			local radius = Zones.radiusOf(region)
+			local minX, maxX, minZ, maxZ
+			if radius then
+				minX, maxX = region.Position.X - radius, region.Position.X + radius
+				minZ, maxZ = region.Position.Z - radius, region.Position.Z + radius
+			else
+				local half = region.Size / 2
+				minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
+				for _, sx in { -1, 1 } do
+					for _, sz in { -1, 1 } do
+						local corner = region.CFrame * Vector3.new(sx * half.X, 0, sz * half.Z)
+						minX, maxX = math.min(minX, corner.X), math.max(maxX, corner.X)
+						minZ, maxZ = math.min(minZ, corner.Z), math.max(maxZ, corner.Z)
+					end
 				end
 			end
-			table.insert(list, {
+			local entry = {
 				kind = zone.kind,
 				tier = zone.tier,
 				name = zone.name,
@@ -100,7 +109,24 @@ local function mapOfZones(): { any }
 				maxX = maxX,
 				minZ = minZ,
 				maxZ = maxZ,
-			})
+				round = radius ~= nil,
+				label = true,
+			}
+			table.insert(list, entry)
+			if zone.id then
+				local area = (maxX - minX) * (maxZ - minZ)
+				local current = biggest[zone.id]
+				if current then
+					if area > (current.maxX - current.minX) * (current.maxZ - current.minZ) then
+						current.label = false
+						biggest[zone.id] = entry
+					else
+						entry.label = false
+					end
+				else
+					biggest[zone.id] = entry
+				end
+			end
 		end
 	end
 	return list
@@ -187,6 +213,12 @@ local function check(player: Player)
 	end
 	if sameZone(state.zone, zone) then
 		state.lastCFrame = root.CFrame
+		return
+	end
+	if zone.region == nil and state.lastCFrame then
+		-- Outside every zone is outside the map (US-056): back to the last place inside it.
+		MovementValidationService.teleport(player, state.lastCFrame)
+		Remotes.event("Notice"):FireClient(player, ZONE_NOTICE_NAME, "OutOfBounds")
 		return
 	end
 	if CombatState.isInCombat(player) and state.lastCFrame then

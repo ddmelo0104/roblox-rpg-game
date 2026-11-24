@@ -1,8 +1,8 @@
 --!strict
 --[[
 	Props.luau
-	The small pieces the provisional world reuses (US-052 to US-054). Nature: trees, bushes, rocks,
-	crystals and dead trees. The city: street lamps, banners, torches, barrels, crates and benches.
+	The small pieces the provisional world reuses (US-052 to US-055). Nature: trees, bushes, rocks,
+	crystals, dead trees, stone spires, ruins and watchtowers. The city: street lamps, banners, torches, barrels, crates and benches.
 	Camps: tents and campfires. Each one stands on `base`, a frame on the ground facing where the
 	piece's front should look (-Z). Trunks, rocks and furniture collide; leaves and other light
 	decoration do not.
@@ -272,6 +272,94 @@ function Props.campfire(parent: Instance, base: CFrame)
 	)
 	Build.fire(first, 4, 7, Color3.fromRGB(255, 160, 60), Color3.fromRGB(255, 70, 20))
 	Build.light(first, Color3.fromRGB(255, 150, 70), 20, 2)
+end
+
+-- A tall spire of dark stone, sometimes with a smaller one beside it.
+function Props.spire(parent: Instance, base: CFrame, random: Random)
+	local height = random:NextNumber(28, 56)
+	local width = random:NextNumber(6, 10)
+	local style = { material = Enum.Material.Basalt, color = NATURE.darkRock, name = "Spire" }
+	Build.block(
+		parent,
+		Vector3.new(width, height, width * random:NextNumber(0.8, 1.2)),
+		base
+			* CFrame.new(0, height / 2 - 3, 0)
+			* CFrame.Angles(math.rad(random:NextNumber(-10, 10)), 0, math.rad(random:NextNumber(-10, 10))),
+		style
+	)
+	if random:NextNumber() < 0.6 then
+		local small = height * random:NextNumber(0.35, 0.55)
+		Build.block(
+			parent,
+			Vector3.new(width * 0.6, small, width * 0.6),
+			base
+				* CFrame.new(width * 0.7, small / 2 - 2, width * 0.3)
+				* CFrame.Angles(
+					math.rad(random:NextNumber(-15, 15)),
+					math.rad(random:NextNumber(0, 90)),
+					math.rad(random:NextNumber(-15, 15))
+				),
+			style
+		)
+	end
+end
+
+-- Ruins: a broken wall, a column stub, a fallen column and loose stones.
+function Props.ruin(parent: Instance, base: CFrame, random: Random)
+	local stone = { material = Enum.Material.Cobblestone, color = NATURE.ruin, name = "Ruin" }
+	for index, height in { 9, 7, 4.5, 2.5 } do
+		Build.block(parent, Vector3.new(4, height, 2), base * CFrame.new(-10 + index * 4, height / 2, 0), stone)
+	end
+	Build.cylinder(parent, 6, 2.2, base * CFrame.new(6, 3, 7), stone)
+	Build.cylinder(
+		parent,
+		9,
+		2,
+		base
+			* CFrame.new(-3, 1, 8)
+			* CFrame.Angles(0, math.rad(random:NextNumber(-30, 30)), 0)
+			* CFrame.Angles(0, 0, math.rad(90)),
+		stone
+	)
+	Props.rock(parent, base * CFrame.new(4, 0, -5), 2.5, random, NATURE.ruin)
+end
+
+-- An old wooden watchtower with a platform, railings and a torn red banner.
+function Props.watchtower(parent: Instance, base: CFrame)
+	local wood = { material = Enum.Material.Wood, color = NATURE.deadWood, name = "Watchtower" }
+	local height = 16
+	for _, sx in { -1, 1 } do
+		for _, sz in { -1, 1 } do
+			Build.block(
+				parent,
+				Vector3.new(0.9, height + 4, 0.9),
+				base * CFrame.new(sx * 3.5, (height + 4) / 2, sz * 3.5),
+				wood
+			)
+		end
+	end
+	Build.block(
+		parent,
+		Vector3.new(9, 0.6, 9),
+		base * CFrame.new(0, height, 0),
+		{ material = Enum.Material.WoodPlanks, color = Color3.fromRGB(88, 70, 56), name = "Watchtower" }
+	)
+	for _, side in { -1, 1 } do
+		Build.block(parent, Vector3.new(9, 0.4, 0.4), base * CFrame.new(0, height + 2.6, side * 4.3), wood)
+		Build.block(parent, Vector3.new(0.4, 0.4, 9), base * CFrame.new(side * 4.3, height + 2.6, 0), wood)
+	end
+	Build.block(
+		parent,
+		Vector3.new(0.5, 11, 0.5),
+		base * CFrame.new(0, height * 0.45, -3.5) * CFrame.Angles(0, 0, math.rad(40)),
+		wood
+	)
+	Build.block(
+		parent,
+		Vector3.new(3, 4.5, 0.15),
+		base * CFrame.new(0, height - 2.4, -4.6),
+		{ material = Enum.Material.Fabric, color = Color3.fromRGB(140, 36, 40), collide = false, name = "Banner" }
+	)
 end
 
 return table.freeze(Props)

@@ -18,6 +18,9 @@
 	the city in Studio.
 ]]
 
+-- A gate in a wall (East, West, North or South), `offset` studs along the wall from its middle.
+export type Gate = { side: string, offset: number }
+
 -- One building or structure of the city.
 export type Building = {
 	kind: string,
@@ -70,7 +73,7 @@ local BUILDINGS: { Building } = {
 	{ kind = "Stall", x = -12, z = 54, facing = 180, width = 9, depth = 6, height = 7 },
 	{ kind = "Stall", x = 8, z = 54, facing = 180, width = 9, depth = 6, height = 7 },
 	{ kind = "Stall", x = 28, z = 54, facing = 180, width = 9, depth = 6, height = 7 },
-	{ kind = "Well", x = 8, z = 76, facing = 0, width = 6, depth = 6, height = 8 },
+	{ kind = "Well", x = 16, z = 76, facing = 0, width = 6, depth = 6, height = 8 },
 }
 for _, building in BUILDINGS do
 	table.freeze(building)
@@ -86,6 +89,14 @@ return table.freeze({
 	WALL_HALF_Z = 118,
 	WALL_HEIGHT = 16,
 	WALL_THICKNESS = 4,
+	-- The gates (US-056): east and west on the main street, south toward the Blue valley, and north
+	-- beside the bank, which stands in the middle of the north side.
+	GATES = table.freeze({
+		table.freeze({ side = "East", offset = 0 }),
+		table.freeze({ side = "West", offset = 0 }),
+		table.freeze({ side = "South", offset = 0 }),
+		table.freeze({ side = "North", offset = 26 }),
+	}) :: { Gate },
 	GATE_WIDTH = 16,
 	GATE_HEIGHT = 20,
 	TOWER_SIZE = 12,
@@ -94,9 +105,9 @@ return table.freeze({
 	MERLON_SPACING = 6,
 	MERLON_SIZE = 2.5,
 
-	-- Streets: the main street joins the two gates; the Star Square is north of it, with the
-	-- monument, and the market square south of it. The center of the city stays free: it is the
-	-- city's return point (EP-009).
+	-- Streets: the main street joins the east and west gates, and the north and south streets end at
+	-- it. The Star Square is north of it, with the monument, and the market square south of it. The
+	-- center of the city stays free: it is the city's return point (EP-009).
 	STREET_WIDTH = 12,
 	PLAZA = table.freeze({ x = 0, z = -38, radius = 24 }),
 	MARKET = table.freeze({ x = 8, z = 40, width = 64, depth = 44 }),
