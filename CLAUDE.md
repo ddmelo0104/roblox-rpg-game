@@ -6,19 +6,56 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 - **Davi é o engenheiro de software e arquiteto.** Ele define visão, prioridades, histórias e decisões (ADRs), e aceita ou recusa o trabalho.
 - **Você (Claude) é o dev.** Implementa histórias, propõe opções técnicas, aponta riscos e dúvidas antes de codar.
 - Responda em **português do Brasil**. Explique o plano antes de mexer, prefira mudanças pequenas e verificáveis e diga quando não tiver certeza.
+- **Delegação de design (Davi, 23/11/2026):** o Davi pediu para o dev tomar as decisões de game design que faltarem "como ele pensa" e seguir construindo o jogo, e disse que ajusta depois.
+  - O dev cria e implementa as histórias do M1 sem esperar aprovação.
+  - Toda decisão tomada pelo dev vai para `docs/planejamento/DECISOES-DELEGADAS.md` e para a história.
+  - Continuam com o Davi: marcar histórias como `concluido`, aceitar ADRs e decisões de negócio (monetização, publicação).
 
 ## Onde está cada coisa
-- **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons) e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
-  - Leia a aba do sistema antes de implementar uma história dele. Se esta sessão não tiver acesso ao Claude Docs, peça ao Davi o trecho necessário. **Nunca invente regra de design.**
+- **Design do jogo (fonte da verdade):** o doc [Projeto RPG · Design do Jogo](https://claude.ai/artifact/J9zY7LF95U87AhXJN5X6iQ) no Claude Docs. Abas: Visão do Jogo, Pilares de Design, Sistemas (Progressão, Zonas e Risco, Dungeons, Combate e Habilidades, Armas e Armaduras, Câmera e Mira, Movimentação, Mundo e Terreno), Facções e Revisão 03/11. Os links diretos de cada aba estão em `docs/README.md`.
+  - Leia a aba do sistema antes de implementar uma história dele. Se esta sessão não tiver acesso ao Claude Docs, use as notas do vault, que são o espelho das abas. **Nunca invente regra de design sem registrar:** quando faltar uma regra, decida pela delegação acima e anote em `docs/planejamento/DECISOES-DELEGADAS.md`.
 - **Planejamento:** `docs/planejamento/` (épicos, histórias, roadmap e o `BACKLOG.md` gerado).
 - **Arquitetura:** `docs/arquitetura/` (visão, estrutura do repositório, convenções e ADRs).
 - **Processo:** `docs/processo/COMO-TRABALHAR-COM-O-CLAUDE.md` e `docs/planejamento/DEFINICOES-DE-PRONTO.md`.
-- **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared`.
+- **Código:** `src/server` → `ServerScriptService.Server` · `src/client` → `StarterPlayer.StarterPlayerScripts.Client` · `src/shared` → `ReplicatedStorage.Shared` · `src/tools` → `ServerStorage.WorldTools` (ferramentas que rodam no Studio, fora do jogo).
 
 ## Estado atual (atualize quando mudar)
-- M0 (Fundação) em andamento: US-001, US-002, US-003, US-004 e US-006 em revisão; US-005 é a próxima, depois que o Davi movê-la para `pronto`.
-- ADR-001, ADR-002 e ADR-003 estão **propostos**: siga-os, mas não os trate como aceitos até o Davi mudar o status.
-- O corte de MVP e os épicos do M1 **ainda não foram aprovados**. Não comece nada de gameplay sem uma história aprovada.
+- M0 (EP-001, "Base técnica e protótipo do núcleo" desde 05/11) em andamento:
+  - US-001 a US-013 e US-015 em revisão, esperando o teste do Davi no Studio. A US-012 já foi testada por ele em 23/11 e só falta ele concluir.
+  - US-014 (spike de terreno) em andamento: a parte do dev está pronta; faltam o terreno e a medição do Davi.
+- M1 em andamento, na ordem do `ROADMAP.md`:
+  - EP-004 (itens, inventário, equipamento e GS) com US-016 a US-020 em revisão: catálogo, inventário com `uid` (ADR-006 proposto), tela (I) e baú de teste.
+  - EP-003 (combate por equipamento) com US-021 a US-024 em revisão:
+    - kit por arma (espada longa, arco, besta e cajado de fogo);
+    - área no chão;
+    - ataque básico com mira assistida no botão esquerdo;
+    - peitoral na tecla C;
+    - esquiva pelas botas.
+  - EP-008 (inimigos) com US-025 a US-028 em revisão: IA no servidor, bolsa de loot com crédito por dano, tipos, elite, tier, pontos de spawn (`EnemySpawn`) e o bandido que explode ao morrer.
+  - EP-005 (progressão) com US-029 a US-032 em revisão: fama por abate (zona e divisão por slot), especialização e maestria no GS, maestria para equipar tiers, pop-up de fama e tela de maestria (N).
+  - EP-006 (perfil salvo) com US-033 e US-034 em revisão, seguindo o ADR-005 (proposto): DataStore com trava de sessão própria, inventário e fama no perfil. A regra dos 30 s ao sair em combate e o banco ficam para depois do EP-007.
+  - EP-007 (zonas) com US-035 a US-037 em revisão, seguindo o ADR-004 (proposto, um place só): regiões com a tag `Zone`, zona no HUD, PvP só na Vermelha, fronteira travada em combate, proteção de entrada, cidade segura e aviso de risco. Faltam o mapa e a cidade (banco, vendedor e reparo); o terreno é do Davi.
+  - EP-009 (morte) com US-038 a US-040 em revisão: derrubado com os tempos de cada zona, reanimar (G), finalizar (H) na Vermelha, desistir, saque total com 25% destruídos e kit de recomeço. Falta o anti *combat logging*.
+  - EP-010 (dungeon solo) com US-041 a US-043 em revisão, seguindo o ADR-007 (proposto, instâncias no mesmo servidor): gerador por semente, salas provisórias, entradas que somem, saída pelo portal ou canal de 30 s (X), mini-chefe e chefe com baús divididos.
+  - EP-011 (UI) com US-044 e US-045 em revisão: mapa do mundo (M) e quest de tutorial de 5 passos, salva no perfil.
+  - EP-012 (grupo) com US-046 a US-048 em revisão: grupo mínimo (convite V, até 4, fama e bolsas divididas, sem dano entre membros), acampamentos e a dungeon de grupo de teste.
+  - Pedidos do Davi de 23/11, em revisão:
+    - US-049 (EP-009): morrer numa dungeon da Vermelha leva para a cidade.
+    - US-050 (EP-011): inventário em 3 colunas, com detalhes, ▲/▼ e 🔒.
+    - US-051 (EP-004): janela de saque para baús e bolsas, com `LootContainerService`.
+  - Pedido do Davi de 24/11 ("ambientação, cidade, estruturas"), em revisão no EP-007:
+    - US-052: cidade de Stardawn provisória feita por código (`CityService`, `Config/City`);
+    - US-053: amanhecer fixo e cor de cada zona (`LightingService`, `AmbienceController`, `Config/Ambience`);
+    - US-054: cenário do layout de teste (`SceneryService`, `Config/Scenery`).
+    - Só aparecem quando o place não tem os do Studio (tags `CityModel` e `Scenery`), e o Davi pode congelá-los no place.
+  - Retorno do Davi de 24/11 (zonas pequenas, mapa plano), em revisão no EP-007:
+    - US-055: gerador do mundo de Stardawn (`src/tools`, `Config/World`), rodado uma vez no Studio. Tem relevo, zonas de ~2,5 min a pé, a cidade no centro e as zonas espalhadas para os lados. Ele manda prints, e eu ajusto os números.
+    - US-056: regiões redondas (`Radius`), zonas de várias partes (`ZoneId`), fim do mapa e a cidade com quatro portões.
+  - Todos os épicos do M1 têm código em revisão. Próximo: o que cada épico lista em "Ainda a escrever", começando pelas funções da cidade (moeda, banco, vendedor e conserto) e pelo anti *combat logging*.
+- O protótipo usa a espada longa com corte frontal, golpe no alvo e giro (Davi, 05/11; números provisórios em `src/shared/Config/Longsword.luau`), mais esquiva (F) e parry (botão direito) contra um boneco que ataca. O parry certo atordoa por 0,5 s, e errar deixa 1 s sem defesa (Davi, 23/11). Em combate (15 s depois de dano), o pulo tem intervalo de 1,5 s.
+- O loader simples (US-007) e a camada de rede com Remotes puros e validação (US-005) são propostas do dev já implementadas, aguardando o Davi confirmar (decisões em aberto da visão arquitetural).
+- ADR-001, ADR-002 e ADR-003 foram **aceitos** pelo Davi em 04/11/2026 (opção B nos três). ADR-009 (acerto com margem de lag) e ADR-010 (validação de movimento) foram **propostos** em 05/11 (opção B nos dois), esperando o Davi; a US-012 e a US-013 seguem o ADR-009, e a US-011 segue o ADR-010.
+- O corte de MVP do M1 foi **aprovado** em 04/11/2026: só PC, região de Stardawn, dungeon solo, acampamentos para grupos de 2 a 4 e uma dungeon de grupo de teste (aba Visão do Jogo do doc). Os épicos do M1 (EP-002 a EP-012) foram **aprovados e criados** em 05/11. Pela delegação de 23/11, o dev escreve as histórias deles e as implementa na ordem do `ROADMAP.md`. Não comece nada de gameplay sem uma história escrita.
 
 ## Regras (não quebre)
 1. **Servidor autoritativo** (ADR-002): o cliente só envia intenções; o servidor valida tipo, faixa, distância, cooldown e posse de tudo o que chega por Remote, e decide.
@@ -26,8 +63,9 @@ RPG de mundo aberto para Roblox, inspirado no Albion Online: zonas por risco, du
 3. **Números de balanceamento ficam em `src/shared/Config/`**, nunca espalhados pelo código. Os valores iniciais estão nas tabelas de tuning das abas de design.
 4. **Uma responsabilidade por módulo:** Services no servidor, Controllers no cliente, tipos e funções puras em `shared`.
 5. **Código só no repositório.** Nunca edite scripts dentro do Studio, porque o Rojo sobrescreve. Mapas e modelos 3D continuam sendo feitos no Studio.
-6. **Nenhum item pode existir em dois lugares.** Itens terão `uid` gerado só no servidor e o perfil terá *session locking* (ADRs a escrever); não crie caminho que permita duplicação.
-7. Siga `docs/arquitetura/CONVENCOES-DE-CODIGO.md` (nomes, comentários, Git).
+6. **Nenhum item pode existir em dois lugares.** Itens têm `uid` gerado só no servidor (ADR-006) e o perfil tem *session locking* (ADR-005), ambos propostos; não crie caminho que permita duplicação. Tudo o que vai para o perfil é uma seção do `ProfileService`, e nenhum serviço apaga dados de jogador no `PlayerRemoving`.
+7. **Código em inglês** (decisão do Davi, 05/11): nomes, comentários, logs, chaves do Config, Remotes, tags, atributos, commits e branches. A documentação em `docs/` e os textos que o jogador vê ficam em português.
+8. Siga `docs/arquitetura/CONVENCOES-DE-CODIGO.md` (nomes, comentários, Git).
 
 ## Fluxo de uma história
 Use a skill `implementar-historia` (`/implementar-historia US-XXX`). Resumo:
@@ -45,13 +83,14 @@ Para novas histórias e ADRs, use as skills `nova-historia` e `novo-adr`, que pa
 ```bash
 stylua src                          # formata (CI: stylua --check src)
 selene src                          # lint com std Roblox; aviso também falha
-rojo build -o projeto-rpg.rbxl      # gera o place e valida o default.project.json
+rojo build -o roblox-rpg-game.rbxl  # gera o place e valida o default.project.json
 python3 tools/backlog.py            # regenera docs/planejamento/BACKLOG.md (CI: --check)
 rojo serve                          # sincronização ao vivo com o Studio
 ```
 As ferramentas estão fixadas em `rokit.toml` (`rokit install`). O Selene baixa a API do Roblox na primeira execução; se o ambiente bloquear `setup.rbxcdn.com`, diga isso em vez de pular o lint, e conte com o CI.
 
 ## Testes
-- No Studio, Play: o Output deve mostrar `[Main] servidor ok` e `[Main] cliente ok`.
+- **Mundo (uma vez por place):** no modo de edição, na barra de comandos, rode `require(game.ServerStorage.WorldTools.Run)()` e salve o place (US-055).
+- No Studio, Play: o Output deve mostrar `[Main] server ok` e `[Main] client ok`.
 - Tudo que envolve dois jogadores: Test → Clients and Servers → 2 players.
 - Se o servidor MCP do Roblox Studio estiver conectado, use-o para ler o Output e inspecionar instâncias, mas edite código só nos arquivos do repositório.

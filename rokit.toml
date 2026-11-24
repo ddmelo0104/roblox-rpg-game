@@ -1,5 +1,5 @@
-# Ferramentas do projeto, gerenciadas pelo Rokit (https://github.com/rojo-rbx/rokit).
-# Instale todas com `rokit install`. As mesmas versões estão fixadas no CI (.github/workflows/ci.yml).
+# Project tools, managed by Rokit (https://github.com/rojo-rbx/rokit).
+# Install all of them with `rokit install`. The CI pins the same versions (.github/workflows/ci.yml).
 
 [tools]
 rojo = "rojo-rbx/rojo@7.4.4"

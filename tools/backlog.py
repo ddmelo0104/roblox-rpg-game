@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-backlog.py: gera docs/planejamento/BACKLOG.md a partir das propriedades (frontmatter)
-dos épicos, histórias, ADRs e bugs em docs/. Substitui os painéis do antigo vault.
+backlog.py: builds docs/planejamento/BACKLOG.md from the properties (frontmatter) of the
+epics, stories, ADRs and bugs in docs/. Replaces the dashboards of the old vault.
 
-Uso:
-    python3 tools/backlog.py           # regenera o arquivo
-    python3 tools/backlog.py --check   # só confere se está atualizado (usado no CI)
+The documents are written in Portuguese, so their frontmatter keys (titulo, epico, pontos...)
+and the generated BACKLOG.md stay in Portuguese; only this code is in English.
 
-No Windows, troque `python3` por `py`. Só usa a biblioteca padrão (Python 3.8+).
+Usage:
+    python3 tools/backlog.py           # rebuilds the file
+    python3 tools/backlog.py --check   # only checks whether it is up to date (used by the CI)
+
+On Windows, use `py` instead of `python3`. Uses only the standard library (Python 3.8+).
 """
 
 from __future__ import annotations
@@ -18,13 +21,13 @@ import re
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
-DOCS = RAIZ / "docs"
-PLANEJAMENTO = DOCS / "planejamento"
-SAIDA = PLANEJAMENTO / "BACKLOG.md"
+ROOT = Path(__file__).resolve().parent.parent
+DOCS = ROOT / "docs"
+PLANNING = DOCS / "planejamento"
+OUTPUT = PLANNING / "BACKLOG.md"
 
-ORDEM_PRIORIDADE = {"must": 0, "should": 1, "could": 2, "wont": 3}
-SECOES_HISTORIAS = [
+PRIORITY_ORDER = {"must": 0, "should": 1, "could": 2, "wont": 3}
+STORY_SECTIONS = [
     ("Em andamento e em revisão", {"em-andamento", "revisao"}),
     ("Prontas para começar", {"pronto"}),
     ("Backlog", {"backlog", "ideia"}),
@@ -32,66 +35,66 @@ SECOES_HISTORIAS = [
 ]
 
 
-def ler_frontmatter(caminho: Path) -> dict:
-    """Lê o bloco `---` do topo do arquivo como pares chave: valor (formato simples, sem listas aninhadas)."""
-    texto = caminho.read_text(encoding="utf-8")
-    dados: dict = {"_arquivo": caminho}
-    if texto.startswith("---"):
-        fim = texto.find("\n---", 3)
-        if fim != -1:
-            for linha in texto[3:fim].splitlines():
-                if ":" not in linha or linha.lstrip().startswith("#"):
+def read_frontmatter(path: Path) -> dict:
+    """Reads the `---` block at the top of the file as key: value pairs (simple format, no nested lists)."""
+    text = path.read_text(encoding="utf-8")
+    data: dict = {"_file": path}
+    if text.startswith("---"):
+        end = text.find("\n---", 3)
+        if end != -1:
+            for line in text[3:end].splitlines():
+                if ":" not in line or line.lstrip().startswith("#"):
                     continue
-                chave, _, valor = linha.partition(":")
-                dados[chave.strip()] = valor.strip().strip('"').strip("'")
-    if not dados.get("titulo"):
-        titulo = re.search(r"^# (.+)$", texto, flags=re.MULTILINE)
-        if titulo:
-            dados["titulo"] = titulo.group(1).split("·", 1)[-1].strip()
-    return dados
+                key, _, value = line.partition(":")
+                data[key.strip()] = value.strip().strip('"').strip("'")
+    if not data.get("titulo"):
+        title = re.search(r"^# (.+)$", text, flags=re.MULTILINE)
+        if title:
+            data["titulo"] = title.group(1).split("·", 1)[-1].strip()
+    return data
 
 
-def carregar(pasta: Path, prefixo: str) -> list:
-    """Todos os arquivos `PREFIXO-*.md` da pasta que têm `id`, ordenados pelo id."""
-    if not pasta.exists():
+def load(folder: Path, prefix: str) -> list:
+    """Every `PREFIX-*.md` file in the folder that has an `id`, sorted by id."""
+    if not folder.exists():
         return []
-    itens = [ler_frontmatter(p) for p in sorted(pasta.glob(f"{prefixo}-*.md"))]
-    return sorted((i for i in itens if i.get("id")), key=lambda i: i["id"])
+    items = [read_frontmatter(p) for p in sorted(folder.glob(f"{prefix}-*.md"))]
+    return sorted((i for i in items if i.get("id")), key=lambda i: i["id"])
 
 
-def celula(valor) -> str:
-    """Texto seguro para uma célula de tabela Markdown."""
-    return str(valor).replace("|", "\\|") if valor not in (None, "") else "—"
+def cell(value) -> str:
+    """Text that is safe inside a Markdown table cell."""
+    return str(value).replace("|", "\\|") if value not in (None, "") else "—"
 
 
 def link(item: dict) -> str:
-    """Link relativo ao BACKLOG.md, no formato `[ID · Título](caminho)`."""
-    destino = Path(os.path.relpath(item["_arquivo"], SAIDA.parent)).as_posix()
-    return f"[{item['id']} · {celula(item.get('titulo', ''))}]({destino})"
+    """Link relative to BACKLOG.md, as `[ID · Title](path)`."""
+    target = Path(os.path.relpath(item["_file"], OUTPUT.parent)).as_posix()
+    return f"[{item['id']} · {cell(item.get('titulo', ''))}]({target})"
 
 
-def pontos(item: dict) -> int:
+def points(item: dict) -> int:
     try:
         return int(item.get("pontos") or 0)
     except ValueError:
         return 0
 
 
-def tabela(cabecalho: list, linhas: list) -> str:
-    if not linhas:
+def table(header: list, rows: list) -> str:
+    if not rows:
         return "_Nada por aqui._\n"
-    saida = ["| " + " | ".join(cabecalho) + " |", "|" + " --- |" * len(cabecalho)]
-    saida += ["| " + " | ".join(celula(c) for c in linha) + " |" for linha in linhas]
-    return "\n".join(saida) + "\n"
+    out = ["| " + " | ".join(header) + " |", "|" + " --- |" * len(header)]
+    out += ["| " + " | ".join(cell(c) for c in row) + " |" for row in rows]
+    return "\n".join(out) + "\n"
 
 
-def gerar() -> str:
-    epicos = carregar(PLANEJAMENTO / "epicos", "EP")
-    historias = carregar(PLANEJAMENTO / "historias", "US")
-    adrs = carregar(DOCS / "arquitetura" / "adr", "ADR")
-    bugs = carregar(DOCS / "dev" / "bugs", "BUG")
+def build() -> str:
+    epics = load(PLANNING / "epicos", "EP")
+    stories = load(PLANNING / "historias", "US")
+    adrs = load(DOCS / "arquitetura" / "adr", "ADR")
+    bugs = load(DOCS / "dev" / "bugs", "BUG")
 
-    partes = [
+    parts = [
         "<!-- Gerado por tools/backlog.py. Não edite à mão: mude os arquivos e rode o script. -->",
         "",
         "# Backlog",
@@ -102,59 +105,57 @@ def gerar() -> str:
         "",
     ]
 
-    linhas = []
-    for epico in epicos:
-        dele = [h for h in historias if h.get("epico") == epico["id"]]
-        feitas = [h for h in dele if h.get("status") == "concluido"]
-        progresso = (
-            f"{len(feitas)}/{len(dele)} histórias · {sum(map(pontos, feitas))}/{sum(map(pontos, dele))} pts"
-            if dele
+    rows = []
+    for epic in epics:
+        its_stories = [s for s in stories if s.get("epico") == epic["id"]]
+        done = [s for s in its_stories if s.get("status") == "concluido"]
+        progress = (
+            f"{len(done)}/{len(its_stories)} histórias · {sum(map(points, done))}/{sum(map(points, its_stories))} pts"
+            if its_stories
             else "sem histórias"
         )
-        linhas.append([link(epico), epico.get("status"), epico.get("prioridade"), epico.get("marco"), progresso])
-    partes += ["## Épicos", "", tabela(["Épico", "Status", "Prioridade", "Marco", "Progresso"], linhas)]
+        rows.append([link(epic), epic.get("status"), epic.get("prioridade"), epic.get("marco"), progress])
+    parts += ["## Épicos", "", table(["Épico", "Status", "Prioridade", "Marco", "Progresso"], rows)]
 
-    for titulo, estados in SECOES_HISTORIAS:
-        selecionadas = [h for h in historias if h.get("status") in estados]
-        selecionadas.sort(key=lambda h: (ORDEM_PRIORIDADE.get(h.get("prioridade", ""), 9), h["id"]))
-        linhas = [
-            [link(h), h.get("status"), h.get("epico"), h.get("prioridade"), pontos(h) or "?"] for h in selecionadas
-        ]
-        partes += [f"## {titulo}", "", tabela(["História", "Status", "Épico", "Prioridade", "Pts"], linhas)]
+    for title, statuses in STORY_SECTIONS:
+        selected = [s for s in stories if s.get("status") in statuses]
+        selected.sort(key=lambda s: (PRIORITY_ORDER.get(s.get("prioridade", ""), 9), s["id"]))
+        rows = [[link(s), s.get("status"), s.get("epico"), s.get("prioridade"), points(s) or "?"] for s in selected]
+        parts += [f"## {title}", "", table(["História", "Status", "Épico", "Prioridade", "Pts"], rows)]
 
-    incompletas = [
-        h
-        for h in historias
-        if h.get("status") not in {"concluido", "cancelado"} and (not h.get("epico") or not pontos(h))
+    incomplete = [
+        s
+        for s in stories
+        if s.get("status") not in {"concluido", "cancelado"} and (not s.get("epico") or not points(s))
     ]
-    if incompletas:
-        partes += ["## Histórias sem épico ou sem estimativa", "", *(f"- {link(h)}" for h in incompletas), ""]
+    if incomplete:
+        parts += ["## Histórias sem épico ou sem estimativa", "", *(f"- {link(s)}" for s in incomplete), ""]
 
-    partes += ["## Decisões (ADRs)", "", tabela(["ADR", "Status"], [[link(a), a.get("status")] for a in adrs])]
+    parts += ["## Decisões (ADRs)", "", table(["ADR", "Status"], [[link(a), a.get("status")] for a in adrs])]
 
-    abertos = [b for b in bugs if b.get("status") not in {"resolvido", "fechado"}]
-    linhas = [[link(b), b.get("severidade"), b.get("status")] for b in abertos]
-    partes += ["## Bugs abertos", "", tabela(["Bug", "Severidade", "Status"], linhas)]
+    open_bugs = [b for b in bugs if b.get("status") not in {"resolvido", "fechado"}]
+    rows = [[link(b), b.get("severidade"), b.get("status")] for b in open_bugs]
+    parts += ["## Bugs abertos", "", table(["Bug", "Severidade", "Status"], rows)]
 
-    return "\n".join(partes).rstrip() + "\n"
+    return "\n".join(parts).rstrip() + "\n"
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Gera docs/planejamento/BACKLOG.md")
-    parser.add_argument("--check", action="store_true", help="falha se o BACKLOG.md estiver desatualizado")
+    parser = argparse.ArgumentParser(description="Builds docs/planejamento/BACKLOG.md")
+    parser.add_argument("--check", action="store_true", help="fail if BACKLOG.md is out of date")
     args = parser.parse_args()
 
-    conteudo = gerar()
+    content = build()
     if args.check:
-        atual = SAIDA.read_text(encoding="utf-8") if SAIDA.exists() else ""
-        if atual != conteudo:
-            print("BACKLOG.md desatualizado: rode `python3 tools/backlog.py` e faça commit.", file=sys.stderr)
+        current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
+        if current != content:
+            print("BACKLOG.md is out of date: run `python3 tools/backlog.py` and commit it.", file=sys.stderr)
             return 1
-        print("BACKLOG.md em dia.")
+        print("BACKLOG.md is up to date.")
         return 0
 
-    SAIDA.write_text(conteudo, encoding="utf-8", newline="\n")
-    print(f"BACKLOG.md atualizado ({SAIDA.relative_to(RAIZ).as_posix()}).")
+    OUTPUT.write_text(content, encoding="utf-8", newline="\n")
+    print(f"BACKLOG.md updated ({OUTPUT.relative_to(ROOT).as_posix()}).")
     return 0
 
 

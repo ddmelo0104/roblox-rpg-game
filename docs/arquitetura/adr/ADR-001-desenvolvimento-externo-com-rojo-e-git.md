@@ -2,10 +2,10 @@
 tipo: adr
 id: ADR-001
 titulo: Desenvolvimento externo com Rojo e Git
-status: proposto
+status: aceito
 epicos: EP-001
 criado: 2026-10-29
-decidido_em:
+decidido_em: 2026-11-04
 substitui:
 substituido_por:
 ---
@@ -13,7 +13,7 @@ substituido_por:
 # ADR-001 · Desenvolvimento externo com Rojo e Git
 
 > [!NOTE]
-> Status: **proposto**, aguardando a decisão do arquiteto.
+> Status: **aceito** em 04/11/2026 pelo Davi (opção B).
 
 ## Contexto
 Scripts editados só dentro do Roblox Studio não têm Git, revisão de código, lint nem acesso por ferramentas externas como o Claude Code.
@@ -29,7 +29,7 @@ Scripts editados só dentro do Roblox Studio não têm Git, revisão de código,
 
 ## Decisão
 > [!IMPORTANT]
-> **Proposta: opção B.** Todo código vive no repositório e é sincronizado com o Studio pelo Rojo.
+> **Decidido: opção B.** Todo código vive no repositório e é sincronizado com o Studio pelo Rojo.
 
 ## Consequências
 - O Studio vira ambiente de execução e de construção do mapa; o código-fonte é o repositório.

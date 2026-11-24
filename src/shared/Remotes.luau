@@ -1,0 +1,80 @@
+--!strict
+--[[
+	Remotes.luau
+	Single list of the game's Remotes (US-005). The server creates all of them in
+	ReplicatedStorage.Remotes before starting the Services; the client only waits for them.
+
+	Every Remote is either a client intent ("I want to sprint") or a server notice; the client never
+	sends a result (ADR-002). To add a Remote: add its name to LIST and validate what arrives through
+	it on the server with Network.onReceive.
+]]
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local FOLDER_NAME = "Remotes"
+
+-- All of them are RemoteEvents. Server-to-client RemoteFunctions are forbidden: the client might
+-- never answer and hang the server.
+local LIST: { string } = {
+	"RequestPing", -- US-005: example of a validated request
+	"RequestSprint", -- US-010: ask to sprint (true) or to stop (false)
+	"RequestAbility", -- US-012: use an ability (id, direction, the locked target and, for Ground, the point)
+	"RequestBasicAttack", -- US-023: basic attack (the locked target, if any; the server assists the aim)
+	"AbilityUsed", -- US-012: server notice to everyone (who used which ability, from where, who was hit, damage)
+	"RequestDodge", -- US-013: dodge (the client dashes on its own; the server opens the invulnerability)
+	"RequestParry", -- US-013: open the parry window
+	"DefenseState", -- US-013: server notice to one player (when dodge and parry are ready, lockout, rejection)
+	"DefenseEvent", -- US-013: server notice to everyone (dodged, parried, parry missed or hit, and the damage)
+	"InventoryUpdate", -- US-017: server notice to one player (a copy of the bag and of the equipment)
+	"RequestEquip", -- US-018: equip the bag item with this uid
+	"RequestUnequip", -- US-018: move what is worn in this slot back to the bag
+	"Notice", -- US-020: server notice to one player, shown on the HUD (action name and reason or text)
+	"ProgressUpdate", -- US-029: server notice to one player (fame totals and the latest gain)
+	"RequestGiveUp", -- US-039: a downed player gives up (comes back now, or is finished in full-loot zones)
+	"RequestDungeonExit", -- US-042: start (true) or cancel (false) channeling out of a dungeon
+	"ZoneMap", -- US-044: server notice to one player (the world's zones, for the map)
+	"TutorialUpdate", -- US-045: server notice to one player (the tutorial step and its progress)
+	"RequestGroupAnswer", -- US-046: accept (true) or decline (false) the group invite received
+	"RequestGroupLeave", -- US-046: leave the group
+	"GroupUpdate", -- US-046: server notice to one player (their group's members, and an invite)
+	"ContainerView", -- US-051: server notice to one player (what a chest or bag holds for them, or that it closed)
+	"RequestTakeItem", -- US-051: take the item with this uid from this container
+	"RequestTakeAll", -- US-051: take everything that fits from this container
+	"RequestCloseContainer", -- US-051: the loot window of this container was closed
+}
+
+local Remotes = {}
+
+-- Server only: creates the folder and one RemoteEvent per name in the list.
+function Remotes.create()
+	assert(RunService:IsServer(), "Remotes.create only runs on the server")
+
+	local folder: Instance
+	local existing = ReplicatedStorage:FindFirstChild(FOLDER_NAME)
+	if existing then
+		folder = existing
+	else
+		local newFolder = Instance.new("Folder")
+		newFolder.Name = FOLDER_NAME
+		newFolder.Parent = ReplicatedStorage
+		folder = newFolder
+	end
+
+	for _, name in LIST do
+		if not folder:FindFirstChild(name) then
+			local event = Instance.new("RemoteEvent")
+			event.Name = name
+			event.Parent = folder
+		end
+	end
+end
+
+-- Both sides: the RemoteEvent with this name. On the client, waits for it to replicate.
+function Remotes.event(name: string): RemoteEvent
+	assert(table.find(LIST, name), `Unknown remote: {name}`)
+	local folder = ReplicatedStorage:WaitForChild(FOLDER_NAME)
+	return folder:WaitForChild(name) :: RemoteEvent
+end
+
+return table.freeze(Remotes)

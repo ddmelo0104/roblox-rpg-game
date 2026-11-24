@@ -14,20 +14,20 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Mesmas versões do rokit.toml
+  # Same versions as rokit.toml
   ROJO_VERSION: 7.4.4
   SELENE_VERSION: 0.27.1
   STYLUA_VERSION: 0.20.0
 
 jobs:
-  qualidade:
-    name: Formatação, lint, backlog e build
+  quality:
+    name: Format, lint, backlog and build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Instalar ferramentas (versões do rokit.toml)
+      - name: Install tools (rokit.toml versions)
         run: |
           mkdir -p "$HOME/bin" && cd "$HOME/bin"
           curl -fsSL -o rojo.zip   "https://github.com/rojo-rbx/rojo/releases/download/v${ROJO_VERSION}/rojo-${ROJO_VERSION}-linux-x86_64.zip"
@@ -37,14 +37,14 @@ jobs:
           chmod +x rojo selene stylua
           echo "$HOME/bin" >> "$GITHUB_PATH"
 
-      - name: Formatação (StyLua)
+      - name: Format (StyLua)
         run: stylua --check src
 
-      - name: Lint (Selene, std Roblox; aviso também falha)
+      - name: Lint (Selene, Roblox std; warnings fail too)
         run: selene src
 
-      - name: Backlog em dia
+      - name: Backlog up to date
         run: python3 tools/backlog.py --check
 
-      - name: Build do place (Rojo)
-        run: rojo build default.project.json --output projeto-rpg.rbxl
+      - name: Build the place (Rojo)
+        run: rojo build default.project.json --output roblox-rpg-game.rbxl

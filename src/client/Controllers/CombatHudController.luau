@@ -1,0 +1,291 @@
+--!strict
+--[[
+	CombatHudController.luau
+	Minimal prototype HUD (US-012, US-013): the energy bar, one slot per ability and per defense
+	action (dodge and parry) with its key, name and cooldown, the last notice ("sem energia",
+	"em recarga"…) and "Em combate" (US-015). A slot's border turns red when there is not enough
+	energy for the ability, or while a missed parry leaves the player vulnerable. The real UI belongs
+	to EP-011.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local CombatState = require(Shared:WaitForChild("CombatState") :: ModuleScript)
+local Energy = require(Shared:WaitForChild("Energy") :: ModuleScript)
+local Items = require(Shared:WaitForChild("Items") :: ModuleScript)
+local Remotes = require(Shared:WaitForChild("Remotes") :: ModuleScript)
+local CombatController = require(script.Parent.CombatController)
+local DefenseController = require(script.Parent.DefenseController)
+local Notices = require(script.Parent.Parent.Notices)
+local InventoryController = require(script.Parent.InventoryController)
+
+-- Visual only: sizes (in pixels), how long a notice stays on screen, and colors.
+local SLOT_SIZE = 64
+local GAP = 8
+local ENERGY_BAR_HEIGHT = 14
+local NOTICE_DURATION = 1.5
+local BACKGROUND_COLOR = Color3.fromRGB(25, 25, 30)
+local ENERGY_COLOR = Color3.fromRGB(80, 170, 255)
+local BLOCKED_COLOR = Color3.fromRGB(220, 70, 70)
+local NOTICE_COLOR = Color3.fromRGB(255, 200, 120)
+local IN_COMBAT_TEXT = "Em combate"
+local IN_COMBAT_COLOR = Color3.fromRGB(255, 110, 90)
+
+-- What a slot shows and where it reads its state from.
+type SlotSpec = {
+	id: string,
+	keyLabel: string,
+	name: string,
+	cooldown: number,
+	energyCost: number,
+	getReadyAt: () -> number,
+	isLocked: () -> boolean,
+}
+
+type Slot = {
+	spec: SlotSpec,
+	shade: Frame,
+	timer: TextLabel,
+	border: UIStroke,
+}
+
+type Hud = {
+	bar: Frame,
+	slotsSignature: string,
+	energyFill: Frame,
+	energyText: TextLabel,
+	notice: TextLabel,
+	inCombat: TextLabel,
+	slots: { Slot },
+}
+
+local CombatHudController = {}
+
+local player = Players.LocalPlayer
+
+-- The abilities of the weapon and of the chest worn now (US-021, US-024), then the two defense
+-- actions.
+local function slotSpecs(): { SlotSpec }
+	local specs: { SlotSpec } = {}
+	for _, ability in CombatController.currentAbilities() do
+		table.insert(specs, {
+			id = ability.id,
+			keyLabel = ability.key.Name,
+			name = ability.name,
+			cooldown = ability.cooldown,
+			energyCost = ability.energyCost,
+			getReadyAt = function()
+				return CombatController.getReadyAt(ability.id)
+			end,
+			isLocked = function()
+				return false
+			end,
+		})
+	end
+	for _, action in DefenseController.actions() do
+		table.insert(specs, {
+			id = action.id,
+			keyLabel = action.keyLabel,
+			name = action.name,
+			cooldown = action.cooldown,
+			energyCost = 0,
+			getReadyAt = function()
+				return DefenseController.getReadyAt(action.id)
+			end,
+			isLocked = DefenseController.isVulnerable,
+		})
+	end
+	return specs
+end
+
+-- A text that changes when the list of slots changes (another weapon or another chest).
+local function signatureOf(specs: { SlotSpec }): string
+	local parts = {}
+	for _, spec in specs do
+		table.insert(parts, `{spec.id}:{spec.cooldown}`)
+	end
+	return table.concat(parts, ",")
+end
+
+local function newLabel(name: string, textSize: number, parent: Instance): TextLabel
+	local label = Instance.new("TextLabel")
+	label.Name = name
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.TextSize = textSize
+	label.Text = ""
+	label.Parent = parent
+	return label
+end
+
+local function newSlot(spec: SlotSpec, index: number, parent: Instance): Slot
+	local frame = Instance.new("Frame")
+	frame.Name = spec.id
+	frame.Size = UDim2.fromOffset(SLOT_SIZE, SLOT_SIZE)
+	frame.Position = UDim2.fromOffset((index - 1) * (SLOT_SIZE + GAP), ENERGY_BAR_HEIGHT + GAP)
+	frame.BackgroundColor3 = BACKGROUND_COLOR
+	frame.BorderSizePixel = 0
+	frame.Parent = parent
+
+	local border = Instance.new("UIStroke")
+	border.Thickness = 2
+	border.Color = BACKGROUND_COLOR
+	border.Parent = frame
+
+	local key = newLabel("Key", 14, frame)
+	key.Text = spec.keyLabel
+	key.TextXAlignment = Enum.TextXAlignment.Left
+	key.Size = UDim2.fromOffset(24, 18)
+	key.Position = UDim2.fromOffset(4, 2)
+
+	local name = newLabel("ActionName", 11, frame)
+	name.Text = spec.name
+	name.TextWrapped = true
+	name.Size = UDim2.new(1, -4, 0, 28)
+	name.Position = UDim2.new(0, 2, 1, -30)
+
+	-- The shade covers the slot and shrinks as the cooldown runs out.
+	local shade = Instance.new("Frame")
+	shade.Name = "Cooldown"
+	shade.AnchorPoint = Vector2.new(0, 1)
+	shade.Position = UDim2.fromScale(0, 1)
+	shade.Size = UDim2.fromScale(1, 0)
+	shade.BackgroundColor3 = Color3.new(0, 0, 0)
+	shade.BackgroundTransparency = 0.35
+	shade.BorderSizePixel = 0
+	shade.ZIndex = 2
+	shade.Parent = frame
+
+	local timer = newLabel("Timer", 20, frame)
+	timer.Size = UDim2.fromScale(1, 1)
+	timer.ZIndex = 3
+
+	return { spec = spec, shade = shade, timer = timer, border = border }
+end
+
+local function createHud(): Hud
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "CombatHud"
+	gui.ResetOnSpawn = false
+
+	local bar = Instance.new("Frame")
+	bar.Name = "Bar"
+	bar.AnchorPoint = Vector2.new(0.5, 1)
+	bar.Position = UDim2.new(0.5, 0, 1, -20)
+	bar.BackgroundTransparency = 1
+	bar.Parent = gui
+
+	local energyBackground = Instance.new("Frame")
+	energyBackground.Name = "Energy"
+	energyBackground.Size = UDim2.new(1, 0, 0, ENERGY_BAR_HEIGHT)
+	energyBackground.BackgroundColor3 = BACKGROUND_COLOR
+	energyBackground.BorderSizePixel = 0
+	energyBackground.Parent = bar
+
+	local energyFill = Instance.new("Frame")
+	energyFill.Name = "Fill"
+	energyFill.Size = UDim2.fromScale(1, 1)
+	energyFill.BackgroundColor3 = ENERGY_COLOR
+	energyFill.BorderSizePixel = 0
+	energyFill.Parent = energyBackground
+
+	local energyText = newLabel("Value", 12, energyBackground)
+	energyText.Size = UDim2.fromScale(1, 1)
+	energyText.ZIndex = 2
+
+	local notice = newLabel("Notice", 18, bar)
+	notice.AnchorPoint = Vector2.new(0.5, 1)
+	notice.Position = UDim2.new(0.5, 0, 0, -6)
+	notice.Size = UDim2.fromOffset(360, 22)
+	notice.TextColor3 = NOTICE_COLOR
+	notice.TextStrokeTransparency = 0.5
+
+	-- "Em combate", to the left of the energy bar (US-015).
+	local inCombat = newLabel("InCombat", 14, bar)
+	inCombat.AnchorPoint = Vector2.new(1, 0)
+	inCombat.Position = UDim2.fromOffset(-8, 0)
+	inCombat.Size = UDim2.fromOffset(100, ENERGY_BAR_HEIGHT)
+	inCombat.TextXAlignment = Enum.TextXAlignment.Right
+	inCombat.TextColor3 = IN_COMBAT_COLOR
+	inCombat.Text = IN_COMBAT_TEXT
+	inCombat.Visible = false
+
+	gui.Parent = player:WaitForChild("PlayerGui")
+	return {
+		bar = bar,
+		slotsSignature = "",
+		energyFill = energyFill,
+		energyText = energyText,
+		notice = notice,
+		inCombat = inCombat,
+		slots = {},
+	}
+end
+
+-- Rebuilds the slots when the kit changes (another weapon, chest or boots), and resizes the bar.
+local function rebuildSlots(hud: Hud)
+	local specs = slotSpecs()
+	local signature = signatureOf(specs)
+	if signature == hud.slotsSignature then
+		return
+	end
+	hud.slotsSignature = signature
+	for _, slot in hud.slots do
+		local frame = slot.shade.Parent
+		if frame then
+			frame:Destroy()
+		end
+	end
+	hud.slots = {}
+	for index, spec in specs do
+		table.insert(hud.slots, newSlot(spec, index, hud.bar))
+	end
+	local count = math.max(#specs, 1)
+	hud.bar.Size = UDim2.fromOffset(count * SLOT_SIZE + (count - 1) * GAP, ENERGY_BAR_HEIGHT + GAP + SLOT_SIZE)
+end
+
+local function update(hud: Hud)
+	local current, max = Energy.of(player)
+	local energyFraction = if max > 0 then math.clamp(current / max, 0, 1) else 0
+	hud.energyFill.Size = UDim2.fromScale(energyFraction, 1)
+	local gearScore = player:GetAttribute(Items.GEAR_SCORE_ATTRIBUTE)
+	hud.energyText.Text = `{current} / {max}  ·  GS {if typeof(gearScore) == "number" then gearScore else "?"}`
+
+	local now = Workspace:GetServerTimeNow()
+	for _, slot in hud.slots do
+		local spec = slot.spec
+		local remaining = math.max(0, spec.getReadyAt() - now)
+		local fraction = if spec.cooldown > 0 then math.clamp(remaining / spec.cooldown, 0, 1) else 0
+		slot.shade.Size = UDim2.fromScale(1, fraction)
+		slot.timer.Text = if remaining > 0 then string.format("%.1f", remaining) else ""
+		local blocked = current < spec.energyCost or spec.isLocked()
+		slot.border.Color = if blocked then BLOCKED_COLOR else BACKGROUND_COLOR
+	end
+
+	hud.inCombat.Visible = CombatState.isInCombat(player)
+
+	local text, shownAt = Notices.last()
+	hud.notice.Text = if text and os.clock() - shownAt < NOTICE_DURATION then text else ""
+end
+
+function CombatHudController:Start()
+	-- Short notices from the server (bag full, item found…).
+	Remotes.event("Notice").OnClientEvent:Connect(function(actionName: string, reason: string)
+		Notices.showReason(actionName, reason)
+	end)
+
+	local hud = createHud()
+	rebuildSlots(hud)
+	InventoryController.changed:Connect(function()
+		rebuildSlots(hud)
+	end)
+	RunService.RenderStepped:Connect(function()
+		update(hud)
+	end)
+end
+
+return CombatHudController
